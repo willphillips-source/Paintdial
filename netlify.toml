@@ -11,3 +11,14 @@
   to = "https://www.paintdial.co.uk/:splat"
   status = 301
   force = true
+[[redirects]]
+  from = "https://paintdial.com/*"
+  to = "https://www.paintdial.co.uk/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.paintdial.com/*"
+  to = "https://www.paintdial.co.uk/:splat"
+  status = 301
+  force = true
