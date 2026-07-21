@@ -484,7 +484,7 @@
     .search-row input{font-size:14px; padding:9px 12px;}
     .photo-btn{padding:11px 12px;}
     .name-toggle{padding:9px 12px; font-size:13.5px;}
-    .pick-panel{height:56px; margin-top:12px; flex-direction:row; align-items:center; justify-content:space-between; padding:0 14px;}
+    .pick-panel{height:80px; margin-top:12px; flex-direction:row; align-items:center; justify-content:space-between; padding:0 14px;}
     .picker-note{display:none;}
     .results{padding:20px 16px 0; display:flex; flex-direction:column;}
     .allmatches{padding:0 16px 90px;}
@@ -600,6 +600,7 @@
 .head-nav{font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:color .12s}.head-nav:hover{color:var(--ink)}@media(max-width:560px){.head-nav{display:none}}
 @media(max-width:560px){header{align-items:center;flex-wrap:nowrap;gap:10px;padding:13px 14px 11px}.brand{font-size:21px;gap:7px}.brand .mark{width:21px;height:21px}.lib-link{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
 
+/* --- bolder match cards: button-style View + card lift --- */.view,.see{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--ink)!important;background:#fff;border:1px solid var(--hairline)!important;border-radius:999px;padding:5px 11px;line-height:1;white-space:nowrap;text-decoration:none}.chip{transition:transform .12s ease,box-shadow .12s ease}.chip:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(33,31,27,.13)}.alt-row{transition:transform .12s ease,box-shadow .12s ease}.alt-row:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(33,31,27,.10)}.chip:hover .view,.alt-row:hover .see{background:var(--ink);color:var(--paper)!important;border-color:var(--ink)!important}
 </style>
 </head>
 <body>
@@ -617,7 +618,7 @@
 
 <div class="prop">
   <h1>Match any colour across 5,582&nbsp;paints from nine leading UK&nbsp;brands</h1>
-  <p class="prop-sub">Upload a photo, search a paint you already know, or drag the wheel to explore, and see every brand&rsquo;s closest match, side by side. Bookmark the ones you like and email yourself a shortlist to test.</p>
+  <p class="prop-sub">Drag the wheel, type a name or code, or match from a photo, and see the nearest paint from every UK brand. Bookmark your favourites and email yourself a shortlist to test.</p>
   <p class="prop-brands"><a href="/colours/farrow-and-ball">Farrow &amp; Ball</a> &middot; <a href="/colours/little-greene">Little Greene</a> &middot; <a href="/colours/craig-and-rose">Craig &amp; Rose</a> &middot; <a href="/colours/dulux">Dulux</a> &middot; <a href="/colours/johnstones">Johnstone&rsquo;s</a> &middot; <a href="/colours/valspar">Valspar</a> &middot; <a href="/colours/lick">Lick</a> &middot; <a href="/colours/crown">Crown</a> &middot; <a href="/colours/coat">COAT</a></p>
 </div>
 <div class="layout">
@@ -640,16 +641,16 @@
       </div>
 
 
+      <div class="pick-panel" id="pickPanel" aria-hidden="true">
+        <span class="pp-lab">Your colour</span>
+        <span class="pp-hex" id="pickPanelHex">#5E7E8B</span>
+      </div>
       <div class="action-row">
         <button class="photo-btn" id="photoBtn">&#128247; Match from a photo</button>
         <button class="name-toggle" id="nameToggle" aria-expanded="false" aria-controls="searchRow">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
           Search by name, code, RAL or BS
         </button>
-      </div>
-      <div class="pick-panel" id="pickPanel" aria-hidden="true">
-        <span class="pp-lab">Your colour</span>
-        <span class="pp-hex" id="pickPanelHex">#5E7E8B</span>
       </div>
       <input type="file" id="photoFile" accept="image/*" hidden>
       <div class="photo-wrap" id="photoWrap">
