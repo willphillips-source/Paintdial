@@ -1,0 +1,32 @@
+# PaintDial — Netlify config.
+
+# --- Build: Netlify regenerates the whole site from ~1 MB of source on every push. ---
+# This is what removes the 285 MB delivery problem entirely: the big artifact is built
+# HERE, on Netlify, and never has to travel through a chat or sit on one machine.
+[build]
+  command = "bash build.sh"
+  publish = "site"
+
+[build.environment]
+  PYTHON_VERSION = "3.12"
+
+# Netlify's own subdomain serves the whole site directly and does NOT redirect to the
+# custom domain — verified live: storied-cassata-d25ad3.netlify.app renders PaintDial
+# with the URL unchanged. That is a crawlable duplicate of all 6,448 pages competing for
+# the same crawl budget. Canonicals point home, but a 301 is the stronger signal.
+# Path-for-path, so an indexed subdomain URL lands on its real twin rather than the root.
+# Scoped to the exact host: deploy previews (<id>--storied-cassata...) are unaffected.
+# Verified against netlify-redirector (Netlify's real engine): 8/8 cases correct.
+[[redirects]]
+  from = "https://storied-cassata-d25ad3.netlify.app/*"
+  to = "https://www.paintdial.co.uk/:splat"
+  status = 301
+  force = true
+
+# Edge function declaration.
+# Scoped by regex to .html only, so clean URLs (every real visitor) never invoke it.
+# See netlify/edge-functions/strip-html.js for why this is not a _redirects file.
+[[edge_functions]]
+  pattern = '^/.+\.html$'
+  excludedPattern = ['^/impact-site-verification\.html$', '^/404\.html$']
+  function = "strip-html"
