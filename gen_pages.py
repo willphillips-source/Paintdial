@@ -410,7 +410,7 @@ def build_colour_page(i):
 <p class="sub">This colour, stepped evenly from dark to light.</p>
 <div class="ladder">{rung_html}</div>
 <h2>Pairs well with</h2>
-<p class="sub">Sympathetic neutrals for trim and ceilings, plus one contrast accent.</p>
+<p class="sub">Neutrals for trim and ceilings, plus one accent to contrast.</p>
 <div class="grid">{''.join(chip(j) for j in neutrals+accents)}</div>
 <div class="cta"><h2 style="margin-top:0">Not quite right?</h2>
 <p>Use the PaintDial colour tool to walk this colour lighter, darker, warmer or cooler across 5,000+ UK paints.</p>
@@ -856,18 +856,18 @@ ALT_BRANDS = {b for b in BRAND_ORDER if TIER[b] == 3}  # Farrow & Ball, Little G
 # editorial; the closest-match sentence that follows is ALWAYS generated from the data,
 # so match names can never go stale. Any slug not listed just gets the varied opening below.
 EDITORIAL_INTRO = {
- 'farrow-and-ball-hague-blue': "{home} is one of Farrow &amp; Ball’s most recognisable deep blues, a dark and characterful choice for front doors, kitchen cabinetry and moody rooms. It’s one of the colours people most often want to match from a more widely stocked brand.",
- 'farrow-and-ball-elephants-breath': "{home} is among Farrow &amp; Ball’s best-loved warm neutrals, a soft greige that shifts noticeably with the light through the day. That’s exactly why so many people look for a close equivalent they can pick up more easily.",
- 'farrow-and-ball-railings': "{home} is Farrow &amp; Ball’s go-to ‘almost-black’, a soft off-black with a blue undertone that’s a favourite for railings, window frames and joinery. Decorators regularly try to match it across other ranges.",
- 'farrow-and-ball-setting-plaster': "{home} is one of Farrow &amp; Ball’s most popular pinks, a soft, chalky plaster tone that reads as a warm neutral in the right light. It’s a hugely searched-for colour to find a close alternative to.",
- 'farrow-and-ball-skimming-stone': "{home} is a Farrow &amp; Ball favourite for whole-house schemes, a warm, soft off-white that sits comfortably almost anywhere. That’s why people so often want to match it from a more widely available brand.",
- 'farrow-and-ball-sulking-room-pink': "{home} is one of Farrow &amp; Ball’s most talked-about colours, a muted, dusky pink that suits snugs and bedrooms. Plenty of people want to recreate it without hunting down the original.",
- 'farrow-and-ball-green-smoke': "{home} is a much-loved Farrow &amp; Ball green, a soft, smoky grey-green that’s a favourite on cabinetry and panelling, and one people frequently look to match from another brand.",
- 'farrow-and-ball-cornforth-white': "{home} is one of Farrow &amp; Ball’s most popular cool greys, a versatile, contemporary neutral for living rooms and hallways, and a colour often searched for a close cross-brand equivalent.",
- 'farrow-and-ball-ammonite': "{home} is a Farrow &amp; Ball staple, a soft, easy mid-grey that’s become a default neutral in countless UK homes. It’s no surprise people want to match it from a more widely stocked range.",
- 'farrow-and-ball-stiffkey-blue': "{home} is one of Farrow &amp; Ball’s richest, deepest blues, dramatic on walls and cabinetry alike, and a characterful colour many people try to match from another brand.",
- 'farrow-and-ball-de-nimes': "{home} is one of Farrow &amp; Ball’s more recent favourites, a soft, workwear-inspired blue that’s become widely popular, and a colour people often want to find a close equivalent to.",
- 'farrow-and-ball-stone-blue': "{home} is a historic Farrow &amp; Ball blue, a deep, characterful grey-blue with real heritage, and one decorators regularly try to match across other ranges.",
+ 'farrow-and-ball-hague-blue': "{home} is a dark, inky Farrow &amp; Ball blue, used on front doors, kitchen cabinetry and moody rooms.",
+ 'farrow-and-ball-elephants-breath': "{home} is a soft, warm greige from Farrow &amp; Ball that shifts noticeably with the light through the day.",
+ 'farrow-and-ball-railings': "{home} is Farrow &amp; Ball’s near-black blue-grey, used on railings, window frames and joinery.",
+ 'farrow-and-ball-setting-plaster': "{home} is a soft, chalky pink-plaster tone from Farrow &amp; Ball that can read as a warm neutral in the right light.",
+ 'farrow-and-ball-skimming-stone': "{home} is a warm off-white from Farrow &amp; Ball that suits most rooms, from hallways to living rooms.",
+ 'farrow-and-ball-sulking-room-pink': "{home} is a muted, dusky pink from Farrow &amp; Ball, often used in snugs and bedrooms.",
+ 'farrow-and-ball-green-smoke': "{home} is a soft grey-green from Farrow &amp; Ball, often used on cabinetry and panelling.",
+ 'farrow-and-ball-cornforth-white': "{home} is a cool grey from Farrow &amp; Ball that works well in living rooms and hallways.",
+ 'farrow-and-ball-ammonite': "{home} is a soft mid-grey from Farrow &amp; Ball that has ended up in a lot of UK homes.",
+ 'farrow-and-ball-stiffkey-blue': "{home} is a deep, dark blue from Farrow &amp; Ball, used on walls and cabinetry.",
+ 'farrow-and-ball-de-nimes': "{home} is a soft, denim-like blue from Farrow &amp; Ball that has become popular in recent years.",
+ 'farrow-and-ball-stone-blue': "{home} is a deep grey-blue from Farrow &amp; Ball with a long history as a traditional colour.",
 }
 AVAIL = {'Dulux': 'widely available', 'Crown': 'widely available', "Johnstone's": 'widely available',
          'Valspar': 'widely available at B&amp;Q', 'Little Greene': 'available online or in-store',
@@ -1541,7 +1541,7 @@ def build_alternatives_page(i):
     cb = diff_bits(i, closest)
     close_txt = (f'is the closest match from any other brand ({matchword(d[closest])})'
                  + (f', though it\u2019s {joinbits(cb)}.' if cb
-                    else f', and it holds {name}\u2019s lightness, warmth and saturation alike.'))
+                    else f', and it holds {name}\u2019s lightness, warmth and saturation.'))
     if cheapest == closest:
         value_txt = ' It\u2019s also the best-value tier of the close matches, unusual, as the nearest match and the best-value one usually differ.'
     else:
@@ -1609,7 +1609,7 @@ def build_alternatives_page(i):
             f'{_homelink} is a {depth} {fam} from {brand}, and a popular colour to match across brands or on a tighter budget.',
             f'If you love {brand}’s {_homelink} but want it from a more widely stocked range, you have options. It’s a {depth} {fam}.',
             f'{_homelink} is one of {brand}’s {depth} {fam}s that people often look to match from another brand.',
-            f'Thinking of {_homelink} but weighing up alternatives? This {depth} {fam} from {brand} has several close cousins across the UK ranges.',
+            f'Thinking of {_homelink} but weighing up alternatives? This {depth} {fam} from {brand} has several close matches across the UK ranges.',
         ]
         _open = _vv[sum(slugs[i].encode()) % len(_vv)]
     intro = _open + ' ' + _match_sentence
