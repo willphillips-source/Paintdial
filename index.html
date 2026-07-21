@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="light only">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23F7F5F0'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%235E7E8B' stroke-width='4'/%3E%3Ccircle cx='16' cy='16' r='3.4' fill='%23211F1B'/%3E%3C/svg%3E">
-<meta name="description" content="Match any paint colour across 5,582 shades from nine UK brands. Find the closest alternative to any premium paint — by name, RAL or BS code, or from a photo.">
+<meta name="description" content="Match any paint colour across 5,582 shades from nine UK brands. Find the closest alternative to any premium paint, by name, RAL or BS code, or from a photo.">
 <link rel="canonical" href="https://www.paintdial.co.uk/">
-<meta property="og:title" content="PaintDial — find the paint behind any colour">
-<meta property="og:description" content="Match any colour across 5,582 paints from nine UK brands — Farrow & Ball, Little Greene, Craig & Rose, Dulux, Johnstone's, Valspar, Lick, Crown and COAT. Upload a photo, search a paint, or explore the wheel.">
+<meta property="og:title" content="PaintDial, find the paint behind any colour">
+<meta property="og:description" content="Match any colour across 5,582 paints from nine UK brands, Farrow & Ball, Little Greene, Craig & Rose, Dulux, Johnstone's, Valspar, Lick, Crown and COAT. Upload a photo, search a paint, or explore the wheel.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.paintdial.co.uk/">
 <meta name="twitter:card" content="summary_large_image">
 <meta property="og:image" content="https://www.paintdial.co.uk/share/farrow-and-ball-hague-blue.jpg">
 <meta name="twitter:image" content="https://www.paintdial.co.uk/share/farrow-and-ball-hague-blue.jpg">
-<title>PaintDial — match any colour across 5,582 paints from 9 UK brands</title>
+<title>PaintDial, match any colour across 5,582 paints from 9 UK brands</title>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"PaintDial","url":"https://www.paintdial.co.uk","logo":"https://www.paintdial.co.uk/share/farrow-and-ball-hague-blue.jpg","description":"An independent tool that matches any colour across 5,582 paints from nine leading UK brands."}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"PaintDial","url":"https://www.paintdial.co.uk","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://www.paintdial.co.uk/colours/?q={search_term_string}"},"query-input":"required name=search_term_string"}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -59,7 +59,7 @@
   }
   /* "All close matches" spans the full layout width below the tool, so the grid
      isn't squeezed into column 2 while column 1 sits empty. Declared BEFORE the
-     media queries below — equal specificity means source order decides. */
+     media queries below, equal specificity means source order decides. */
   .allmatches{ grid-column:1 / -1; padding:26px 28px 28px; }
   /* very wide screens: give the results room, widen picker slightly */
   @media(min-width:1700px){ .layout{ max-width:1760px; grid-template-columns:420px 1fr; } }
@@ -73,7 +73,7 @@
     .picker-inner{ max-width:100%; }
     /* Keep the wheel and dial SIDE BY SIDE. This was flex-wrap:wrap, but the pair
        (320 + 22 gap + 180 = 522px) never fit the 464px column, so the dial always
-       wrapped onto its own line — adding ~350px of height and pushing the picked
+       wrapped onto its own line, adding ~350px of height and pushing the picked
        colour below the fold on every wide monitor. nowrap lets them shrink to fit,
        exactly as they already do at 1440. */
     .pick-row{ flex-wrap:nowrap; align-items:center; }
@@ -90,7 +90,7 @@
     .allmatches .grid .c-swatch{ height:110px; }
     .allmatches .grid .c-name{ font-size:16px; }
     .best .best-swatch{ min-height:220px; }
-    /* headline top-4 — biggest cards on the page */
+    /* headline top-4, biggest cards on the page */
     .alt-list .alt-swatch{ height:170px; }
     .alt-list .alt-txt{ padding:16px 18px 4px; }
     .alt-list .alt-txt b{ font-size:22px; }
@@ -139,7 +139,7 @@
   /* divider drawn on the layout so it spans only where both columns exist,
      not down into the empty space below the short picker */
   .layout{ position:relative; }
-  /* keep the column divider tidy — it ends with the layout, browse-brands sits below with its own top rule */
+  /* keep the column divider tidy, it ends with the layout, browse-brands sits below with its own top rule */
   @media(max-width:860px){ .picker{border-right:none; border-bottom:1px solid var(--hairline);} }
   /* z-index:50 is load-bearing. `position:sticky` CREATES A STACKING CONTEXT, so the
      search dropdown inside (.search-results, z-index:40) was trapped in here and painted
@@ -261,7 +261,7 @@
   .btn.ghost{background:transparent; color:var(--ink);}
   .btn:focus-visible{outline:2px solid var(--pick); outline-offset:2px;}
 
-  /* chip grid — the fan deck */
+  /* chip grid, the fan deck */
   .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:14px;}
   .chip{
     border:1px solid var(--hairline); border-radius:10px; overflow:hidden;
@@ -599,6 +599,7 @@
 @media(max-width:560px){.popalt{padding:18px 14px 12px;max-width:100%}.popalt-grid{grid-template-columns:1fr 1fr;gap:6px}.popalt-grid a{font-size:11.5px;padding:7px 8px;gap:6px}}
 .head-nav{font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:color .12s}.head-nav:hover{color:var(--ink)}@media(max-width:560px){.head-nav{display:none}}
 @media(max-width:560px){header{align-items:center;flex-wrap:nowrap;gap:10px;padding:13px 14px 11px}.brand{font-size:21px;gap:7px}.brand .mark{width:21px;height:21px}.lib-link{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
+.pd-journey{list-style:none;display:flex;flex-wrap:wrap;gap:9px 22px;margin:16px 0 2px;padding:0;font-size:13px;color:var(--muted)}.pd-journey li{display:flex;align-items:center;gap:8px}.pd-journey li span{flex:none;width:20px;height:20px;border-radius:50%;background:var(--pick);color:#fff;font-size:11px;font-weight:600;line-height:1;display:flex;align-items:center;justify-content:center}@media(max-width:640px){.pd-journey{gap:7px 15px;font-size:12px}.pd-journey li span{width:18px;height:18px;font-size:10px}}
 </style>
 </head>
 <body>
@@ -616,24 +617,31 @@
 
 <div class="prop">
   <h1>Match any colour across 5,582&nbsp;paints from nine leading UK&nbsp;brands</h1>
-  <p class="prop-sub">Upload a photo, search a paint you already know, or drag the wheel to explore &mdash; and see every brand&rsquo;s closest match, side by side.</p>
+  <p class="prop-sub">Upload a photo, search a paint you already know, or drag the wheel to explore, and see every brand&rsquo;s closest match, side by side.</p>
   <p class="prop-brands"><a href="/colours/farrow-and-ball">Farrow &amp; Ball</a> &middot; <a href="/colours/little-greene">Little Greene</a> &middot; <a href="/colours/craig-and-rose">Craig &amp; Rose</a> &middot; <a href="/colours/dulux">Dulux</a> &middot; <a href="/colours/johnstones">Johnstone&rsquo;s</a> &middot; <a href="/colours/valspar">Valspar</a> &middot; <a href="/colours/lick">Lick</a> &middot; <a href="/colours/crown">Crown</a> &middot; <a href="/colours/coat">COAT</a></p>
 </div>
+<ol class="pd-journey" aria-label="How PaintDial works">
+<li><span>1</span>Search, upload or pick a colour</li>
+<li><span>2</span>Compare closest matches across brands</li>
+<li><span>3</span>Bookmark your favourites</li>
+<li><span>4</span>Email yourself a shortlist</li>
+<li><span>5</span>Order testers before committing</li>
+</ol>
 <div class="layout">
   <aside class="picker">
     <div class="picker-inner">
       <div class="pick-row">
       <div class="wheel-wrap">
-        <div class="wheel-ring" id="wheelRing"><canvas id="wheel" width="600" height="600" aria-label="Colour wheel — drag to choose hue and saturation"></canvas></div>
+        <div class="wheel-ring" id="wheelRing"><canvas id="wheel" width="600" height="600" aria-label="Colour wheel, drag to choose hue and saturation"></canvas></div>
         <div class="pointer" id="pointer"></div>
         <span class="pointer-hex" id="pointerHex">#5E7E8B</span>
         <span class="mini-label">Colour</span>
       </div>
 
       <div class="dial-wrap">
-        <div class="dial-label"><span>Lighter / darker &mdash; drag the dial</span><output id="lightOut">50%</output></div>
+        <div class="dial-label"><span>Lighter / darker, drag the dial</span><output id="lightOut">50%</output></div>
         <canvas id="dial" width="360" height="360" tabindex="0" role="slider"
-          aria-label="Lightness dial &mdash; drag or use arrow keys" aria-valuemin="5" aria-valuemax="97" aria-valuenow="52"></canvas>
+          aria-label="Lightness dial, drag or use arrow keys" aria-valuemin="5" aria-valuemax="97" aria-valuenow="52"></canvas>
         <span class="mini-label">Lighter / darker</span>
       </div>
       </div>
@@ -663,7 +671,7 @@
         <div class="search-results" id="searchResults"></div>
       </div>
 
-      <p class="picker-note"><b>Already have a paint in mind?</b> Search by name, code, RAL or BS to find its closest matches across all nine UK brands — or drag the wheel to explore from scratch.</p>
+      <p class="picker-note"><b>Already have a paint in mind?</b> Search by name, code, RAL or BS to find its closest matches across all nine UK brands, or drag the wheel to explore from scratch.</p>
     </div>
   </aside>
 
@@ -687,6 +695,7 @@
   </main>
   <section class="allmatches" id="allmatches" aria-label="All close matches">
     <h3 class="sec-head" id="gridHead">All close matches</h3>
+    <p class="hint" style="margin:2px 0 12px">Tap the bookmark on any paint to save it to your shortlist, then email the list to yourself.</p>
     <div class="grid" id="grid"></div>
     <div id="moreWrap" style="text-align:center;margin-top:18px"></div>
   </section>
@@ -696,7 +705,7 @@
 
 <section class="popalt">
   <h2>Popular paint alternatives</h2>
-  <p>The closest match from every UK brand — ranked, with a verdict on each.</p>
+  <p>The closest match from every UK brand, ranked, with a verdict on each.</p>
   <div class="popalt-grid"><a href="/alternatives/farrow-and-ball-hague-blue"><i style="background:#3D4E57"></i>Hague Blue alternatives</a><a href="/alternatives/farrow-and-ball-elephants-breath"><i style="background:#C7BEB3"></i>Elephant&rsquo;s Breath alternatives</a><a href="/alternatives/farrow-and-ball-railings"><i style="background:#45494C"></i>Railings alternatives</a><a href="/alternatives/farrow-and-ball-setting-plaster"><i style="background:#D9C0AE"></i>Setting Plaster alternatives</a><a href="/alternatives/farrow-and-ball-skimming-stone"><i style="background:#DBD5CA"></i>Skimming Stone alternatives</a><a href="/alternatives/farrow-and-ball-sulking-room-pink"><i style="background:#AA8D87"></i>Sulking Room Pink alternatives</a><a href="/alternatives/farrow-and-ball-green-smoke"><i style="background:#6F7B71"></i>Green Smoke alternatives</a><a href="/alternatives/farrow-and-ball-cornforth-white"><i style="background:#CFCBC4"></i>Cornforth White alternatives</a><a href="/alternatives/farrow-and-ball-ammonite"><i style="background:#D8D6CF"></i>Ammonite alternatives</a><a href="/alternatives/farrow-and-ball-stiffkey-blue"><i style="background:#4A5B6B"></i>Stiffkey Blue alternatives</a><a href="/alternatives/farrow-and-ball-de-nimes"><i style="background:#748284"></i>De Nimes alternatives</a><a href="/alternatives/farrow-and-ball-stone-blue"><i style="background:#7295A1"></i>Stone Blue alternatives</a></div>
 </section>
 
@@ -709,7 +718,7 @@
 </section>
 
 <footer>
-  Browse the full <a href="/colours/" style="color:inherit">colour library</a>. Screen colours are indicative — paint reflects light, screens emit it, so always order a tester pot before committing.
+  Browse the full <a href="/colours/" style="color:inherit">colour library</a>. Screen colours are indicative, paint reflects light, screens emit it, so always order a tester pot before committing.
   Colour values are each brand's own published digital swatches (5,582 paints across Farrow &amp; Ball, Little Greene, Craig &amp; Rose, Dulux, Johnstone's, Valspar, Lick, Crown and COAT). Colour names are the property of their respective brands. Farrow &amp; Ball, Little Greene, Dulux, Crown, COAT and Craig &amp; Rose chips link straight to the brand's product page; Lick links to the colour's family on lick.com; Johnstone's and Valspar link to B&amp;Q search results, as most of their shades are mixed to order.<br><br><span style="opacity:.85">Brand, partnership or data enquiry? <a href="/about/" style="color:var(--pick); font-weight:600; text-decoration:none;">About</a> &middot; <a href="/how-it-works/" style="color:var(--pick); font-weight:600; text-decoration:none;">How matching works</a> &middot; <a href="/research/" style="color:var(--pick); font-weight:600; text-decoration:none;">Research</a> &middot; <a href="/contact/" style="color:var(--pick); font-weight:600; text-decoration:none;">Contact us &rarr;</a></span><br><br><span style="opacity:.75">&copy; 2026 PaintDial. All rights reserved.</span>
 </footer>
 
@@ -1017,13 +1026,13 @@ function freshlickDest(p){
 // Per-brand DIRECT Awin merchant IDs (the brand's OWN programme). Set ONLY once APPROVED;
 // then that brand's links auto-route through Awin (tracked/commissionable). null = direct link.
 const AWIN_MID={
-  'Farrow & Ball': null,   // applied — set to 20199 when approved
-  'Dulux':         null,   // applied — set to Dulux's merchant ID when approved
-  'Little Greene': null,   // earned via Freshlick (retailer) — see FRESHLICK_MID above
+  'Farrow & Ball': null,  // applied, set to 20199 when approved
+  'Dulux':         null,  // applied, set to Dulux's merchant ID when approved
+  'Little Greene': null,  // earned via Freshlick (retailer), see FRESHLICK_MID above
   'Valspar':       null,
   "Johnstone's":   null,
-  'Lick':          null,   // Lick run their own affiliate programme; set MID when approved
-  'Crown':         null,   // earned via Freshlick (retailer) — see FRESHLICK_MID above
+  'Lick':          null,  // Lick run their own affiliate programme; set MID when approved
+  'Crown':         null,  // earned via Freshlick (retailer), see FRESHLICK_MID above
   'COAT':          null    // COAT sell direct; set MID if/when a programme is available
 };
 function awinWrap(mid, dest){
@@ -1137,7 +1146,7 @@ function renderLadder(lab, pool){
     const b=document.createElement('a');
     b.className='rung'+(i===hereIdx?' here':'');
     b.href=colourPageUrl(p);
-    b.title=p.name+' \u2014 '+p.brand;
+    b.title=p.name+', '+p.brand;
     b.innerHTML=`<div class="r-swatch" style="background:${p.hex}"></div>
       <div class="r-body"><span class="r-name">${p.name}</span><span class="r-brand">${p.brand}</span></div>`;
     row.appendChild(b);
@@ -1148,7 +1157,7 @@ function renderMatches(){
   const hx=currentHex();
   const lab=rgbToLab(...hexToRgb(hx));
   const pool=currentPool();
-  if(pool.length===0){document.getElementById('bestWrap').innerHTML='';document.getElementById('grid').innerHTML='';document.getElementById('ladderSec').style.display='none';document.getElementById('subline').textContent='No brands selected \u2014 tap All to reset.';return;}
+  if(pool.length===0){document.getElementById('bestWrap').innerHTML='';document.getElementById('grid').innerHTML='';document.getElementById('ladderSec').style.display='none';document.getElementById('subline').textContent='No brands selected, tap All to reset.';return;}
   const PICK_OK=rgbToOklab(...hexToRgb(hx));
   const ranked=pool.map(p=>({...p,d:okDistM(PICK_OK,p.ok)})).sort((a,b)=>a.d-b.d);
   renderLadder(lab, pool);
@@ -1208,7 +1217,7 @@ function runSearch(){
   const hx=normHex(raw);
   srItems=[];
   if(hx) srItems.push({__hex:true, hex:hx, name:'Use this colour', brand:hx});
-  const ralItem=r=>({__hex:true, hex:r.h, name:'RAL '+r.c+' \u2014 '+r.n, brand:'RAL Classic \u00b7 sets the wheel to this colour'});
+  const ralItem=r=>({__hex:true, hex:r.h, name:'RAL '+r.c+', '+r.n, brand:'RAL Classic \u00b7 sets the wheel to this colour'});
   const rm=q.match(/^ral[\s\-]*(\d{1,4})$/);
   if(rm){
     srItems=srItems.concat(RALC.filter(r=>r.c.startsWith(rm[1])).slice(0,7).map(ralItem));
@@ -1218,7 +1227,7 @@ function runSearch(){
     const nm=q.slice(4);
     srItems=srItems.concat(RALC.filter(r=>r.n.toLowerCase().includes(nm)).slice(0,7).map(ralItem));
   }
-  const bsItem=r=>({__hex:true, hex:r.h, name:'BS '+r.c+' \u2014 '+r.n, brand:'BS 4800 \u00b7 sets the wheel to this colour'});
+  const bsItem=r=>({__hex:true, hex:r.h, name:'BS '+r.c+', '+r.n, brand:'BS 4800 \u00b7 sets the wheel to this colour'});
   const bsCodeMatch=key=>{let m=BSC.filter(r=>r.c.replace(/\s/g,'')===key); if(!m.length) m=BSC.filter(r=>r.c.replace(/\s/g,'').startsWith(key)).slice(0,8); return m;};
   if(q.startsWith('bs')&&q.length>=3){
     const rest=q.replace(/^bs[\s\-]*/,'').trim(), key=rest.replace(/[\s\-]/g,'').toUpperCase();
@@ -1449,7 +1458,7 @@ setFromHex('#5E7E8B'); /* start on Stone Blue territory */
   function colourURLFor(it){return `/colours/${slug(it.brand)}-${slug(it.name)}`;}
 
   function emailBody(items){
-    const lines = items.map(it=>`\u2022 ${it.name} \u2014 ${it.brand} \u2014 ${it.hex}\n  ${SITE}${colourURLFor(it)}`).join('\n\n');
+    const lines = items.map(it=>`\u2022 ${it.name}, ${it.brand}, ${it.hex}\n  ${SITE}${colourURLFor(it)}`).join('\n\n');
     return `Here are the paint colours I shortlisted on PaintDial:\n\n${lines}\n\nCompare them anytime at ${SITE}`;
   }
   function sendEmail(addr){
@@ -1468,9 +1477,9 @@ setFromHex('#5E7E8B'); /* start on Stone Blue territory */
       `<div class="pd-tray-head"><b>Your shortlist</b> <span class="pd-tray-n">${items.length}</span>`+
       `<button class="pd-tray-min" aria-label="Minimise shortlist" title="Minimise">\u2013</button>`+
       `<button class="pd-tray-clear" aria-label="Clear shortlist">Clear</button></div>`+
-      `<div class="pd-tray-note">Saved on this device \u2014 come back anytime. A shortlist to compare, not a basket.</div>`+
+      `<div class="pd-tray-note">Saved on this device, come back anytime. A shortlist to compare, not a basket.</div>`+
       `<div class="pd-tray-row">`+items.map(it=>
-        `<a class="pd-tray-chip" href="${colourURLFor(it)}" title="${it.name} \u2014 ${it.brand}">`+
+        `<a class="pd-tray-chip" href="${colourURLFor(it)}" title="${it.name}, ${it.brand}">`+
         `<span class="pd-tray-sw" style="background:${it.hex}"></span>`+
         `<span class="pd-tray-x" data-id="${it.id}" role="button" aria-label="Remove ${it.name}">\u00d7</span>`+
         `<span class="pd-tray-name">${it.name}</span></a>`).join('')+`</div>`+
