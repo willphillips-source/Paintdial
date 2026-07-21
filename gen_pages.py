@@ -403,7 +403,7 @@ def build_colour_page(i):
 <p class="afftext">Affiliate link, PaintDial may earn a small commission at no cost to you.</p>
 </div></div>
 <h2>Closest matches from other brands</h2>
-<p class="sub">One from each brand, badged by how close the match is. The tier is the brand\u2019s market position, not a price. Tap any to open the full colour.</p>
+<p class="sub">One from each brand, badged by how close the match is. The tier is the brand\u2019s market position, not a price. Tap any to open it, or tap its bookmark to save a shortlist you can email yourself.</p>
 <div class="grid">{''.join(chip(j, home_lab=lab, show_tier=True, home_i=i) for j, _ in xmatch)}</div>
 {alt_link}
 <h2>Lighter &amp; darker</h2>
