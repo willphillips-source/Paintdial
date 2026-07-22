@@ -22,7 +22,7 @@ _NUMW = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six', 7: 'sev
 def numword(n):
     return _NUMW.get(n, f'{n}')
 SHORTLIST_CSS = '.pd-heart{position:absolute;top:8px;right:8px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C8578;transition:transform .12s,color .12s;z-index:2;padding:0}\n.pd-heart:hover{transform:scale(1.12);color:#5E7E8B}\n.pd-heart svg{fill:none;stroke:currentColor;stroke-width:1.7}\n.pd-heart.on{color:#5E7E8B}.pd-heart.on svg{fill:currentColor;stroke:currentColor}\n#pd-tray{position:fixed;right:14px;bottom:14px;z-index:900;background:#fff;border:1px solid #E3DFD5;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:11px 12px;max-width:min(92vw,560px)}\n.pd-tray-head{display:flex;align-items:center;gap:8px;font-size:13px;color:#211F1B}\n.pd-tray-head b{font-weight:600}.pd-tray-n{background:#F1EEE7;border-radius:20px;padding:1px 8px;font-size:12px;color:#7E786C}\n.pd-tray-clear{margin-left:auto;border:none;background:none;color:#9A6B6B;font-size:12px;cursor:pointer;padding:2px 4px}\n.pd-tray-clear:hover{text-decoration:underline}\n.pd-tray-note{font-size:11px;color:#9A9488;margin:3px 0 9px}\n.pd-tray-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}\n.pd-tray-chip{position:relative;flex:0 0 auto;width:64px;text-decoration:none;color:#211F1B}\n.pd-tray-sw{display:block;height:48px;border-radius:8px;border:1px solid rgba(0,0,0,.08)}\n.pd-tray-name{display:block;font-size:10px;line-height:1.2;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#7E786C}\n.pd-tray-x{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:#211F1B;color:#fff;font-size:12px;line-height:18px;text-align:center}\n.pd-tray-mail{margin-top:10px;border-top:1px solid #EEEAE1;padding-top:9px}\n.pd-mail-toggle{border:none;background:none;color:#5E7E8B;font-size:12.5px;font-weight:600;cursor:pointer;padding:0}\n.pd-mail-toggle:hover{text-decoration:underline}\n.pd-mail-form{display:flex;gap:6px;margin-top:8px}\n.pd-mail-input{flex:1;min-width:0;border:1px solid #D9D4C8;border-radius:8px;padding:7px 9px;font-size:13px;font-family:inherit}\n.pd-mail-input:focus{outline:none;border-color:#5E7E8B}\n.pd-mail-send{border:none;background:#5E7E8B;color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer}\n.pd-mail-send:hover{filter:brightness(1.06)}\n\n.pd-tray-min{border:none;background:none;color:#7E786C;font-size:17px;line-height:1;cursor:pointer;padding:0 4px;margin-left:2px}\n.pd-tray-min:hover{color:#211F1B}\n#pd-tray.min{padding:0;cursor:pointer}\n#pd-tray.min .pd-tray-head{margin-bottom:0;padding:10px 13px}\n#pd-tray.min .pd-tray-note,#pd-tray.min .pd-tray-row,#pd-tray.min .pd-tray-mail,#pd-tray.min .pd-tray-clear{display:none}\n#pd-sl-flash{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(10px);background:#211F1B;color:#fff;padding:9px 15px;border-radius:9px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:950}\n#pd-sl-flash.show{opacity:1;transform:translateX(-50%) translateY(0)}\n.chip,.c-swatch,.alt-row,.hero-swatch{position:relative}\n@media(max-width:560px){#pd-tray{right:8px;bottom:8px;left:8px;max-width:none}.pd-heart{width:27px;height:27px}}\n'
-SHORTLIST_JS = '/* ---------- PaintDial shortlist: save paints on this device, compare & email ----------\n   No login, no basket. Held in localStorage; shared by the tool and every colour page. */\n(function(){\n  const KEY=\'pd_shortlist_v1\', MAX=12, SITE=\'https://www.paintdial.co.uk\';\n  let minimized=false;\n  const read=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[];}catch(e){return [];}};\n  const write=a=>{try{localStorage.setItem(KEY,JSON.stringify(a.slice(0,MAX)));}catch(e){}};\n  const has=id=>read().some(x=>x.id===id);\n  const idOf=(name,brand)=>(brand+\'|\'+name).toLowerCase();\n\n  function toggle(item){\n    let a=read(); const i=a.findIndex(x=>x.id===item.id);\n    if(i>=0) a.splice(i,1); else { if(a.length>=MAX){flash(\'You can keep up to \'+MAX+\' colours\');return false;} a.unshift(item); }\n    write(a); paint(); return true;\n  }\n  function flash(msg){\n    let f=document.getElementById(\'pd-sl-flash\'); if(!f){f=document.createElement(\'div\');f.id=\'pd-sl-flash\';document.body.appendChild(f);}\n    f.textContent=msg; f.classList.add(\'show\'); clearTimeout(f._t); f._t=setTimeout(()=>f.classList.remove(\'show\'),1900);\n  }\n  const BOOKMARK=\'<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>\';\n\n  window.PDShortlist={\n    heartHTML:(name,brand,hex)=>`<button class="pd-heart" data-name="${name.replace(/"/g,\'&quot;\')}" data-brand="${brand.replace(/"/g,\'&quot;\')}" data-hex="${hex}" aria-label="Save ${name.replace(/"/g,\'&quot;\')} to your shortlist" title="Save to shortlist">${BOOKMARK}</button>`,\n    isSaved:has, idOf, toggle, read, refresh:()=>paint()\n  };\n\n  function bindHearts(root){\n    (root||document).querySelectorAll(\'.pd-heart\').forEach(btn=>{\n      if(btn._b) return; btn._b=1;\n      const id=idOf(btn.dataset.name, btn.dataset.brand);\n      if(has(id)) btn.classList.add(\'on\');\n      btn.addEventListener(\'click\',e=>{\n        e.preventDefault(); e.stopPropagation();\n        const ok=toggle({id, name:btn.dataset.name, brand:btn.dataset.brand, hex:btn.dataset.hex});\n        if(ok!==false) btn.classList.toggle(\'on\', has(id));\n      });\n    });\n  }\n  window.PDShortlist.bind=bindHearts;\n\n  function slug(s){return s.normalize(\'NFKD\').replace(/[\\u0300-\\u036f]/g,\'\').toLowerCase().replace(/&/g,\'and\').replace(/\'/g,\'\').replace(/[^a-z0-9]+/g,\'-\').replace(/^-|-$/g,\'\');}\n  function colourURLFor(it){return `/colours/${slug(it.brand)}-${slug(it.name)}`;}\n\n  function emailBody(items){\n    const lines = items.map(it=>`\\u2022 ${it.name}, ${it.brand}, ${it.hex}\\n  ${SITE}${colourURLFor(it)}`).join(\'\\n\\n\');\n    return `Here are the paint colours I shortlisted on PaintDial:\\n\\n${lines}\\n\\nCompare them anytime at ${SITE}`;\n  }\n  function sendEmail(addr){\n    const items=read(); if(!items.length) return;\n    const subj=`My PaintDial shortlist (${items.length} colour${items.length>1?\'s\':\'\'})`;\n    const to=addr?encodeURIComponent(addr):\'\';\n    window.location.href=`mailto:${to}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(emailBody(items))}`;\n  }\n\n  function paint(){\n    const items=read();\n    let tray=document.getElementById(\'pd-tray\');\n    if(!items.length){ if(tray) tray.remove(); document.querySelectorAll(\'.pd-heart.on\').forEach(b=>{ if(!has(idOf(b.dataset.name,b.dataset.brand))) b.classList.remove(\'on\');}); return; }\n    if(!tray){ tray=document.createElement(\'div\'); tray.id=\'pd-tray\'; document.body.appendChild(tray); }\n    tray.innerHTML=\n      `<div class="pd-tray-head"><b>Your shortlist</b> <span class="pd-tray-n">${items.length}</span>`+\n      `<button class="pd-tray-min" aria-label="Minimise shortlist" title="Minimise">\\u2013</button>`+\n      `<button class="pd-tray-clear" aria-label="Clear shortlist">Clear</button></div>`+\n      `<div class="pd-tray-note">Saved on this device, come back anytime. A shortlist to compare, not a basket.</div>`+\n      `<div class="pd-tray-row">`+items.map(it=>\n        `<a class="pd-tray-chip" href="${colourURLFor(it)}" title="${it.name}, ${it.brand}">`+\n        `<span class="pd-tray-sw" style="background:${it.hex}"></span>`+\n        `<span class="pd-tray-x" data-id="${it.id}" role="button" aria-label="Remove ${it.name}">\\u00d7</span>`+\n        `<span class="pd-tray-name">${it.name}</span></a>`).join(\'\')+`</div>`+\n      `<div class="pd-tray-mail">`+\n        `<button class="pd-mail-toggle" type="button">\\u2709 Email these to me</button>`+\n        `<div class="pd-mail-form" hidden><input type="email" class="pd-mail-input" placeholder="you@email.com" aria-label="Your email address"><button class="pd-mail-send" type="button">Send</button></div>`+\n      `</div>`;\n    tray.querySelector(\'.pd-tray-clear\').onclick=()=>{write([]);paint();document.querySelectorAll(\'.pd-heart.on\').forEach(b=>b.classList.remove(\'on\'));};\n    tray.querySelectorAll(\'.pd-tray-x\').forEach(x=>x.addEventListener(\'click\',e=>{\n      e.preventDefault();e.stopPropagation(); const a=read().filter(y=>y.id!==x.dataset.id); write(a); paint();\n      document.querySelectorAll(\'.pd-heart\').forEach(b=>{ if(idOf(b.dataset.name,b.dataset.brand)===x.dataset.id) b.classList.remove(\'on\');});\n    }));\n    const mt=tray.querySelector(\'.pd-mail-toggle\'), mf=tray.querySelector(\'.pd-mail-form\'),\n          mi=tray.querySelector(\'.pd-mail-input\'), ms=tray.querySelector(\'.pd-mail-send\');\n    mt.onclick=()=>{mf.hidden=!mf.hidden; if(!mf.hidden) mi.focus();};\n    ms.onclick=()=>sendEmail(mi.value.trim());\n    mi.addEventListener(\'keydown\',e=>{if(e.key===\'Enter\'){e.preventDefault();sendEmail(mi.value.trim());}});\n    // minimise / expand\n    const head=tray.querySelector(\'.pd-tray-head\'), minBtn=tray.querySelector(\'.pd-tray-min\');\n    const applyMin=()=>{tray.classList.toggle(\'min\',minimized); minBtn.textContent=minimized?\'\\u002b\':\'\\u2013\'; minBtn.title=minimized?\'Expand\':\'Minimise\';};\n    minBtn.addEventListener(\'click\',e=>{e.stopPropagation(); minimized=!minimized; applyMin();});\n    head.addEventListener(\'click\',e=>{ if(minimized && !e.target.closest(\'.pd-tray-clear\')){ minimized=false; applyMin(); }});\n    applyMin();\n  }\n\n  document.addEventListener(\'DOMContentLoaded\',()=>{bindHearts(document);paint();});\n  window.addEventListener(\'pd:rendered\',e=>bindHearts(e.detail||document));\n})();\n'
+SHORTLIST_JS = '/* ---------- PaintDial shortlist: save paints on this device, compare & email ----------\n   No login, no basket. Held in localStorage; shared by the tool and every colour page. */\n(function(){\n  const KEY=\'pd_shortlist_v1\', MAX=12, SITE=\'https://www.paintdial.co.uk\';\n  let minimized=false;\n  const read=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[];}catch(e){return [];}};\n  const write=a=>{try{localStorage.setItem(KEY,JSON.stringify(a.slice(0,MAX)));}catch(e){}};\n  const has=id=>read().some(x=>x.id===id);\n  const idOf=(name,brand)=>(brand+\'|\'+name).toLowerCase();\n\n  function toggle(item){\n    let a=read(); const i=a.findIndex(x=>x.id===item.id);\n    if(i>=0) a.splice(i,1); else { if(a.length>=MAX){flash(\'You can keep up to \'+MAX+\' colours\');return false;} a.unshift(item); }\n    write(a); paint(); return true;\n  }\n  function flash(msg){\n    let f=document.getElementById(\'pd-sl-flash\'); if(!f){f=document.createElement(\'div\');f.id=\'pd-sl-flash\';document.body.appendChild(f);}\n    f.textContent=msg; f.classList.add(\'show\'); clearTimeout(f._t); f._t=setTimeout(()=>f.classList.remove(\'show\'),1900);\n  }\n  const BOOKMARK=\'<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>\';\n\n  window.PDShortlist={\n    heartHTML:(name,brand,hex)=>`<button class="pd-heart" data-name="${name.replace(/"/g,\'&quot;\')}" data-brand="${brand.replace(/"/g,\'&quot;\')}" data-hex="${hex}" aria-label="Save ${name.replace(/"/g,\'&quot;\')} to your shortlist" title="Save to shortlist">${BOOKMARK}</button>`,\n    isSaved:has, idOf, toggle, read, refresh:()=>paint()\n  };\n\n  function bindHearts(root){\n    (root||document).querySelectorAll(\'.pd-heart\').forEach(btn=>{\n      if(btn._b) return; btn._b=1;\n      const id=idOf(btn.dataset.name, btn.dataset.brand);\n      if(has(id)) btn.classList.add(\'on\');\n      btn.addEventListener(\'click\',e=>{\n        e.preventDefault(); e.stopPropagation();\n        const ok=toggle({id, name:btn.dataset.name, brand:btn.dataset.brand, hex:btn.dataset.hex});\n        if(ok!==false) btn.classList.toggle(\'on\', has(id));\n      });\n    });\n  }\n  window.PDShortlist.bind=bindHearts;\n\n  function slug(s){return s.normalize(\'NFKD\').replace(/[\\u0300-\\u036f]/g,\'\').toLowerCase().replace(/&/g,\'and\').replace(/\'/g,\'\').replace(/[^a-z0-9]+/g,\'-\').replace(/^-|-$/g,\'\');}\n  function colourURLFor(it){return `/colours/${slug(it.brand)}-${slug(it.name)}`;}\n\n  function emailBody(items){\n    const lines = items.map(it=>`\\u2022 ${it.name} \\u2014 ${it.brand} \\u2014 ${it.hex}\\n  ${SITE}${colourURLFor(it)}`).join(\'\\n\\n\');\n    return `Here are the paint colours I shortlisted on PaintDial:\\n\\n${lines}\\n\\nCompare them anytime at ${SITE}`;\n  }\n  function sendEmail(addr){\n    const items=read(); if(!items.length) return;\n    const subj=`My PaintDial shortlist (${items.length} colour${items.length>1?\'s\':\'\'})`;\n    const to=addr?encodeURIComponent(addr):\'\';\n    window.location.href=`mailto:${to}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(emailBody(items))}`;\n  }\n\n  function paint(){\n    const items=read();\n    let tray=document.getElementById(\'pd-tray\');\n    if(!items.length){ if(tray) tray.remove(); document.querySelectorAll(\'.pd-heart.on\').forEach(b=>{ if(!has(idOf(b.dataset.name,b.dataset.brand))) b.classList.remove(\'on\');}); return; }\n    if(!tray){ tray=document.createElement(\'div\'); tray.id=\'pd-tray\'; document.body.appendChild(tray); }\n    tray.innerHTML=\n      `<div class="pd-tray-head"><b>Your shortlist</b> <span class="pd-tray-n">${items.length}</span>`+\n      `<button class="pd-tray-min" aria-label="Minimise shortlist" title="Minimise">\\u2013</button>`+\n      `<button class="pd-tray-clear" aria-label="Clear shortlist">Clear</button></div>`+\n      `<div class="pd-tray-note">Saved on this device \\u2014 come back anytime. A shortlist to compare, not a basket.</div>`+\n      `<div class="pd-tray-row">`+items.map(it=>\n        `<a class="pd-tray-chip" href="${colourURLFor(it)}" title="${it.name} \\u2014 ${it.brand}">`+\n        `<span class="pd-tray-sw" style="background:${it.hex}"></span>`+\n        `<span class="pd-tray-x" data-id="${it.id}" role="button" aria-label="Remove ${it.name}">\\u00d7</span>`+\n        `<span class="pd-tray-name">${it.name}</span></a>`).join(\'\')+`</div>`+\n      `<div class="pd-tray-mail">`+\n        `<button class="pd-mail-toggle" type="button">\\u2709 Email these to me</button>`+\n        `<div class="pd-mail-form" hidden><input type="email" class="pd-mail-input" placeholder="you@email.com" aria-label="Your email address"><button class="pd-mail-send" type="button">Send</button></div>`+\n      `</div>`;\n    tray.querySelector(\'.pd-tray-clear\').onclick=()=>{write([]);paint();document.querySelectorAll(\'.pd-heart.on\').forEach(b=>b.classList.remove(\'on\'));};\n    tray.querySelectorAll(\'.pd-tray-x\').forEach(x=>x.addEventListener(\'click\',e=>{\n      e.preventDefault();e.stopPropagation(); const a=read().filter(y=>y.id!==x.dataset.id); write(a); paint();\n      document.querySelectorAll(\'.pd-heart\').forEach(b=>{ if(idOf(b.dataset.name,b.dataset.brand)===x.dataset.id) b.classList.remove(\'on\');});\n    }));\n    const mt=tray.querySelector(\'.pd-mail-toggle\'), mf=tray.querySelector(\'.pd-mail-form\'),\n          mi=tray.querySelector(\'.pd-mail-input\'), ms=tray.querySelector(\'.pd-mail-send\');\n    mt.onclick=()=>{mf.hidden=!mf.hidden; if(!mf.hidden) mi.focus();};\n    ms.onclick=()=>sendEmail(mi.value.trim());\n    mi.addEventListener(\'keydown\',e=>{if(e.key===\'Enter\'){e.preventDefault();sendEmail(mi.value.trim());}});\n    // minimise / expand\n    const head=tray.querySelector(\'.pd-tray-head\'), minBtn=tray.querySelector(\'.pd-tray-min\');\n    const applyMin=()=>{tray.classList.toggle(\'min\',minimized); minBtn.textContent=minimized?\'\\u002b\':\'\\u2013\'; minBtn.title=minimized?\'Expand\':\'Minimise\';};\n    minBtn.addEventListener(\'click\',e=>{e.stopPropagation(); minimized=!minimized; applyMin();});\n    head.addEventListener(\'click\',e=>{ if(minimized && !e.target.closest(\'.pd-tray-clear\')){ minimized=false; applyMin(); }});\n    applyMin();\n  }\n\n  document.addEventListener(\'DOMContentLoaded\',()=>{bindHearts(document);paint();});\n  window.addEventListener(\'pd:rendered\',e=>bindHearts(e.detail||document));\n})();\n'
 
 import json as _json
 
@@ -54,6 +54,16 @@ def heart(name, brand, hexv):
     return (f'<button class="pd-heart" data-name="{nm}" data-brand="{br}" data-hex="{hexv}" '
             f'aria-label="Save {nm} to your shortlist" title="Save to shortlist">'
             '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg></button>')
+
+def save_button(name, brand, hexv):
+    """A big, explicit labelled version of the shortlist bookmark for the hero.
+    Shares the .pd-heart class so the existing shortlist JS binds and toggles it;
+    the .btn-save class restyles it from the corner-icon into a labelled button."""
+    nm=H.escape(name, quote=True); br=H.escape(brand, quote=True)
+    return (f'<button class="pd-heart btn-save" data-name="{nm}" data-brand="{br}" data-hex="{hexv}" '
+            f'aria-label="Save {nm} to your shortlist" title="Save to your shortlist">'
+            '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>'
+            '<span class="save-on">Saved</span><span class="save-off">Save this paint</span></button>')
 
 def _ldjson(*objs):
     return "".join(f'<script type="application/ld+json">{_json.dumps(o, ensure_ascii=False, separators=(",",":"))}</script>' for o in objs)
@@ -179,10 +189,11 @@ FOOT = ("<span class=\"foot-links\">"
         "<a href=\"/research/\">Research</a> \u00b7 "
         "<a href=\"/contact/\">Contact</a> \u00b7 "
         "<a href=\"/colours/\">Colour library</a> \u00b7 "
+        "<a href=\"/match-from-a-photo/\">Match from a photo</a> \u00b7 "
         "<a href=\"/\">Colour tool</a>"
         "</span>"
         "<span class=\"foot-copy\">\u00a9 2026 PaintDial. All rights reserved.</span>"
-        "Screen colours are indicative, always order a tester pot before committing. Colour values are the "
+        "Screen colours are indicative \u2014 always order a tester pot before committing. Colour values are the "
         "brand\u2019s published digital swatches; LRV is estimated. Colour names are the property of their respective "
         "brands. Some links may earn PaintDial a commission at no cost to you.")
 
@@ -240,6 +251,18 @@ h2::after{content:'';display:block;width:34px;height:4px;border-radius:2px;backg
 .cta{margin-top:40px;border:1px solid var(--hairline);border-radius:14px;background:var(--card);padding:24px 26px;text-align:center}
 .cta p{font-size:14px;color:var(--muted);margin:6px 0 14px}
 .afftext{font-size:11px;color:var(--muted);margin-top:12px}
+.cta-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.buy-full{display:inline-block;margin-top:11px;font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+.buy-full:hover{color:var(--ink)}
+.colour-summary{font-size:15px;color:var(--ink);max-width:72ch;margin:22px 0 2px;line-height:1.6}
+.colour-summary a{color:var(--pc);text-decoration:none;font-weight:600}
+.colour-summary a:hover{text-decoration:underline}
+.pd-heart.btn-save{position:static;top:auto;right:auto;width:auto;height:auto;border-radius:9px;background:#fff;backdrop-filter:none;border:1px solid var(--hairline);box-shadow:0 1px 2px rgba(33,31,27,.05);padding:10px 15px;gap:8px;font-family:var(--sans);font-size:14px;font-weight:600;color:var(--ink)}
+.pd-heart.btn-save:hover{transform:none;color:var(--ink);border-color:var(--muted);box-shadow:0 4px 12px rgba(33,31,27,.10)}
+.pd-heart.btn-save.on{color:#5E7E8B;border-color:#5E7E8B}
+.btn-save .save-on{display:none}
+.btn-save.on .save-off{display:none}
+.btn-save.on .save-on{display:inline}
 footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--hairline);font-size:11.5px;color:var(--muted);line-height:1.6}.foot-links{display:block;margin-bottom:6px}.foot-links a{color:var(--pc);font-weight:600;text-decoration:none}.foot-links a:hover{text-decoration:underline}.foot-copy{display:block;margin-bottom:10px;color:var(--muted)}
 footer a{color:var(--muted)}
 
@@ -327,7 +350,7 @@ def chip(j, home_lab=None, show_tier=False, home_i=None):
                         word = 'same family'
         # Closeness is the payoff, so it leads as a coloured badge; the tier is a
         # quiet market-position label alongside it (never a price claim).
-        tier = (f'<span class="c-tier" title="Brand market tier, not a price">{TIER_WORD[TIER[q["brand"]]]}</span>'
+        tier = (f'<span class="c-tier" title="Brand market tier — not a price">{TIER_WORD[TIER[q["brand"]]]}</span>'
                 if show_tier else '')
         de = f'<div class="c-meta"><span class="c-badge {bcls}">{word}</span>{tier}</div>'
     return (f'<a class="chip" href="/colours/{slugs[j]}">'
@@ -353,6 +376,7 @@ def build_colour_page(i):
     _x0, _x0d = xmatch[0]
     seo_top = f"{H.escape(paints[_x0]['name'])} by {H.escape(paints[_x0]['brand'])}"
     seo_word = matchword(_x0d)
+    _depth, _fam = describe(i)   # computed one-line summary (like allpaintcolours' lead sentence)
     seo_also = (f"{H.escape(paints[xmatch[1][0]]['name'])} by {H.escape(paints[xmatch[1][0]]['brand'])} "
                 f"and {H.escape(paints[xmatch[2][0]]['name'])} by {H.escape(paints[xmatch[2][0]]['brand'])}")
 
@@ -379,7 +403,7 @@ def build_colour_page(i):
     img_url = f"{DOMAIN}/share/{slug}.jpg"
     page = f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{brand} {name}, colour match &amp; alternatives | PaintDial</title>
+<title>{brand} {name} \u2014 colour match &amp; alternatives | PaintDial</title>
 <meta name="description" content="{brand} {name} ({p['hex']}, LRV \u2248 {lrv(L0):.0f}). See its closest matches across {BRANDS_WORD} UK brands, lighter &amp; darker shades, and where to buy a tester.">
 <link rel="canonical" href="{DOMAIN}/colours/{slug}">
 {_ldjson(
@@ -388,7 +412,7 @@ def build_colour_page(i):
    _breadcrumb([("Home","/"),("Colours","/colours/"),(p['brand'],f"/colours/{base_slug(p['brand'])}"),(p['name'],f"/colours/{slug}")]),
    _itemlist([(f"{paints[j]['name']} by {paints[j]['brand']}", f"/colours/{slugs[j]}") for j,_ in xmatch])
 )}
-<meta property="og:title" content="{name} by {brand}, closest match: {seo_top}">
+<meta property="og:title" content="{name} by {brand} \u2014 closest match: {seo_top}">
 <meta property="og:image" content="{img_url}">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
@@ -399,18 +423,20 @@ def build_colour_page(i):
 <div class="hero"><div class="hero-swatch">{heart(p['name'], p['brand'], p['hex'])}</div><div class="hero-body">
 <span class="eyebrow">{brand}</span><h1>{name}</h1>
 <div class="facts"><span>Hex <b>{p['hex']}</b></span><span>LRV <b>\u2248\u2009{lrv(L0):.0f}</b></span><span>Lightness <b>{L0:.0f}/100</b></span></div>
-<a class="btn" href="{buy_link(p)}" target="_blank" rel="noopener sponsored">Buy {name} \u2192</a>
-<p class="afftext">Affiliate link, PaintDial may earn a small commission at no cost to you.</p>
+<div class="cta-row"><a class="btn" href="{buy_link(p)}" target="_blank" rel="noopener sponsored">Order a {name} tester \u2192</a>{save_button(p['name'], p['brand'], p['hex'])}</div>
+<a class="buy-full" href="{buy_link(p)}" target="_blank" rel="noopener sponsored">Prefer a full tin? Buy {name} \u2192</a>
+<p class="afftext">Affiliate links \u2014 PaintDial may earn a small commission at no cost to you. Always order a tester and check it in your own light before committing.</p>
 </div></div>
+<p class="colour-summary">{name} is a {_depth} {_fam} from {brand} — hex {p['hex']}, LRV ≈ {lrv(L0):.0f}. Its closest match from another brand is <a href="/colours/{slugs[_x0]}">{seo_top}</a> ({seo_word}), with the full ranked list below.</p>
 <h2>Closest matches from other brands</h2>
-<p class="sub">One from each brand, badged by how close the match is. The tier is the brand\u2019s market position, not a price. Tap any to open it, or tap its bookmark to save a shortlist you can email yourself.</p>
+<p class="sub">One from each brand, badged by how close the match is. The tier is the brand\u2019s market position, not a price. Tap any to open the full colour.</p>
 <div class="grid">{''.join(chip(j, home_lab=lab, show_tier=True, home_i=i) for j, _ in xmatch)}</div>
 {alt_link}
 <h2>Lighter &amp; darker</h2>
 <p class="sub">This colour, stepped evenly from dark to light.</p>
 <div class="ladder">{rung_html}</div>
 <h2>Pairs well with</h2>
-<p class="sub">Neutrals for trim and ceilings, plus one accent to contrast.</p>
+<p class="sub">Sympathetic neutrals for trim and ceilings, plus one contrast accent.</p>
 <div class="grid">{''.join(chip(j) for j in neutrals+accents)}</div>
 <div class="cta"><h2 style="margin-top:0">Not quite right?</h2>
 <p>Use the PaintDial colour tool to walk this colour lighter, darker, warmer or cooler across 5,000+ UK paints.</p>
@@ -702,14 +728,14 @@ def build_brand_page(b):
     be = H.escape(b)
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{be} colours, the full range | PaintDial</title>
-<meta name="description" content="All {len(idxs)} {be} paint colours. Filter by colour, neutral, or tone, with cross-brand matches, lighter and darker versions, and where to buy.">
+<title>{be} colours \u2014 the full range | PaintDial</title>
+<meta name="description" content="All {len(idxs)} {be} paint colours. Filter by colour, neutral, or tone \u2014 with cross-brand matches, lighter and darker versions, and where to buy.">
 {FAVICON}
 {FONTS}<style>{LIB_CSS}</style></head><body><div class="wrap">
 {LIB_HDR}
 <div class="top"><span class="eyebrow">The colour library</span>
 <h1>{be}</h1>
-<p class="lede">All {len(idxs)} {be} colours. Filter by colour, type or tone, a muted shade can be both a colour and a neutral, so nothing hides. Tap any swatch for its cross-brand matches, lighter &amp; darker versions, and where to buy.</p>{dupes_link}</div>
+<p class="lede">All {len(idxs)} {be} colours. Filter by colour, type or tone \u2014 a muted shade can be both a colour and a neutral, so nothing hides. Tap any swatch for its cross-brand matches, lighter &amp; darker versions, and where to buy.</p>{dupes_link}</div>
 <div class="fan">{fan}</div>
 {sections}
 <footer>{FOOT}</footer>
@@ -769,14 +795,14 @@ def build_colours_index():
                   f'<span class="l-n">{len(idxs)} colours</span></span></a>')
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The colour library, every UK paint colour by brand | PaintDial</title>
-<meta name="description" content="Browse {N:,} UK paint colours across Farrow &amp; Ball, Little Greene, Dulux, Johnstone's, Valspar and Lick, each with cross-brand matches and tonal ladders.">
+<title>The colour library \u2014 every UK paint colour by brand | PaintDial</title>
+<meta name="description" content="Browse {N:,} UK paint colours across Farrow &amp; Ball, Little Greene, Dulux, Johnstone's, Valspar and Lick \u2014 each with cross-brand matches and tonal ladders.">
 {FAVICON}
 {FONTS}<style>{LIB_CSS}</style></head><body><div class="wrap">
 {LIB_HDR}
 <div class="top"><span class="eyebrow">The colour library</span>
 <h1>Every colour, brand by brand</h1>
-<p class="lede">{N:,} paints across {BRANDS_WORD} UK brands. Each brand's complete published range, grouped by colour family, or start from any colour in the <a href="/" style="color:inherit">colour tool</a>.</p></div>
+<p class="lede">{N:,} paints across {BRANDS_WORD} UK brands. Each brand's complete published range, grouped by colour family \u2014 or start from any colour in the <a href="/" style="color:inherit">colour tool</a>.</p></div>
 <div class="lib-grid">{cards}</div>
 <footer>{FOOT}</footer>
 </div><div class="top-band"></div></body></html>"""
@@ -851,24 +877,6 @@ header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6
 @media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
 """
 ALT_BRANDS = {b for b in BRAND_ORDER if TIER[b] == 3}  # Farrow & Ball, Little Greene, Lick, COAT
-
-# Hand-written, evergreen openings for the most-searched hero colours. The opening is
-# editorial; the closest-match sentence that follows is ALWAYS generated from the data,
-# so match names can never go stale. Any slug not listed just gets the varied opening below.
-EDITORIAL_INTRO = {
- 'farrow-and-ball-hague-blue': "{home} is a dark, inky Farrow &amp; Ball blue, used on front doors, kitchen cabinetry and moody rooms.",
- 'farrow-and-ball-elephants-breath': "{home} is a soft, warm greige from Farrow &amp; Ball that shifts noticeably with the light through the day.",
- 'farrow-and-ball-railings': "{home} is Farrow &amp; Ball’s near-black blue-grey, used on railings, window frames and joinery.",
- 'farrow-and-ball-setting-plaster': "{home} is a soft, chalky pink-plaster tone from Farrow &amp; Ball that can read as a warm neutral in the right light.",
- 'farrow-and-ball-skimming-stone': "{home} is a warm off-white from Farrow &amp; Ball that suits most rooms, from hallways to living rooms.",
- 'farrow-and-ball-sulking-room-pink': "{home} is a muted, dusky pink from Farrow &amp; Ball, often used in snugs and bedrooms.",
- 'farrow-and-ball-green-smoke': "{home} is a soft grey-green from Farrow &amp; Ball, often used on cabinetry and panelling.",
- 'farrow-and-ball-cornforth-white': "{home} is a cool grey from Farrow &amp; Ball that works well in living rooms and hallways.",
- 'farrow-and-ball-ammonite': "{home} is a soft mid-grey from Farrow &amp; Ball that has ended up in a lot of UK homes.",
- 'farrow-and-ball-stiffkey-blue': "{home} is a deep, dark blue from Farrow &amp; Ball, used on walls and cabinetry.",
- 'farrow-and-ball-de-nimes': "{home} is a soft, denim-like blue from Farrow &amp; Ball that has become popular in recent years.",
- 'farrow-and-ball-stone-blue': "{home} is a deep grey-blue from Farrow &amp; Ball with a long history as a traditional colour.",
-}
 AVAIL = {'Dulux': 'widely available', 'Crown': 'widely available', "Johnstone's": 'widely available',
          'Valspar': 'widely available at B&amp;Q', 'Little Greene': 'available online or in-store',
          'Lick': 'ordered direct', 'COAT': 'ordered direct', 'Farrow & Ball': 'available online or in-store'}
@@ -1027,7 +1035,7 @@ def build_dupes_page(brand):
                 f'<span class="badge{badge_cls}">{w}</span></span></a>')
 
     body = ''.join(rowhtml(n + 1, i, j, dd) for n, (i, j, dd) in enumerate(rows))
-    title = f'{bname} dupes, every colour\u2019s best value \u0026 mid-range match, ranked'
+    title = f'{bname} dupes \u2014 every colour\u2019s best value \u0026 mid-range match, ranked'
     desc = (f'Every {bname} colour matched to its closest value or mid-range equivalent, '
             f'ranked from the strongest match down. Tap any row for the full colour page and where to buy.')
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8">
@@ -1044,8 +1052,8 @@ def build_dupes_page(brand):
 <nav><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>
 <span class="eyebrow">Ranked dupes</span>
 <h1>Every {bname} colour\u2019s best-value match, ranked</h1>
-<p class="sub">All {len(rows)} {bname} colours, each paired with its single closest match from a value or mid-range brand, ranked from the strongest match down. Tap any row to see the full colour page, more matches, and where to buy.</p>
-<p class="method">Matches are computed from each brand\u2019s published digital swatches using perceptual colour distance. Screen colours are indicative, always order tester pots of both before committing.</p>
+<p class="sub">All {len(rows)} {bname} colours, each paired with its single closest match from a value or mid-range brand \u2014 ranked from the strongest match down. Tap any row to see the full colour page, more matches, and where to buy.</p>
+<p class="method">Matches are computed from each brand\u2019s published digital swatches using perceptual colour distance. Screen colours are indicative \u2014 always order tester pots of both before committing.</p>
 <div class="brands-nav">{nav}</div>
 <div class="dupe-list">{body}</div>
 <footer>{FOOT}</footer>
@@ -1157,33 +1165,33 @@ def _page_shell(title, desc, path, body):
 def build_method_page():
     body = f"""<span class="eyebrow">Methodology</span>
 <h1>How PaintDial matches colours</h1>
-<p>PaintDial compares {N:,} paints from {BRANDS_WORD} UK brands and finds the closest matches to any colour, across every brand at once, not just one manufacturer\u2019s range. Here\u2019s exactly how it works, and what its limits are.</p>
+<p>PaintDial compares {N:,} paints from {BRANDS_WORD} UK brands and finds the closest matches to any colour \u2014 across every brand at once, not just one manufacturer\u2019s range. Here\u2019s exactly how it works, and what its limits are.</p>
 
 <h2>Where the colour data comes from</h2>
-<p>Every colour in the library uses the brand\u2019s own published digital swatch, the colour value each manufacturer provides for its paints on the web. We don\u2019t re-photograph or estimate colours ourselves. LRV (light reflectance value) shown on colour pages is estimated from the swatch rather than measured from paint.</p>
+<p>Every colour in the library uses the brand\u2019s own published digital swatch \u2014 the colour value each manufacturer provides for its paints on the web. We don\u2019t re-photograph or estimate colours ourselves. LRV (light reflectance value) shown on colour pages is estimated from the swatch rather than measured from paint.</p>
 
 <h2>How matches are calculated</h2>
-<p>Matches are ranked by perceptual colour difference, a measure of how different two colours look to the human eye, computed in the OKLab colour space, which handles hue more faithfully than older formulas (blues stay blue as they lighten, and purples don\u2019t get mistaken for blues). Our ranking also weights hue more heavily than lightness: a paint that\u2019s a touch lighter or darker still reads as the same colour, while one that\u2019s drifted in hue reads as a different colour, so matches keep the colour\u2019s character, and the lighter/darker ladder covers depth.</p>
+<p>Matches are ranked by perceptual colour difference \u2014 a measure of how different two colours look to the human eye \u2014 computed in the OKLab colour space, which handles hue more faithfully than older formulas (blues stay blue as they lighten, and purples don\u2019t get mistaken for blues). Our ranking also weights hue more heavily than lightness: a paint that\u2019s a touch lighter or darker still reads as the same colour, while one that\u2019s drifted in hue reads as a different colour \u2014 so matches keep the colour\u2019s character, and the lighter/darker ladder covers depth.</p>
 
 <h2>What the match labels mean</h2>
 <ul>
-<li><span class="label">Near-identical</span>, a difference most people can\u2019t see on a wall. On screen the swatches look the same.</li>
-<li><span class="label">Very close</span>, a difference you\u2019d struggle to spot unless the two were side by side.</li>
-<li><span class="label">Close</span>, visibly similar; the same decorating intent, with a slight shift in tone or depth.</li>
-<li><span class="label">Same family</span>, further apart, but genuinely the same hue family (checked in OKLab, not just nearby in the list).</li>
-<li><span class="label">Related / similar tone</span>, close in overall feel, but honestly not the same family. We label these rather than overclaim.</li>
+<li><span class="label">Near-identical</span> \u2014 a difference most people can\u2019t see on a wall. On screen the swatches look the same.</li>
+<li><span class="label">Very close</span> \u2014 a difference you\u2019d struggle to spot unless the two were side by side.</li>
+<li><span class="label">Close</span> \u2014 visibly similar; the same decorating intent, with a slight shift in tone or depth.</li>
+<li><span class="label">Same family</span> \u2014 further apart, but genuinely the same hue family (checked in OKLab, not just nearby in the list).</li>
+<li><span class="label">Related / similar tone</span> \u2014 close in overall feel, but honestly not the same family. We label these rather than overclaim.</li>
 </ul>
 
 <h2>RAL Classic and BS 4800 codes</h2>
-<p>Trade and specification colours are covered too: type a RAL Classic code (say, \u201cRAL 7016\u201d) or a British Standard BS 4800 code (say, \u201c08 B 15\u201d, Magnolia), or a colour name, into the tool\u2019s search and PaintDial shows every brand\u2019s nearest paints to it. Our RAL values are derived from the standard\u2019s published CIELAB coordinates; our BS 4800 values are derived from measured colour data (averaged spectrophotometer readings, standardised to D65 / CIE 1964). Both are physical colour standards, so on-screen values are approximate conversions, for binding samples, use an official RAL or British Standard fan deck.</p>
+<p>Trade and specification colours are covered too: type a RAL Classic code (say, \u201cRAL 7016\u201d) or a British Standard BS 4800 code (say, \u201c08 B 15\u201d, Magnolia) \u2014 or a colour name \u2014 into the tool\u2019s search and PaintDial shows every brand\u2019s nearest paints to it. Our RAL values are derived from the standard\u2019s published CIELAB coordinates; our BS 4800 values are derived from measured colour data (averaged spectrophotometer readings, standardised to D65 / CIE 1964). Both are physical colour standards, so on-screen values are approximate conversions \u2014 for binding samples, use an official RAL or British Standard fan deck.</p>
 
 <h2>Why photo matching is approximate</h2>
-<p>The \u201cmatch from a photo\u201d tool reads the pixel colour from your image. That pixel is shaped by the room\u2019s lighting, the camera\u2019s processing, and your screen, so treat photo matches as a strong starting point, not a guarantee. The same wall photographed at noon and at dusk will match to different paints.</p>
+<p>The \u201cmatch from a photo\u201d tool reads the pixel colour from your image. That pixel is shaped by the room\u2019s lighting, the camera\u2019s processing, and your screen \u2014 so treat photo matches as a strong starting point, not a guarantee. The same wall photographed at noon and at dusk will match to different paints.</p>
 
 <h2>Why you should still order testers</h2>
-<p>Screen colours are indicative. Real paint changes with sheen, light, and the surface underneath it, and every screen shows colour slightly differently. Before committing to any colour (or any match), order tester pots of both and look at them in the room they\u2019ll live in, in daylight and lamplight.</p>
+<p>Screen colours are indicative. Real paint changes with sheen, light, and the surface underneath it \u2014 and every screen shows colour slightly differently. Before committing to any colour (or any match), order tester pots of both and look at them in the room they\u2019ll live in, in daylight and lamplight.</p>
 
-<p class="muted">Found something that looks wrong? <a href="/contact/">Tell us</a>, accuracy is the whole point of PaintDial, and corrections are genuinely welcome.</p>"""
+<p class="muted">Found something that looks wrong? <a href="/contact/">Tell us</a> \u2014 accuracy is the whole point of PaintDial, and corrections are genuinely welcome.</p>"""
     return _page_shell("How PaintDial matches colours",
         "Where PaintDial's colour data comes from, how cross-brand matches are calculated, what the match labels mean, and why you should still order testers.",
         "/how-it-works/", body)
@@ -1194,7 +1202,7 @@ def ink_on(i):
 
 
 def build_match_index_page():
-    """The UK Paint Match Index, findings computed live from the library, so the
+    """The UK Paint Match Index — findings computed live from the library, so the
     page stays true as brands are added. Every colour named links to its page."""
     NEARID, VCLOSE, DEEP = 2.0, 5.0, 0.30
     brands = sorted({p['brand'] for p in paints})
@@ -1237,7 +1245,7 @@ def build_match_index_page():
                 f'<span>{H.escape(paints[j]["brand"])} \u00b7 {paints[j]["hex"]}</span></span></a>')
     dupe_rows = ''.join(
         f'<figure class="pair"><div class="pair-blocks">{half(i)}{half(k)}</div>'
-        f'<figcaption>\u0394E {_d:.1f}, the published digital swatches are '
+        f'<figcaption>\u0394E {_d:.1f} \u2014 the published digital swatches are '
         f'virtually indistinguishable.</figcaption></figure>'
         for _d, i, k in fb_pairs[:4])
 
@@ -1276,7 +1284,7 @@ def build_match_index_page():
 
     body = f"""<span class="eyebrow">Research</span>
 <h1>The UK Paint Match Index</h1>
-<p>We compared every one of the {N:,} colours published by {len(brands)} UK paint brands against every other, millions of pairwise comparisons, to answer one question: how many premium paint colours are genuinely unique, and how many already have a near-identical twin?</p>
+<p>We compared every one of the {N:,} colours published by {len(brands)} UK paint brands against every other \u2014 millions of pairwise comparisons \u2014 to answer one question: how many premium paint colours are genuinely unique, and how many already have a near-identical twin?</p>
 <p class="muted">Updated automatically from PaintDial\u2019s live colour library. Last built {TODAY}.</p>
 
 <h2>1. Almost every premium colour has a close alternative</h2>
@@ -1286,37 +1294,37 @@ def build_match_index_page():
 <h2>2. The closest pairs differ by a single step in their hex code</h2>
 {dupe_rows}
 
-<h2>3. Only {len(uniq)} premium colours can\u2019t be matched, and they\u2019re all one brand</h2>
+<h2>3. Only {len(uniq)} premium colours can\u2019t be matched \u2014 and they\u2019re all one brand</h2>
 <p>Of {len(prem)} premium colours, just <b>{len(uniq)}</b> have no very-close match from any other brand. Every one belongs to <b>{uniq_brands.most_common(1)[0][0]}</b>.</p>
 <div class="uq-grid">{uniq_rows}</div>
 
 <h2>4. The reason: British paint barely goes dark</h2>
 <p>Only <b>{len(deep)} of {N:,}</b> colours across all {len(brands)} brands are genuinely deep. By brand: {deep_rows}.</p>
-<p>That single fact explains the finding above. {uniq_brands.most_common(1)[0][0]} isn\u2019t unmatchable because it\u2019s premium, it\u2019s unmatchable because it\u2019s the only brand making colours that dark. <b>Depth, not prestige, is what can\u2019t be copied.</b></p>
+<p>That single fact explains the finding above. {uniq_brands.most_common(1)[0][0]} isn\u2019t unmatchable because it\u2019s premium \u2014 it\u2019s unmatchable because it\u2019s the only brand making colours that dark. <b>Depth, not prestige, is what can\u2019t be copied.</b></p>
 
 <h2>5. Whose palette is most Farrow &amp; Ball-like?</h2>
-<p>Raw counts favour whoever publishes most colours. Corrected for range size, closest-match wins per 100 colours of each brand\u2019s own range, the picture changes:</p>
+<p>Raw counts favour whoever publishes most colours. Corrected for range size \u2014 closest-match wins per 100 colours of each brand\u2019s own range \u2014 the picture changes:</p>
 <div class="bars">{fb_rows}</div>
 <p>Volume and aim are different things. <a href="/dupes/farrow-and-ball">See every Farrow &amp; Ball colour\u2019s closest match \u2192</a></p>
 
 <h2>Method</h2>
-<p>Every colour is each brand\u2019s <a href="/how-it-works/">own published digital swatch</a>, we don\u2019t photograph or estimate colours. Differences are computed in <b>OKLab</b>, weighting hue drift twice and discounting lightness, because a paint a shade lighter still reads as the same colour while one that\u2019s drifted in hue reads as a different one. Thresholds are the ones used across the site: near-identical = \u0394E&nbsp;&lt;&nbsp;2, very close = \u0394E&nbsp;&lt;&nbsp;5. \u201cGenuinely deep\u201d means OKLab lightness below {DEEP}.</p>
+<p>Every colour is each brand\u2019s <a href="/how-it-works/">own published digital swatch</a> \u2014 we don\u2019t photograph or estimate colours. Differences are computed in <b>OKLab</b>, weighting hue drift twice and discounting lightness, because a paint a shade lighter still reads as the same colour while one that\u2019s drifted in hue reads as a different one. Thresholds are the ones used across the site: near-identical = \u0394E&nbsp;&lt;&nbsp;2, very close = \u0394E&nbsp;&lt;&nbsp;5. \u201cGenuinely deep\u201d means OKLab lightness below {DEEP}.</p>
 
 <h2>What this doesn\u2019t claim</h2>
 <ul>
 <li><b>No price claims.</b> PaintDial holds no live pricing, so we make no statements about savings. \u201cValue brand\u201d describes market tier, not price.</li>
-<li><b>Screen, not wall.</b> These are digital swatch comparisons. Real paint differs by finish, pigment and light, a near-identical hex is a shortlist, not a guarantee. Always order testers.</li>
+<li><b>Screen, not wall.</b> These are digital swatch comparisons. Real paint differs by finish, pigment and light \u2014 a near-identical hex is a shortlist, not a guarantee. Always order testers.</li>
 <li><b>Range sizes differ enormously</b> ({max(len(v) for v in idx_by_brand.values()):,} colours vs {min(len(v) for v in idx_by_brand.values())}). Every brand-level claim here is corrected for that.</li>
 <li><b>Published ranges only.</b> Mix-to-order and bespoke matching are excluded.</li>
 </ul>
-<p class="muted">Companion study: <a href="/paint-choice-index/">The UK Paint Choice Index</a>, how much genuine choice Britain\u2019s paint colours actually offer. Journalists and researchers: the underlying comparisons are all on the site, colour by colour. Questions or corrections, <a href="/contact/">get in touch</a>.</p>"""
+<p class="muted">Companion study: <a href="/paint-choice-index/">The UK Paint Choice Index</a> \u2014 how much genuine choice Britain\u2019s paint colours actually offer. Journalists and researchers: the underlying comparisons are all on the site, colour by colour. Questions or corrections \u2014 <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("The UK Paint Match Index",
-        f"We compared {N:,} UK paint colours across {len(brands)} brands. {pct_vc}% of premium colours have a very close match from another brand, and only {len(uniq)} can\u2019t be matched at all.",
+        f"We compared {N:,} UK paint colours across {len(brands)} brands. {pct_vc}% of premium colours have a very close match from another brand \u2014 and only {len(uniq)} can\u2019t be matched at all.",
         "/paint-match-index/", body)
 
 
 def build_choice_index_page():
-    """The UK Paint Choice Index, how much choice British paint actually offers.
+    """The UK Paint Choice Index — how much choice British paint actually offers.
     Every figure computed live from the library at build time; thresholds are the
     site's own published ones (near-identical dE<2, very close dE<5) and the site's
     own live family classification. Verified 15 Jul 2026: clustering robust across
@@ -1377,7 +1385,7 @@ def build_choice_index_page():
     try:
         cr1, cr2 = find('Craig & Rose', 'Regency White'), find('Craig & Rose', 'Isabelline')
         showcase += (f'<figure class="pair"><div class="pair-blocks">{half(cr1)}{half(cr2)}</div>'
-                     f'<figcaption>Two Craig &amp; Rose colours, one published value, {paints[cr1]["hex"]}. '
+                     f'<figcaption>Two Craig &amp; Rose colours, one published value \u2014 {paints[cr1]["hex"]}. '
                      f'There is no join to find.</figcaption></figure>')
     except StopIteration:
         pass
@@ -1387,7 +1395,7 @@ def build_choice_index_page():
         group = [i for i in range(N) if paints[i]['brand'] == 'Dulux' and paints[i]['hex'].upper() == bigh][:4]
         if len(group) >= 3:
             showcase += (f'<figure class="pair"><div class="pair-blocks">{"".join(half(j) for j in group)}</div>'
-                         f'<figcaption>{len(group)} Dulux names, one published value, {bigh}.</figcaption></figure>')
+                         f'<figcaption>{len(group)} Dulux names, one published value \u2014 {bigh}.</figcaption></figure>')
 
     inb_rows = ''.join(
         f'<div class="brow"><span class="blab">{H.escape(b)}</span>'
@@ -1454,45 +1462,99 @@ def build_choice_index_page():
 <p>You could remove <b>{dup_pct}%</b> of the colours on sale in Britain and every one removed would still have a near-identical match among the survivors. Without any clustering at all: <b>{round(100*twin_any/N)}%</b> of colours have a near-identical twin somewhere on the market, and <b>{round(100*twin_cross/N)}%</b> have one from a <em>different brand</em>. <a href="/">Check any colour\u2019s twins in the tool \u2192</a></p>
 
 <h2>2. {exact_total} colours share an exact value with a sibling from their own brand</h2>
-<p>Not near-identical, identical. The same published swatch value, sold under two names by the same brand:</p>
+<p>Not near-identical \u2014 identical. The same published swatch value, sold under two names by the same brand:</p>
 {showcase}
 <p class="muted">Dulux accounts for most of these: {len(hex_groups.get('Dulux', []))} of its published values appear under more than one name.</p>
 
 <h2>3. Inside the biggest ranges, most colours have an in-house twin</h2>
 <p>Share of each brand\u2019s own range with a near-identical twin <em>from the same brand</em>:</p>
 <div class="bars">{inb_rows}</div>
-<p>Bigger ranges duplicate more, partly simple arithmetic: publish {max(brand_n.values()):,} colours into a finite space and overlap follows. But it means a bigger colour card is not proportionally more choice.</p>
+<p>Bigger ranges duplicate more \u2014 partly simple arithmetic: publish {max(brand_n.values()):,} colours into a finite space and overlap follows. But it means a bigger colour card is not proportionally more choice.</p>
 
 <h2>4. The colour Britain doesn\u2019t sell</h2>
-<p>Take every colour a standard screen can display and ask: does any UK paint come <b>very close</b> to it (our site-wide \u0394E&nbsp;&lt;&nbsp;5)? The answer is yes for just <b>{cover_pct}%</b> of them. The missing colour isn\u2019t evenly spread, it is overwhelmingly the vivid end of <b>purple ({unc_purple}% of the gap), blue ({unc_blue}%) and the reds and pinks ({unc_pink}%)</b>.</p>
-<p>Part of that is physics: screens emit light and pigment can\u2019t, so no paint will ever match a glowing violet. But the pattern holds <em>inside</em> paint itself: British paint pushes red to a peak chroma of {red_max:.2f}, yet purple stops at {purp_max:.2f}, less than half. <b>{red_vivid} red paints exceed a chroma of 0.10. Exactly {purp_vivid} purple does.</b></p>
+<p>Take every colour a standard screen can display and ask: does any UK paint come <b>very close</b> to it (our site-wide \u0394E&nbsp;&lt;&nbsp;5)? The answer is yes for just <b>{cover_pct}%</b> of them. The missing colour isn\u2019t evenly spread \u2014 it is overwhelmingly the vivid end of <b>purple ({unc_purple}% of the gap), blue ({unc_blue}%) and the reds and pinks ({unc_pink}%)</b>.</p>
+<p>Part of that is physics: screens emit light and pigment can\u2019t, so no paint will ever match a glowing violet. But the pattern holds <em>inside</em> paint itself: British paint pushes red to a peak chroma of {red_max:.2f}, yet purple stops at {purp_max:.2f} \u2014 less than half. <b>{red_vivid} red paints exceed a chroma of 0.10. Exactly {purp_vivid} purple does.</b></p>
 
 <h2>Method</h2>
-<p>Every colour is each brand\u2019s <a href="/how-it-works/">own published digital swatch</a>. Distinctness uses greedy clustering at the site\u2019s published near-identical threshold (\u0394E&nbsp;&lt;&nbsp;2 in our hue-weighted OKLab metric), averaged over five seeded random orderings; the spread across orderings is about 1%, so the count is not an artefact of ordering. Colour families are the site\u2019s own live classification, the same rule that files every colour in the <a href="/colours/">library</a>. Screen-colour coverage samples the sRGB gamut uniformly in OKLab volume (40,000 seeded points) and measures distance to the nearest paint with the site\u2019s own metric and thresholds.</p>
+<p>Every colour is each brand\u2019s <a href="/how-it-works/">own published digital swatch</a>. Distinctness uses greedy clustering at the site\u2019s published near-identical threshold (\u0394E&nbsp;&lt;&nbsp;2 in our hue-weighted OKLab metric), averaged over five seeded random orderings; the spread across orderings is about 1%, so the count is not an artefact of ordering. Colour families are the site\u2019s own live classification \u2014 the same rule that files every colour in the <a href="/colours/">library</a>. Screen-colour coverage samples the sRGB gamut uniformly in OKLab volume (40,000 seeded points) and measures distance to the nearest paint with the site\u2019s own metric and thresholds.</p>
 
 <h2>What this doesn\u2019t claim</h2>
 <ul>
-<li><b>Published swatch values, not paint in tins.</b> Brands may distinguish colours in ways a swatch value doesn\u2019t capture, finish, texture, opacity. Two identical values are identical <em>on screen</em>.</li>
-<li><b>Duplication is not an accusation.</b> Much of it is arithmetic, large ranges into a finite colour space, and some may be deliberate continuity across renamed ranges.</li>
+<li><b>Published swatch values, not paint in tins.</b> Brands may distinguish colours in ways a swatch value doesn\u2019t capture \u2014 finish, texture, opacity. Two identical values are identical <em>on screen</em>.</li>
+<li><b>Duplication is not an accusation.</b> Much of it is arithmetic \u2014 large ranges into a finite colour space \u2014 and some may be deliberate continuity across renamed ranges.</li>
 <li><b>Screens glow; pigment doesn\u2019t.</b> Some of the \u201cmissing\u201d colour in finding 4 is physically out of reach for any paint. The red-versus-purple contrast, measured within paint alone, does not depend on that comparison.</li>
 <li><b>No price claims.</b> PaintDial holds no live pricing.</li>
 </ul>
-<p class="muted">Companion study: <a href="/paint-match-index/">The UK Paint Match Index</a>, how closely premium colours can be matched across brands. Questions or corrections, <a href="/contact/">get in touch</a>.</p>"""
+<p class="muted">Companion study: <a href="/paint-match-index/">The UK Paint Match Index</a> \u2014 how closely premium colours can be matched across brands. Questions or corrections \u2014 <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("The UK Paint Choice Index",
-        f"Britain sells {N:,} paint colours. Only {distinct:,} are genuinely distinct, and just {purp_vivid} purple is genuinely vivid.",
+        f"Britain sells {N:,} paint colours. Only {distinct:,} are genuinely distinct \u2014 and just {purp_vivid} purple is genuinely vivid.",
         "/paint-choice-index/", body)
 
+
+def build_photo_page():
+    """Dedicated SEO landing page for 'match a paint colour from a photo'. It does NOT
+    duplicate the tool — it ranks for the query and funnels into the homepage tool (/#photo)."""
+    cta = '<a class="pf-cta" href="/#photo">\U0001F4F7️ Upload a photo →</a>'
+    faqs = [
+        ("How accurate is matching a paint colour from a photo?",
+         "It’s a strong starting point, not a guarantee. A photo’s colour is shaped by the "
+         "room’s lighting, your camera and your screen, so treat the match as a shortlist and always "
+         "order a tester pot to check in the room itself."),
+        ("What kind of photo works best?",
+         "A flat, evenly-lit patch of the colour, shot in daylight without glare or heavy shadow. Avoid "
+         "filtered or very dark images — the truer the light, the closer the match."),
+        (f"Which paint brands does it match against?",
+         f"All {N:,} colours across {BRANDS_WORD} UK brands at once — Farrow &amp; Ball, Little Greene, "
+         "Craig &amp; Rose, Dulux, Johnstone’s, Valspar, Lick, Crown and COAT — ranked by how close each is."),
+    ]
+    faq_ld = {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+        {"@type":"Question","name":q,"acceptedAnswer":{"@type":"Answer","text":re.sub('<[^>]+>','',a)}} for q,a in faqs]}
+    faq_html = ''.join(f'<div class="q"><h3>{q}</h3><p>{a}</p></div>' for q,a in faqs)
+    body = f"""<style>
+.pf-cta{{display:inline-block;margin:8px 0 2px;font-size:15px;font-weight:600;text-decoration:none;background:var(--ink);color:var(--paper);padding:13px 24px;border-radius:10px}}
+.pf-cta:hover{{filter:brightness(1.08)}}
+.pf-steps{{margin:18px 0 8px;padding:0;counter-reset:s;list-style:none}}
+.pf-steps li{{position:relative;padding:0 0 14px 46px;font-size:15px;max-width:640px}}
+.pf-steps li::before{{counter-increment:s;content:counter(s);position:absolute;left:0;top:-3px;width:30px;height:30px;border-radius:50%;background:var(--pc);color:#fff;font-family:var(--serif);font-weight:600;display:flex;align-items:center;justify-content:center}}
+.q h3{{font-family:var(--serif);font-size:16px;font-weight:600;margin:16px 0 4px}}
+</style>
+<span class="eyebrow">Colour tool</span>
+<h1>Match a paint colour from a photo</h1>
+<p>Seen a colour you love — on a wall, a fabric, a front door? Upload a photo and PaintDial finds the
+nearest paint to it across {N:,} colours from {BRANDS_WORD} UK brands at once, ranked by how close each one
+is. Free, and no sign-up.</p>
+<p>{cta}</p>
+<h2>How it works</h2>
+<ol class="pf-steps">
+<li><b>Upload your photo.</b> Open the tool and tap “Match from a photo”, then pick any image from your phone or computer.</li>
+<li><b>Tap the colour you want.</b> Touch or drag anywhere on the image to choose the exact spot — a wall, a cushion, a leaf.</li>
+<li><b>See the nearest paints, ranked.</b> PaintDial shows the closest match from every UK brand, with lighter and darker options and where to order a tester.</li>
+</ol>
+<p>{cta}</p>
+<h2>Why a photo match is a starting point</h2>
+<p>The colour in a photo is shaped by the room’s light, your camera and your screen — the same wall at
+noon and at dusk can read as different paints. So PaintDial treats a photo as a strong shortlist, never the
+last word. Before committing, <a href="/how-it-works/">order a tester pot</a> and look at it in the room it’s
+for, in daylight and lamplight.</p>
+<h2>Common questions</h2>
+<div class="faq">{faq_html}</div>
+<p class="muted" style="margin-top:20px"><a href="/">Open the colour tool →</a> · <a href="/how-it-works/">How matching works</a></p>
+{_ldjson(faq_ld)}"""
+    return _page_shell("Match a paint colour from a photo",
+        f"Upload a photo and find the nearest paint colour across {N:,} shades from {BRANDS_WORD} UK brands "
+        "— Farrow &amp; Ball, Dulux, Little Greene and more. Free, no sign-up. Always order a tester.",
+        "/match-from-a-photo/", body)
 
 def build_research_hub():
     brands = sorted({p['brand'] for p in paints})
     body = f"""<span class="eyebrow">PaintDial</span>
 <h1>Research</h1>
-<p>Original studies computed from PaintDial\u2019s live library, {N:,} colours across {len(brands)} UK brands, compared with the same metric and thresholds used on every page of this site. Each study rebuilds automatically as brands are added.</p>
+<p>Original studies computed from PaintDial\u2019s live library \u2014 {N:,} colours across {len(brands)} UK brands, compared with the same metric and thresholds used on every page of this site. Each study rebuilds automatically as brands are added.</p>
 <div class="rsch-cards">
-<a class="rsch-card" href="/paint-match-index/"><b>The UK Paint Match Index</b><span>How closely can premium paint colours be matched across brands, and which colours can\u2019t be matched at all?</span></a>
-<a class="rsch-card" href="/paint-choice-index/"><b>The UK Paint Choice Index</b><span>Britain sells {N:,} paint colours. How much genuine choice is that, and what colour does Britain not sell?</span></a>
+<a class="rsch-card" href="/paint-match-index/"><b>The UK Paint Match Index</b><span>How closely can premium paint colours be matched across brands \u2014 and which colours can\u2019t be matched at all?</span></a>
+<a class="rsch-card" href="/paint-choice-index/"><b>The UK Paint Choice Index</b><span>Britain sells {N:,} paint colours. How much genuine choice is that \u2014 and what colour does Britain not sell?</span></a>
 </div>
-<p class="muted">Journalists and researchers: every underlying comparison is public, colour by colour, across the site. Questions or corrections, <a href="/contact/">get in touch</a>.</p>"""
+<p class="muted">Journalists and researchers: every underlying comparison is public, colour by colour, across the site. Questions or corrections \u2014 <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("Research", 
         f"Original colour research computed from {N:,} UK paint colours across {len(brands)} brands.",
         "/research/", body)
@@ -1501,15 +1563,15 @@ def build_research_hub():
 def build_about_page():
     body = f"""<span class="eyebrow">About</span>
 <h1>About PaintDial</h1>
-<p>PaintDial started with a familiar frustration: every paint brand\u2019s website has a lovely colour tool, that only shows you <em>their</em> paints. If you\u2019ve fallen for a designer colour but want to see what every other brand\u2019s nearest equivalent looks like, you end up with a dozen tabs open and no honest way to compare.</p>
-<p>So PaintDial does one thing: it puts {N:,} paints from {BRANDS_WORD} UK brands, Farrow &amp; Ball, Little Greene, Craig &amp; Rose, Dulux, Johnstone\u2019s, Valspar, Lick, Crown and COAT, into one independent tool. Pick any colour, match one from a photo, or search a paint you already know, and see the closest equivalents from every brand side by side, honestly labelled.</p>
+<p>PaintDial started with a familiar frustration: every paint brand\u2019s website has a lovely colour tool \u2014 that only shows you <em>their</em> paints. If you\u2019ve fallen for a designer colour but want to see what every other brand\u2019s nearest equivalent looks like, you end up with a dozen tabs open and no honest way to compare.</p>
+<p>So PaintDial does one thing: it puts {N:,} paints from {BRANDS_WORD} UK brands \u2014 Farrow &amp; Ball, Little Greene, Craig &amp; Rose, Dulux, Johnstone\u2019s, Valspar, Lick, Crown and COAT \u2014 into one independent tool. Pick any colour, match one from a photo, or search a paint you already know, and see the closest equivalents from every brand side by side, honestly labelled.</p>
 <p>It\u2019s an independent, one-person project. PaintDial isn\u2019t owned by, sponsored by, or affiliated with any paint brand, and no brand can pay to change how well its colours match. The matching is <a href="/how-it-works/">pure colour science</a>, applied the same way to every paint in the library.</p>
 
 <h2>How PaintDial is funded</h2>
-<p>Some \u201cwhere to buy\u201d links are affiliate links, run through partner networks including impact.com and Awin. If you buy through one, PaintDial may earn a small commission at no extra cost to you. That\u2019s the only way the site makes money, there are no ads, no sponsored placements, and no paid rankings. Matches are never influenced by whether a link earns commission.</p>
+<p>Some \u201cwhere to buy\u201d links are affiliate links, run through partner networks including impact.com and Awin. If you buy through one, PaintDial may earn a small commission at no extra cost to you. That\u2019s the only way the site makes money \u2014 there are no ads, no sponsored placements, and no paid rankings. Matches are never influenced by whether a link earns commission.</p>
 
 <h2>A note on colour names</h2>
-<p>Colour names and paint ranges are the property of their respective brands. PaintDial shows each brand\u2019s published digital swatch values for comparison, always order a tester pot before committing to any colour.</p>
+<p>Colour names and paint ranges are the property of their respective brands. PaintDial shows each brand\u2019s published digital swatch values for comparison \u2014 always order a tester pot before committing to any colour.</p>
 
 <p class="muted">Questions, corrections, or partnership enquiries: <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("About PaintDial",
@@ -1540,10 +1602,10 @@ def build_alternatives_page(i):
     # ---- PaintDial verdict: computed from the colour values, unique per page ----
     cb = diff_bits(i, closest)
     close_txt = (f'is the closest match from any other brand ({matchword(d[closest])})'
-                 + (f', though it\u2019s {joinbits(cb)}.' if cb
-                    else f', and it holds {name}\u2019s lightness, warmth and saturation.'))
+                 + (f' \u2014 though it\u2019s {joinbits(cb)}.' if cb
+                    else f' \u2014 and it holds {name}\u2019s lightness, warmth and saturation alike.'))
     if cheapest == closest:
-        value_txt = ' It\u2019s also the best-value tier of the close matches, unusual, as the nearest match and the best-value one usually differ.'
+        value_txt = ' It\u2019s also the best-value tier of the close matches \u2014 unusual, as the nearest match and the best-value one usually differ.'
     else:
         vb = diff_bits(i, cheapest)
         value_txt = (f' The closest value-tier option is <a class="pn" href="/colours/{slugs[cheapest]}">'
@@ -1557,7 +1619,7 @@ def build_alternatives_page(i):
     n_near = sum(1 for b, k in best.items() if d[k] < 3)
     n_brands = len(best)
     if n_near == 0:
-        dist_txt = (f' No other brand gets within a near-identical match of {name}, '
+        dist_txt = (f' No other brand gets within a near-identical match of {name} \u2014 '
                     f'it\u2019s one of the more distinctive colours in the library, so expect a visible difference whichever you pick.')
     elif n_near == 1:
         dist_txt = f' Only one of the {n_brands} other brands manages a near-identical match, which makes {name} fairly distinctive.'
@@ -1593,37 +1655,19 @@ def build_alternatives_page(i):
     dulux_q = (f'<div class="q"><h3>Is there a Dulux equivalent to <span class="pn"><i></i>{name}</span>?</h3>'
                f'<p>The nearest Dulux colour is <a class="pn" href="/colours/{slugs[dulux]}"><i style="background:{paints[dulux]['hex']}"></i>{nm(dulux)}</a> ({matchword(d[dulux])}). '
                f'It won\u2019t be pixel-perfect, so order a tester before committing.</p></div>') if dulux is not None else ''
-    # ---- Intro: editorial opening for hero colours, varied opening for the rest;
-    #      the closest-match sentence is ALWAYS generated so it stays correct. ----
-    _cl = paints[closest]
-    _homelink = f'<a class="pn" href="/colours/{slugs[i]}"><i></i>{name}</a>'
-    _matchlink = (f'<a class="pn" href="/colours/{slugs[closest]}">'
-                  f'<i style="background:{_cl["hex"]}"></i>{H.escape(_cl["name"])}</a> by {H.escape(_cl["brand"])}')
-    _match_sentence = (f'PaintDial’s closest match from another UK brand is {_matchlink} '
-                       f'({matchword(d[closest])}), with every other close match ranked below.')
-    _open = EDITORIAL_INTRO.get(slugs[i])
-    if _open:
-        _open = _open.replace('{home}', _homelink)
-    else:
-        _vv = [
-            f'{_homelink} is a {depth} {fam} from {brand}, and a popular colour to match across brands or on a tighter budget.',
-            f'If you love {brand}’s {_homelink} but want it from a more widely stocked range, you have options. It’s a {depth} {fam}.',
-            f'{_homelink} is one of {brand}’s {depth} {fam}s that people often look to match from another brand.',
-            f'Thinking of {_homelink} but weighing up alternatives? This {depth} {fam} from {brand} has several close matches across the UK ranges.',
-        ]
-        _open = _vv[sum(slugs[i].encode()) % len(_vv)]
-    intro = _open + ' ' + _match_sentence
+    intro = (f'<a class="pn" href="/colours/{slugs[i]}"><i></i>{name}</a> is a {depth} {fam} from {brand}. As a premium paint, '
+             f'it\u2019s a popular colour to seek out close matches and value-brand alternatives to.')
 
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{brand} {name} alternatives, dupes &amp; closest matches | PaintDial</title>
+<title>{brand} {name} alternatives \u2014 dupes &amp; closest matches | PaintDial</title>
 <meta name="description" content="The closest alternative to {brand} {name} is {H.escape(paints[closest]['name'])} by {H.escape(paints[closest]['brand'])} ({matchword(d[closest])}). See all {len(alts)} matches from other UK brands, ranked, including value-brand options.">
 <link rel="canonical" href="{DOMAIN}/alternatives/{slugs[i]}">
 {_ldjson(
   _breadcrumb([("Home","/"),("Colours","/colours/"),(p['name'],f"/colours/{slugs[i]}"),("Alternatives",f"/alternatives/{slugs[i]}")]),
   _itemlist([(f"{paints[k]['name']} by {paints[k]['brand']}", f"/colours/{slugs[k]}") for k in alts])
 )}
-<meta property="og:title" content="{brand} {name} alternatives, closest: {H.escape(paints[closest]['name'])} by {H.escape(paints[closest]['brand'])}">
+<meta property="og:title" content="{brand} {name} alternatives \u2014 closest: {H.escape(paints[closest]['name'])} by {H.escape(paints[closest]['brand'])}">
 <meta property="og:image" content="{DOMAIN}/share/{slugs[i]}.jpg">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
@@ -1638,7 +1682,7 @@ def build_alternatives_page(i):
 <div class="hero-stats"><span><i>Hex</i>{p['hex']}</span><span><i>LRV</i>\u2248 {lrv(L[i]):.0f}</span><span><i>Shade</i>{depth.capitalize()} {fam}</span></div></div></div>
 <p class="intro">{intro}</p>
 {verdict}
-<p class="intro">Below is every genuinely close match to <span class="pn"><i></i>{name}</span> from the other {OTHERS_WORD} brands, ranked purely by closeness, so where one brand has several near-misses, they all appear. For the single best match <em>per brand</em>, see the <a href="/colours/{slugs[i]}">{name} colour page</a>.</p>
+<p class="intro">Below is every genuinely close match to <span class="pn"><i></i>{name}</span> from the other {OTHERS_WORD} brands \u2014 ranked purely by closeness, so where one brand has several near-misses, they all appear. For the single best match <em>per brand</em>, see the <a href="/colours/{slugs[i]}">{name} colour page</a>.</p>
 <h2>All {len(alts)} close matches, ranked</h2>
 <div class="alts">{cards}</div>
 <div class="faq"><h2>Common questions</h2>
@@ -1646,7 +1690,7 @@ def build_alternatives_page(i):
 <div class="q"><h3>What\u2019s the best-value alternative to <span class="pn"><i></i>{name}</span>?</h3>
 <p>Of the close matches, <a class="pn" href="/colours/{slugs[cheapest]}"><i style="background:{paints[cheapest]['hex']}"></i>{nm(cheapest)}</a> by {brn(cheapest)} is the best-value option ({TIER_WORD[TIER[paints[cheapest]['brand']]].lower()}, {matchword(d[cheapest])}).</p></div>
 <div class="q"><h3>How close are these to <span class="pn"><i></i>{name}</span>?</h3>
-<p>The list shows every genuinely close match from other brands, ranked nearest-first by perceptual colour difference, including several from one brand where they\u2019re all close. Screens differ from paint on a wall, so treat these as a shortlist and always order tester pots.</p></div></div>
+<p>The list shows every genuinely close match from other brands, ranked nearest-first by perceptual colour difference \u2014 including several from one brand where they\u2019re all close. Screens differ from paint on a wall, so treat these as a shortlist and always order tester pots.</p></div></div>
 <div class="cta"><b style="font-family:var(--serif);font-size:18px">Matching a different colour?</b>
 <p style="font-size:14px;color:var(--muted);margin:6px 0 0">Search any paint name in the tool to see its closest matches across every UK brand.</p>
 <a href="/colours/{slugs[i]}">See the full {name} colour page \u2192</a></div>
@@ -1702,6 +1746,9 @@ if __name__ == '__main__':
     os.makedirs('site/research', exist_ok=True)
     open('site/research/index.html', 'w', encoding='utf-8').write(build_research_hub())
     print('research hub written')
+    os.makedirs('site/match-from-a-photo', exist_ok=True)
+    open('site/match-from-a-photo/index.html', 'w', encoding='utf-8').write(build_photo_page())
+    print('photo landing page written')
     print('trust pages: 2')
 
     urls = [f'{DOMAIN}/', f'{DOMAIN}/colours/'] \
@@ -1710,7 +1757,7 @@ if __name__ == '__main__':
         + [f'{DOMAIN}/alternatives/{slugs[i]}' for i in alt_idx] \
         + [f'{DOMAIN}/dupes/{base_slug(b)}' for b in DUPE_TARGETS] \
         + [f'{DOMAIN}/how-it-works/', f'{DOMAIN}/about/', f'{DOMAIN}/paint-match-index/',
-           f'{DOMAIN}/paint-choice-index/', f'{DOMAIN}/research/']
+           f'{DOMAIN}/paint-choice-index/', f'{DOMAIN}/research/', f'{DOMAIN}/match-from-a-photo/']
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += ''.join(f'<url><loc>{u}</loc></url>\n' for u in urls)+'</urlset>'
     open('site/sitemap.xml', 'w').write(sm)
@@ -1726,7 +1773,7 @@ if __name__ == '__main__':
     {HDR}
     <div class="hero"><div class="hero-body">
     <span class="eyebrow">404</span><h1>That colour has escaped the wheel</h1>
-    <p class="sub">The page you were after doesn\u2019t exist, it may have moved when we reorganised.</p>
+    <p class="sub">The page you were after doesn\u2019t exist \u2014 it may have moved when we reorganised.</p>
     <p class="sub" style="margin-top:14px"><a href="/" style="color:inherit;font-weight:600">Open the colour tool \u2192</a> &nbsp;\u00b7&nbsp; <a href="/colours/" style="color:inherit;font-weight:600">Browse the colour library \u2192</a></p>
     </div></div>
     {FOOT}
