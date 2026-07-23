@@ -21,6 +21,9 @@ _NUMW = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six', 7: 'sev
          8: 'eight', 9: 'nine', 10: 'ten', 11: 'eleven', 12: 'twelve'}
 def numword(n):
     return _NUMW.get(n, f'{n}')
+def a_an(w):
+    """'a' or 'an' by the first letter — so 'Order an Etruria tester', not 'a Etruria'."""
+    return 'an' if (w[:1].lower() in 'aeiou') else 'a'
 SHORTLIST_CSS = '.pd-heart{position:absolute;top:8px;right:8px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C8578;transition:transform .12s,color .12s;z-index:2;padding:0}\n.pd-heart:hover{transform:scale(1.12);color:#5E7E8B}\n.pd-heart svg{fill:none;stroke:currentColor;stroke-width:1.7}\n.pd-heart.on{color:#5E7E8B}.pd-heart.on svg{fill:currentColor;stroke:currentColor}\n#pd-tray{position:fixed;right:14px;bottom:14px;z-index:900;background:#fff;border:1px solid #E3DFD5;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:11px 12px;max-width:min(92vw,560px)}\n.pd-tray-head{display:flex;align-items:center;gap:8px;font-size:13px;color:#211F1B}\n.pd-tray-head b{font-weight:600}.pd-tray-n{background:#F1EEE7;border-radius:20px;padding:1px 8px;font-size:12px;color:#7E786C}\n.pd-tray-clear{margin-left:auto;border:none;background:none;color:#9A6B6B;font-size:12px;cursor:pointer;padding:2px 4px}\n.pd-tray-clear:hover{text-decoration:underline}\n.pd-tray-note{font-size:11px;color:#9A9488;margin:3px 0 9px}\n.pd-tray-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}\n.pd-tray-chip{position:relative;flex:0 0 auto;width:64px;text-decoration:none;color:#211F1B}\n.pd-tray-sw{display:block;height:48px;border-radius:8px;border:1px solid rgba(0,0,0,.08)}\n.pd-tray-name{display:block;font-size:10px;line-height:1.2;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#7E786C}\n.pd-tray-x{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:#211F1B;color:#fff;font-size:12px;line-height:18px;text-align:center}\n.pd-tray-mail{margin-top:10px;border-top:1px solid #EEEAE1;padding-top:9px}\n.pd-mail-toggle{border:none;background:none;color:#5E7E8B;font-size:12.5px;font-weight:600;cursor:pointer;padding:0}\n.pd-mail-toggle:hover{text-decoration:underline}\n.pd-mail-form{display:flex;gap:6px;margin-top:8px}\n.pd-mail-input{flex:1;min-width:0;border:1px solid #D9D4C8;border-radius:8px;padding:7px 9px;font-size:13px;font-family:inherit}\n.pd-mail-input:focus{outline:none;border-color:#5E7E8B}\n.pd-mail-send{border:none;background:#5E7E8B;color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer}\n.pd-mail-send:hover{filter:brightness(1.06)}\n\n.pd-tray-min{border:none;background:none;color:#7E786C;font-size:17px;line-height:1;cursor:pointer;padding:0 4px;margin-left:2px}\n.pd-tray-min:hover{color:#211F1B}\n#pd-tray.min{padding:0;cursor:pointer}\n#pd-tray.min .pd-tray-head{margin-bottom:0;padding:10px 13px}\n#pd-tray.min .pd-tray-note,#pd-tray.min .pd-tray-row,#pd-tray.min .pd-tray-mail,#pd-tray.min .pd-tray-clear{display:none}\n#pd-sl-flash{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(10px);background:#211F1B;color:#fff;padding:9px 15px;border-radius:9px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:950}\n#pd-sl-flash.show{opacity:1;transform:translateX(-50%) translateY(0)}\n.chip,.c-swatch,.alt-row,.hero-swatch{position:relative}\n@media(max-width:560px){#pd-tray{right:8px;bottom:8px;left:8px;max-width:none}.pd-heart{width:27px;height:27px}}\n'
 SHORTLIST_JS = '/* ---------- PaintDial shortlist: save paints on this device, compare & email ----------\n   No login, no basket. Held in localStorage; shared by the tool and every colour page. */\n(function(){\n  const KEY=\'pd_shortlist_v1\', MAX=12, SITE=\'https://www.paintdial.co.uk\';\n  let minimized=false;\n  const read=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[];}catch(e){return [];}};\n  const write=a=>{try{localStorage.setItem(KEY,JSON.stringify(a.slice(0,MAX)));}catch(e){}};\n  const has=id=>read().some(x=>x.id===id);\n  const idOf=(name,brand)=>(brand+\'|\'+name).toLowerCase();\n\n  function toggle(item){\n    let a=read(); const i=a.findIndex(x=>x.id===item.id);\n    if(i>=0) a.splice(i,1); else { if(a.length>=MAX){flash(\'You can keep up to \'+MAX+\' colours\');return false;} a.unshift(item); }\n    write(a); paint(); return true;\n  }\n  function flash(msg){\n    let f=document.getElementById(\'pd-sl-flash\'); if(!f){f=document.createElement(\'div\');f.id=\'pd-sl-flash\';document.body.appendChild(f);}\n    f.textContent=msg; f.classList.add(\'show\'); clearTimeout(f._t); f._t=setTimeout(()=>f.classList.remove(\'show\'),1900);\n  }\n  const BOOKMARK=\'<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>\';\n\n  window.PDShortlist={\n    heartHTML:(name,brand,hex)=>`<button class="pd-heart" data-name="${name.replace(/"/g,\'&quot;\')}" data-brand="${brand.replace(/"/g,\'&quot;\')}" data-hex="${hex}" aria-label="Save ${name.replace(/"/g,\'&quot;\')} to your shortlist" title="Save to shortlist">${BOOKMARK}</button>`,\n    isSaved:has, idOf, toggle, read, refresh:()=>paint()\n  };\n\n  function bindHearts(root){\n    (root||document).querySelectorAll(\'.pd-heart\').forEach(btn=>{\n      if(btn._b) return; btn._b=1;\n      const id=idOf(btn.dataset.name, btn.dataset.brand);\n      if(has(id)) btn.classList.add(\'on\');\n      btn.addEventListener(\'click\',e=>{\n        e.preventDefault(); e.stopPropagation();\n        const ok=toggle({id, name:btn.dataset.name, brand:btn.dataset.brand, hex:btn.dataset.hex});\n        if(ok!==false) btn.classList.toggle(\'on\', has(id));\n      });\n    });\n  }\n  window.PDShortlist.bind=bindHearts;\n\n  function slug(s){return s.normalize(\'NFKD\').replace(/[\\u0300-\\u036f]/g,\'\').toLowerCase().replace(/&/g,\'and\').replace(/\'/g,\'\').replace(/[^a-z0-9]+/g,\'-\').replace(/^-|-$/g,\'\');}\n  function colourURLFor(it){return `/colours/${slug(it.brand)}-${slug(it.name)}`;}\n\n  function emailBody(items){\n    const lines = items.map(it=>`\\u2022 ${it.name} \\u2014 ${it.brand} \\u2014 ${it.hex}\\n  ${SITE}${colourURLFor(it)}`).join(\'\\n\\n\');\n    return `Here are the paint colours I shortlisted on PaintDial:\\n\\n${lines}\\n\\nCompare them anytime at ${SITE}`;\n  }\n  function sendEmail(addr){\n    const items=read(); if(!items.length) return;\n    const subj=`My PaintDial shortlist (${items.length} colour${items.length>1?\'s\':\'\'})`;\n    const to=addr?encodeURIComponent(addr):\'\';\n    window.location.href=`mailto:${to}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(emailBody(items))}`;\n  }\n\n  function paint(){\n    const items=read();\n    let tray=document.getElementById(\'pd-tray\');\n    if(!items.length){ if(tray) tray.remove(); document.querySelectorAll(\'.pd-heart.on\').forEach(b=>{ if(!has(idOf(b.dataset.name,b.dataset.brand))) b.classList.remove(\'on\');}); return; }\n    if(!tray){ tray=document.createElement(\'div\'); tray.id=\'pd-tray\'; document.body.appendChild(tray); }\n    tray.innerHTML=\n      `<div class="pd-tray-head"><b>Your shortlist</b> <span class="pd-tray-n">${items.length}</span>`+\n      `<button class="pd-tray-min" aria-label="Minimise shortlist" title="Minimise">\\u2013</button>`+\n      `<button class="pd-tray-clear" aria-label="Clear shortlist">Clear</button></div>`+\n      `<div class="pd-tray-note">Saved on this device \\u2014 come back anytime. A shortlist to compare, not a basket.</div>`+\n      `<div class="pd-tray-row">`+items.map(it=>\n        `<a class="pd-tray-chip" href="${colourURLFor(it)}" title="${it.name} \\u2014 ${it.brand}">`+\n        `<span class="pd-tray-sw" style="background:${it.hex}"></span>`+\n        `<span class="pd-tray-x" data-id="${it.id}" role="button" aria-label="Remove ${it.name}">\\u00d7</span>`+\n        `<span class="pd-tray-name">${it.name}</span></a>`).join(\'\')+`</div>`+\n      `<div class="pd-tray-mail">`+\n        `<button class="pd-mail-toggle" type="button">\\u2709 Email these to me</button>`+\n        `<div class="pd-mail-form" hidden><input type="email" class="pd-mail-input" placeholder="you@email.com" aria-label="Your email address"><button class="pd-mail-send" type="button">Send</button></div>`+\n      `</div>`;\n    tray.querySelector(\'.pd-tray-clear\').onclick=()=>{write([]);paint();document.querySelectorAll(\'.pd-heart.on\').forEach(b=>b.classList.remove(\'on\'));};\n    tray.querySelectorAll(\'.pd-tray-x\').forEach(x=>x.addEventListener(\'click\',e=>{\n      e.preventDefault();e.stopPropagation(); const a=read().filter(y=>y.id!==x.dataset.id); write(a); paint();\n      document.querySelectorAll(\'.pd-heart\').forEach(b=>{ if(idOf(b.dataset.name,b.dataset.brand)===x.dataset.id) b.classList.remove(\'on\');});\n    }));\n    const mt=tray.querySelector(\'.pd-mail-toggle\'), mf=tray.querySelector(\'.pd-mail-form\'),\n          mi=tray.querySelector(\'.pd-mail-input\'), ms=tray.querySelector(\'.pd-mail-send\');\n    mt.onclick=()=>{mf.hidden=!mf.hidden; if(!mf.hidden) mi.focus();};\n    ms.onclick=()=>sendEmail(mi.value.trim());\n    mi.addEventListener(\'keydown\',e=>{if(e.key===\'Enter\'){e.preventDefault();sendEmail(mi.value.trim());}});\n    // minimise / expand\n    const head=tray.querySelector(\'.pd-tray-head\'), minBtn=tray.querySelector(\'.pd-tray-min\');\n    const applyMin=()=>{tray.classList.toggle(\'min\',minimized); minBtn.textContent=minimized?\'\\u002b\':\'\\u2013\'; minBtn.title=minimized?\'Expand\':\'Minimise\';};\n    minBtn.addEventListener(\'click\',e=>{e.stopPropagation(); minimized=!minimized; applyMin();});\n    head.addEventListener(\'click\',e=>{ if(minimized && !e.target.closest(\'.pd-tray-clear\')){ minimized=false; applyMin(); }});\n    applyMin();\n  }\n\n  document.addEventListener(\'DOMContentLoaded\',()=>{bindHearts(document);paint();});\n  window.addEventListener(\'pd:rendered\',e=>bindHearts(e.detail||document));\n})();\n'
 
@@ -182,7 +185,7 @@ FAVICON = ("<link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://ww
            "%3Ccircle cx='16' cy='16' r='3.4' fill='%23211F1B'/%3E%3C/svg%3E\">")
 FONTS = ('<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,600'
          '&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">')
-HDR = '<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>'
+HDR = '<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="lib-link" href="/colours/" aria-label="Colour library"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span><span class="nav-lbl">Colour library</span></a><a class="nav-cta" href="/" aria-label="Open the colour tool"><span class="cta-wheel" aria-hidden="true"></span><span class="nav-lbl">Colour tool</span></a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>'
 FOOT = ("<span class=\"foot-links\">"
         "<a href=\"/about/\">About</a> \u00b7 "
         "<a href=\"/how-it-works/\">How matching works</a> \u00b7 "
@@ -209,7 +212,7 @@ header{display:flex;justify-content:space-between;align-items:center;padding:16p
 .logo{display:inline-flex;align-items:center;gap:9px;font-family:var(--serif);font-size:20px;font-weight:600;color:#5E7E8B;text-decoration:none}
 .logo .mark{flex:none}
 header nav{display:flex;align-items:center;gap:16px;font-size:13px}
-header nav a{font-family:var(--sans);font-weight:500;color:var(--muted);text-decoration:none}header nav a.lib-link{display:inline-flex;align-items:center;gap:8px;color:var(--ink);font-weight:600;padding:6px 12px 6px 7px;background:#fff;border:1px solid var(--hairline);border-radius:9px;box-shadow:0 1px 2px rgba(33,31,27,.05);transition:box-shadow .12s,transform .12s,border-color .12s}header nav a.lib-link:hover{box-shadow:0 4px 12px rgba(33,31,27,.10);transform:translateY(-1px);border-color:var(--muted);color:var(--ink)}.lib-swatches{display:inline-flex;gap:3px}.lib-swatches i{width:13px;height:13px;border-radius:3px;display:inline-block}
+header nav a{font-family:var(--sans);font-weight:500;color:var(--muted);text-decoration:none}header nav a.lib-link{display:inline-flex;align-items:center;gap:8px;color:var(--ink);font-weight:600;padding:6px 12px 6px 7px;background:#fff;border:1px solid var(--hairline);border-radius:9px;box-shadow:0 1px 2px rgba(33,31,27,.05);transition:box-shadow .12s,transform .12s,border-color .12s}header nav a.lib-link:hover{box-shadow:0 4px 12px rgba(33,31,27,.10);transform:translateY(-1px);border-color:var(--muted);color:var(--ink)}.lib-swatches{display:grid;grid-template-columns:repeat(2,1fr);gap:2px}.lib-swatches i{width:8px;height:8px;border-radius:2px;display:block}
 header nav a:hover{color:var(--ink)}
 header nav a.nav-cta{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--ink);font-weight:600;font-size:13px;padding:6px 14px 6px 8px;border:1px solid var(--hairline);border-radius:9px;box-shadow:0 1px 2px rgba(33,31,27,.05);transition:box-shadow .12s,transform .12s,border-color .12s}.cta-wheel{width:16px;height:16px;border-radius:50%;flex:none;background:conic-gradient(from 90deg,#e0574f,#e6a02e,#c9c94f,#8a9d80,#5e7e8b,#7a6a9e,#b7788d,#e0574f);box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 4px rgba(0,0,0,.06)}
 header nav a.nav-cta:hover{box-shadow:0 4px 12px rgba(33,31,27,.10);transform:translateY(-1px);border-color:var(--muted);color:var(--ink)}
@@ -252,11 +255,17 @@ h2::after{content:'';display:block;width:34px;height:4px;border-radius:2px;backg
 .cta p{font-size:14px;color:var(--muted);margin:6px 0 14px}
 .afftext{font-size:11px;color:var(--muted);margin-top:12px}
 .cta-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.buy-full{display:inline-block;margin-top:11px;font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:2px}
-.buy-full:hover{color:var(--ink)}
 .colour-summary{font-size:15px;color:var(--ink);max-width:72ch;margin:22px 0 2px;line-height:1.6}
 .colour-summary a{color:var(--pc);text-decoration:none;font-weight:600}
 .colour-summary a:hover{text-decoration:underline}
+.dcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(212px,1fr));gap:12px;margin:16px 0 2px}
+.dcard{display:flex;align-items:stretch;border:1px solid var(--hairline);border-radius:12px;overflow:hidden;background:var(--card);box-shadow:0 1px 2px rgba(33,31,27,.06);text-decoration:none;color:var(--ink);transition:transform .12s,box-shadow .12s}
+.dcard:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(33,31,27,.10)}
+.dc-sw{width:66px;flex:none;align-self:stretch;min-height:80px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}
+.dc-body{padding:11px 13px;min-width:0}
+.dc-role{display:block;font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--pc)}
+.dc-nm{display:block;font-family:var(--serif);font-size:16px;font-weight:600;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dc-meta{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}
 .pd-heart.btn-save{position:static;top:auto;right:auto;width:auto;height:auto;border-radius:9px;background:#fff;backdrop-filter:none;border:1px solid var(--hairline);box-shadow:0 1px 2px rgba(33,31,27,.05);padding:10px 15px;gap:8px;font-family:var(--sans);font-size:14px;font-weight:600;color:var(--ink)}
 .pd-heart.btn-save:hover{transform:none;color:var(--ink);border-color:var(--muted);box-shadow:0 4px 12px rgba(33,31,27,.10)}
 .pd-heart.btn-save.on{color:#5E7E8B;border-color:#5E7E8B}
@@ -270,7 +279,7 @@ footer a{color:var(--muted)}
 header{flex-wrap:wrap;row-gap:6px;padding:12px 0}
 header nav{width:100%;gap:8px;justify-content:flex-start}header nav:only-child,header nav:has(> :only-child){width:auto;justify-content:flex-end;margin-left:auto}
 header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6px;white-space:nowrap}
-.lib-swatches i{width:11px;height:11px}
+.lib-swatches i{width:9px;height:9px}
 }
 
 @media(max-width:640px){
@@ -279,7 +288,7 @@ header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6
 }
 .head-nav{font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:color .12s}.head-nav:hover{color:var(--ink)}@media(max-width:560px){.head-nav{display:none}}
 .mnav{display:none}@media(max-width:560px){.mnav{display:flex;gap:18px;align-items:center;padding:7px 0 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
-@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
+@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:7px;border-radius:8px;box-shadow:none;gap:0}.nav-lbl{display:none}}
 """
 
 def ladder_for(i):
@@ -358,6 +367,17 @@ def chip(j, home_lab=None, show_tier=False, home_i=None):
             f'<div class="c-body"><span class="c-name">{H.escape(q["name"])}</span>'
             f'<span class="c-brand">{H.escape(q["brand"])}</span>{de}</div></a>')
 
+def decision_card(role, j, dd):
+    """A featured 'decision' card for the colour page — the closest / best-value /
+    best-premium answer, surfaced above the full ranked grid."""
+    q = paints[j]
+    return (f'<a class="dcard" href="/colours/{slugs[j]}">'
+            f'<span class="dc-sw" style="background:{q["hex"]}"></span>'
+            f'<span class="dc-body"><span class="dc-role">{role}</span>'
+            f'<span class="dc-nm">{H.escape(q["name"])}</span>'
+            f'<span class="dc-meta">{H.escape(q["brand"])} · {TIER_WORD[TIER[q["brand"]]]} · {matchword(dd)}</span>'
+            f'</span></a>')
+
 def build_colour_page(i):
     p = paints[i]; lab = LAB[i]
     name = H.escape(p['name']); brand = H.escape(p['brand'])
@@ -377,6 +397,17 @@ def build_colour_page(i):
     seo_top = f"{H.escape(paints[_x0]['name'])} by {H.escape(paints[_x0]['brand'])}"
     seo_word = matchword(_x0d)
     _depth, _fam = describe(i)   # computed one-line summary (like allpaintcolours' lead sentence)
+    # decision layer: closest overall / best value / best premium (deduped, no repeats)
+    _val = [(j, dd) for j, dd in xmatch if TIER[paints[j]['brand']] == 1]
+    _prem = [(j, dd) for j, dd in xmatch if TIER[paints[j]['brand']] == 3]
+    _bv = min(_val, key=lambda t: t[1]) if _val else None
+    _bp = min(_prem, key=lambda t: t[1]) if _prem else None
+    _cards = [('Closest overall', _x0, _x0d)]
+    if _bv and _bv[0] != _x0:
+        _cards.append(('Best value', _bv[0], _bv[1]))
+    if _bp and _bp[0] != _x0 and (not _bv or _bp[0] != _bv[0]):
+        _cards.append(('Best premium', _bp[0], _bp[1]))
+    dcards_html = ''.join(decision_card(r, j, dd) for r, j, dd in _cards)
     seo_also = (f"{H.escape(paints[xmatch[1][0]]['name'])} by {H.escape(paints[xmatch[1][0]]['brand'])} "
                 f"and {H.escape(paints[xmatch[2][0]]['name'])} by {H.escape(paints[xmatch[2][0]]['brand'])}")
 
@@ -423,11 +454,11 @@ def build_colour_page(i):
 <div class="hero"><div class="hero-swatch">{heart(p['name'], p['brand'], p['hex'])}</div><div class="hero-body">
 <span class="eyebrow">{brand}</span><h1>{name}</h1>
 <div class="facts"><span>Hex <b>{p['hex']}</b></span><span>LRV <b>\u2248\u2009{lrv(L0):.0f}</b></span><span>Lightness <b>{L0:.0f}/100</b></span></div>
-<div class="cta-row"><a class="btn" href="{buy_link(p)}" target="_blank" rel="noopener sponsored">Order a {name} tester \u2192</a>{save_button(p['name'], p['brand'], p['hex'])}</div>
-<a class="buy-full" href="{buy_link(p)}" target="_blank" rel="noopener sponsored">Prefer a full tin? Buy {name} \u2192</a>
-<p class="afftext">Affiliate links \u2014 PaintDial may earn a small commission at no cost to you. Always order a tester and check it in your own light before committing.</p>
+<div class="cta-row"><a class="btn" href="{buy_link(p)}" target="_blank" rel="noopener sponsored">Order {a_an(paints[i]['name'])} {name} tester \u2192</a>{save_button(p['name'], p['brand'], p['hex'])}</div>
+<p class="afftext">Opens {brand}\u2019s page, where you can order a tester or a full tin. Affiliate link \u2014 PaintDial may earn a small commission at no cost to you. Always test in your own light before committing.</p>
 </div></div>
 <p class="colour-summary">{name} is a {_depth} {_fam} from {brand} — hex {p['hex']}, LRV ≈ {lrv(L0):.0f}. Its closest match from another brand is <a href="/colours/{slugs[_x0]}">{seo_top}</a> ({seo_word}), with the full ranked list below.</p>
+<div class="dcards">{dcards_html}</div>
 <h2>Closest matches from other brands</h2>
 <p class="sub">One from each brand, badged by how close the match is. The tier is the brand\u2019s market position, not a price. Tap any to open the full colour.</p>
 <div class="grid">{''.join(chip(j, home_lab=lab, show_tier=True, home_i=i) for j, _ in xmatch)}</div>
@@ -585,7 +616,7 @@ header{padding:16px 0;border-bottom:1px solid var(--hairline);display:flex;justi
 header a.logo{display:inline-flex;align-items:center;gap:9px;font-family:var(--serif);font-size:20px;font-weight:600;color:#5E7E8B;text-decoration:none}
 header .mark{flex:none}
 header nav{display:flex;align-items:center;gap:16px}
-header nav a{font-family:var(--sans);font-size:13px;font-weight:500;color:var(--muted);text-decoration:none}header nav a.lib-link{display:inline-flex;align-items:center;gap:8px;color:var(--ink);font-weight:600;padding:6px 12px 6px 7px;background:#fff;border:1px solid var(--hairline);border-radius:9px;box-shadow:0 1px 2px rgba(33,31,27,.05);transition:box-shadow .12s,transform .12s,border-color .12s}header nav a.lib-link:hover{box-shadow:0 4px 12px rgba(33,31,27,.10);transform:translateY(-1px);border-color:var(--muted);color:var(--ink)}.lib-swatches{display:inline-flex;gap:3px}.lib-swatches i{width:13px;height:13px;border-radius:3px;display:inline-block}
+header nav a{font-family:var(--sans);font-size:13px;font-weight:500;color:var(--muted);text-decoration:none}header nav a.lib-link{display:inline-flex;align-items:center;gap:8px;color:var(--ink);font-weight:600;padding:6px 12px 6px 7px;background:#fff;border:1px solid var(--hairline);border-radius:9px;box-shadow:0 1px 2px rgba(33,31,27,.05);transition:box-shadow .12s,transform .12s,border-color .12s}header nav a.lib-link:hover{box-shadow:0 4px 12px rgba(33,31,27,.10);transform:translateY(-1px);border-color:var(--muted);color:var(--ink)}.lib-swatches{display:grid;grid-template-columns:repeat(2,1fr);gap:2px}.lib-swatches i{width:8px;height:8px;border-radius:2px;display:block}
 header nav a:hover{color:var(--ink)}
 header nav a.nav-cta{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--ink);font-weight:600;font-size:13px;padding:6px 14px 6px 8px;border:1px solid var(--hairline);border-radius:9px;box-shadow:0 1px 2px rgba(33,31,27,.05);transition:box-shadow .12s,transform .12s,border-color .12s}.cta-wheel{width:16px;height:16px;border-radius:50%;flex:none;background:conic-gradient(from 90deg,#e0574f,#e6a02e,#c9c94f,#8a9d80,#5e7e8b,#7a6a9e,#b7788d,#e0574f);box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 4px rgba(0,0,0,.06)}
 header nav a.nav-cta:hover{box-shadow:0 4px 12px rgba(33,31,27,.10);transform:translateY(-1px);border-color:var(--muted);color:var(--ink)}
@@ -658,14 +689,14 @@ footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--hairline);fon
 header{flex-wrap:wrap;row-gap:6px;padding:12px 0}
 header nav{width:100%;gap:8px;justify-content:flex-start}header nav:only-child,header nav:has(> :only-child){width:auto;justify-content:flex-end;margin-left:auto}
 header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6px;white-space:nowrap}
-.lib-swatches i{width:11px;height:11px}
+.lib-swatches i{width:9px;height:9px}
 }
 .head-nav{font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:color .12s}.head-nav:hover{color:var(--ink)}@media(max-width:560px){.head-nav{display:none}}
 .mnav{display:none}@media(max-width:560px){.mnav{display:flex;gap:18px;align-items:center;padding:7px 0 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
-@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
+@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:7px;border-radius:8px;box-shadow:none;gap:0}.nav-lbl{display:none}}
 """
 
-LIB_HDR = '<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>'
+LIB_HDR = '<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="nav-cta" href="/" aria-label="Open the colour tool"><span class="cta-wheel" aria-hidden="true"></span><span class="nav-lbl">Colour tool</span></a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>'
 
 def anchor(fam): return 'f-'+re.sub(r'[^a-z0-9]+', '-', fam.lower().replace('&', 'and')).strip('-')
 
@@ -817,7 +848,7 @@ header{display:flex;justify-content:space-between;align-items:center;padding:16p
 .logo{display:inline-flex;align-items:center;gap:9px;font-family:var(--serif);font-size:20px;font-weight:600;color:#5E7E8B;text-decoration:none}
 .logo .mark{flex:none}
 header nav{display:flex;align-items:center;gap:16px;font-size:13px}
-header nav a{font-family:var(--sans);font-weight:500;color:var(--muted);text-decoration:none}header nav a.lib-link{display:inline-flex;align-items:center;gap:8px;color:var(--ink);font-weight:600;padding:6px 12px 6px 7px;background:#fff;border:1px solid var(--hairline);border-radius:9px;box-shadow:0 1px 2px rgba(33,31,27,.05);transition:box-shadow .12s,transform .12s,border-color .12s}header nav a.lib-link:hover{box-shadow:0 4px 12px rgba(33,31,27,.10);transform:translateY(-1px);border-color:var(--muted);color:var(--ink)}.lib-swatches{display:inline-flex;gap:3px}.lib-swatches i{width:13px;height:13px;border-radius:3px;display:inline-block}
+header nav a{font-family:var(--sans);font-weight:500;color:var(--muted);text-decoration:none}header nav a.lib-link{display:inline-flex;align-items:center;gap:8px;color:var(--ink);font-weight:600;padding:6px 12px 6px 7px;background:#fff;border:1px solid var(--hairline);border-radius:9px;box-shadow:0 1px 2px rgba(33,31,27,.05);transition:box-shadow .12s,transform .12s,border-color .12s}header nav a.lib-link:hover{box-shadow:0 4px 12px rgba(33,31,27,.10);transform:translateY(-1px);border-color:var(--muted);color:var(--ink)}.lib-swatches{display:grid;grid-template-columns:repeat(2,1fr);gap:2px}.lib-swatches i{width:8px;height:8px;border-radius:2px;display:block}
 header nav a:hover{color:var(--ink)}
 header nav a.nav-cta{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--ink);font-weight:600;font-size:13px;padding:6px 14px 6px 8px;border:1px solid var(--hairline);border-radius:9px;box-shadow:0 1px 2px rgba(33,31,27,.05);transition:box-shadow .12s,transform .12s,border-color .12s}.cta-wheel{width:16px;height:16px;border-radius:50%;flex:none;background:conic-gradient(from 90deg,#e0574f,#e6a02e,#c9c94f,#8a9d80,#5e7e8b,#7a6a9e,#b7788d,#e0574f);box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 4px rgba(0,0,0,.06)}
 header nav a.nav-cta:hover{box-shadow:0 4px 12px rgba(33,31,27,.10);transform:translateY(-1px);border-color:var(--muted);color:var(--ink)}
@@ -870,11 +901,11 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--hairline);fon
 header{flex-wrap:wrap;row-gap:6px;padding:12px 0}
 header nav{width:100%;gap:8px;justify-content:flex-start}header nav:only-child,header nav:has(> :only-child){width:auto;justify-content:flex-end;margin-left:auto}
 header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6px;white-space:nowrap}
-.lib-swatches i{width:11px;height:11px}
+.lib-swatches i{width:9px;height:9px}
 }
 .head-nav{font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:color .12s}.head-nav:hover{color:var(--ink)}@media(max-width:560px){.head-nav{display:none}}
 .mnav{display:none}@media(max-width:560px){.mnav{display:flex;gap:18px;align-items:center;padding:7px 0 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
-@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
+@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:7px;border-radius:8px;box-shadow:none;gap:0}.nav-lbl{display:none}}
 """
 ALT_BRANDS = {b for b in BRAND_ORDER if TIER[b] == 3}  # Farrow & Ball, Little Greene, Lick, COAT
 AVAIL = {'Dulux': 'widely available', 'Crown': 'widely available', "Johnstone's": 'widely available',
@@ -959,7 +990,7 @@ header a.logo{display:inline-flex;align-items:center;gap:9px;font-family:var(--s
 header nav{display:flex;gap:18px;align-items:center}
 header nav a{font-family:var(--sans);font-size:13px;font-weight:500;color:var(--muted);text-decoration:none}
 header nav a.lib-link{display:inline-flex;align-items:center;gap:8px;color:var(--ink);font-weight:600;padding:6px 12px 6px 7px;background:#fff;border:1px solid var(--hairline);border-radius:9px;box-shadow:0 1px 2px rgba(33,31,27,.05)}
-.lib-swatches{display:inline-flex;gap:3px}.lib-swatches i{width:13px;height:13px;border-radius:3px;display:inline-block}
+.lib-swatches{display:grid;grid-template-columns:repeat(2,1fr);gap:2px}.lib-swatches i{width:8px;height:8px;border-radius:2px;display:block}
 .eyebrow{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 h1{font-family:var(--serif);font-size:36px;font-weight:600;letter-spacing:-.012em;line-height:1.08;margin:8px 0 10px}
 .sub{font-size:14.5px;color:var(--muted);max-width:640px;margin-bottom:8px}
@@ -990,11 +1021,11 @@ footer a{color:var(--muted)}
 header{flex-wrap:wrap;row-gap:6px;padding:12px 0}
 header nav{width:100%;gap:8px;justify-content:flex-start}header nav:only-child,header nav:has(> :only-child){width:auto;justify-content:flex-end;margin-left:auto}
 header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6px;white-space:nowrap}
-.lib-swatches i{width:11px;height:11px}
+.lib-swatches i{width:9px;height:9px}
 }
 .head-nav{font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:color .12s}.head-nav:hover{color:var(--ink)}@media(max-width:560px){.head-nav{display:none}}
 .mnav{display:none}@media(max-width:560px){.mnav{display:flex;gap:18px;align-items:center;padding:7px 0 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
-@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
+@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:7px;border-radius:8px;box-shadow:none;gap:0}.nav-lbl{display:none}}
 """
 
 DUPE_TARGETS = [b for b in BRAND_ORDER if TIER[b] == 3]
@@ -1049,7 +1080,7 @@ def build_dupes_page(brand):
 )}
 {FONTS}<style>{DUPES_CSS}</style></head><body><div class="wrap">
 <header><a class="logo" href="/"><span class="logo-dial"></span>PaintDial</a>
-<nav><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>
+<nav><a class="lib-link" href="/colours/" aria-label="Colour library"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span><span class="nav-lbl">Colour library</span></a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>
 <span class="eyebrow">Ranked dupes</span>
 <h1>Every {bname} colour\u2019s best-value match, ranked</h1>
 <p class="sub">All {len(rows)} {bname} colours, each paired with its single closest match from a value or mid-range brand \u2014 ranked from the strongest match down. Tap any row to see the full colour page, more matches, and where to buy.</p>
@@ -1075,7 +1106,7 @@ header a.logo{display:inline-flex;align-items:center;gap:9px;font-family:var(--s
 header nav{display:flex;gap:12px;align-items:center}
 header nav a{font-family:var(--sans);font-size:13px;font-weight:500;color:var(--muted);text-decoration:none}
 header nav a.lib-link{display:inline-flex;align-items:center;gap:8px;color:var(--ink);font-weight:600;padding:6px 12px 6px 7px;background:#fff;border:1px solid var(--hairline);border-radius:9px;box-shadow:0 1px 2px rgba(33,31,27,.05)}
-.lib-swatches{display:inline-flex;gap:3px}.lib-swatches i{width:13px;height:13px;border-radius:3px;display:inline-block}
+.lib-swatches{display:grid;grid-template-columns:repeat(2,1fr);gap:2px}.lib-swatches i{width:8px;height:8px;border-radius:2px;display:block}
 .eyebrow{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 h1{font-family:var(--serif);font-size:34px;font-weight:600;letter-spacing:-.012em;line-height:1.1;margin:8px 0 18px}
 h2{font-family:var(--serif);font-size:21px;font-weight:600;margin:34px 0 10px}
@@ -1093,7 +1124,7 @@ footer a{color:var(--muted)}
 header{flex-wrap:wrap;row-gap:6px;padding:12px 0}
 header nav{width:100%;gap:8px;justify-content:flex-start}header nav:only-child,header nav:has(> :only-child){width:auto;justify-content:flex-end;margin-left:auto}
 header nav a.lib-link{font-size:12px;padding:5px 10px 5px 6px;white-space:nowrap}
-.lib-swatches i{width:11px;height:11px}
+.lib-swatches i{width:9px;height:9px}
 h1{font-size:27px}.wrap{padding:0 18px 60px}
 }
 
@@ -1146,7 +1177,7 @@ text-decoration:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.09);transition:trans
 }
 .head-nav{font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:color .12s}.head-nav:hover{color:var(--ink)}@media(max-width:560px){.head-nav{display:none}}
 .mnav{display:none}@media(max-width:560px){.mnav{display:flex;gap:18px;align-items:center;padding:7px 0 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
-@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
+@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:7px;border-radius:8px;box-shadow:none;gap:0}.nav-lbl{display:none}}
 """
 
 def _page_shell(title, desc, path, body):
@@ -1157,7 +1188,7 @@ def _page_shell(title, desc, path, body):
 <link rel="canonical" href="{DOMAIN}{path}">
 {FONTS}<style>{PAGES_CSS}</style></head><body><div class="wrap">
 <header><a class="logo" href="/"><span class="logo-dial"></span>PaintDial</a>
-<nav><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>
+<nav><a class="lib-link" href="/colours/" aria-label="Colour library"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span><span class="nav-lbl">Colour library</span></a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>
 {body}
 <footer>{FOOT}</footer>
 </div></body></html>"""
@@ -1674,7 +1705,7 @@ def build_alternatives_page(i):
 <meta name="twitter:image" content="{DOMAIN}/share/{slugs[i]}.jpg">
 {FAVICON}
 {FONTS}<style>{ALT_CSS}</style></head><body style="--pc:{p['hex']}"><div class="top-band"></div><div class="wrap">
-<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>
+<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="lib-link" href="/colours/" aria-label="Colour library"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span><span class="nav-lbl">Colour library</span></a><a class="nav-cta" href="/" aria-label="Open the colour tool"><span class="cta-wheel" aria-hidden="true"></span><span class="nav-lbl">Colour tool</span></a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>
 <h1>{brand} <span class="pn"><i></i>{name}</span> alternatives</h1>
 <div class="hero-card"><div class="hero-sw" style="background:{p['hex']}"></div>
 <div class="hero-info"><div class="hero-label">The colour you\u2019re matching</div>
