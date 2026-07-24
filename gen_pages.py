@@ -368,7 +368,7 @@ def chip(j, home_lab=None, show_tier=False, home_i=None):
             f'<span class="c-brand">{H.escape(q["brand"])}</span>{de}</div></a>')
 
 def decision_card(role, j, dd):
-    """A featured 'decision' card for the colour page — the closest / best-value /
+    """A featured 'decision' card for the colour page — the closest / closest value-brand /
     best-premium answer, surfaced above the full ranked grid."""
     q = paints[j]
     return (f'<a class="dcard" href="/colours/{slugs[j]}">'
@@ -397,16 +397,17 @@ def build_colour_page(i):
     seo_top = f"{H.escape(paints[_x0]['name'])} by {H.escape(paints[_x0]['brand'])}"
     seo_word = matchword(_x0d)
     _depth, _fam = describe(i)   # computed one-line summary (like allpaintcolours' lead sentence)
-    # decision layer: closest overall / best value / best premium (deduped, no repeats)
+    # decision layer: closest overall / closest value-brand / closest premium (deduped).
+    # NB deliberately NOT "best value" — we hold no live prices, so no savings claim (see research pages).
     _val = [(j, dd) for j, dd in xmatch if TIER[paints[j]['brand']] == 1]
     _prem = [(j, dd) for j, dd in xmatch if TIER[paints[j]['brand']] == 3]
     _bv = min(_val, key=lambda t: t[1]) if _val else None
     _bp = min(_prem, key=lambda t: t[1]) if _prem else None
     _cards = [('Closest overall', _x0, _x0d)]
     if _bv and _bv[0] != _x0:
-        _cards.append(('Best value', _bv[0], _bv[1]))
+        _cards.append(('Closest value-brand match', _bv[0], _bv[1]))
     if _bp and _bp[0] != _x0 and (not _bv or _bp[0] != _bv[0]):
-        _cards.append(('Best premium', _bp[0], _bp[1]))
+        _cards.append(('Closest premium alternative', _bp[0], _bp[1]))
     dcards_html = ''.join(decision_card(r, j, dd) for r, j, dd in _cards)
     seo_also = (f"{H.escape(paints[xmatch[1][0]]['name'])} by {H.escape(paints[xmatch[1][0]]['brand'])} "
                 f"and {H.escape(paints[xmatch[2][0]]['name'])} by {H.escape(paints[xmatch[2][0]]['brand'])}")
@@ -702,7 +703,7 @@ def anchor(fam): return 'f-'+re.sub(r'[^a-z0-9]+', '-', fam.lower().replace('&',
 
 def build_brand_page(b):
     idxs = [i for i in range(N) if paints[i]['brand'] == b]
-    dupes_link = (f'<p class="lede" style="margin-top:6px"><a href="/dupes/{base_slug(b)}" style="color:var(--pc);font-weight:600">See every {H.escape(b)} colour\u2019s best-value match, ranked \u2192</a></p>'
+    dupes_link = (f'<p class="lede" style="margin-top:6px"><a href="/dupes/{base_slug(b)}" style="color:var(--pc);font-weight:600">See every {H.escape(b)} colour\u2019s closest value or mid-range match, ranked \u2192</a></p>'
                   if TIER.get(b) == 3 else '')
     allc = sorted(idxs, key=lambda i: (hx2hsl(paints[i]['hex'])[0], -hx2hsl(paints[i]['hex'])[2]))
     step = max(1, len(allc)//64)
@@ -1066,7 +1067,7 @@ def build_dupes_page(brand):
                 f'<span class="badge{badge_cls}">{w}</span></span></a>')
 
     body = ''.join(rowhtml(n + 1, i, j, dd) for n, (i, j, dd) in enumerate(rows))
-    title = f'{bname} dupes \u2014 every colour\u2019s best value \u0026 mid-range match, ranked'
+    title = f'{bname} dupes \u2014 every colour\u2019s closest value \u0026 mid-range match, ranked'
     desc = (f'Every {bname} colour matched to its closest value or mid-range equivalent, '
             f'ranked from the strongest match down. Tap any row for the full colour page and where to buy.')
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8">
@@ -1082,7 +1083,7 @@ def build_dupes_page(brand):
 <header><a class="logo" href="/"><span class="logo-dial"></span>PaintDial</a>
 <nav><a class="lib-link" href="/colours/" aria-label="Colour library"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span><span class="nav-lbl">Colour library</span></a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>
 <span class="eyebrow">Ranked dupes</span>
-<h1>Every {bname} colour\u2019s best-value match, ranked</h1>
+<h1>Every {bname} colour\u2019s closest value or mid-range match, ranked</h1>
 <p class="sub">All {len(rows)} {bname} colours, each paired with its single closest match from a value or mid-range brand \u2014 ranked from the strongest match down. Tap any row to see the full colour page, more matches, and where to buy.</p>
 <p class="method">Matches are computed from each brand\u2019s published digital swatches using perceptual colour distance. Screen colours are indicative \u2014 always order tester pots of both before committing.</p>
 <div class="brands-nav">{nav}</div>
@@ -1636,10 +1637,10 @@ def build_alternatives_page(i):
                  + (f' \u2014 though it\u2019s {joinbits(cb)}.' if cb
                     else f' \u2014 and it holds {name}\u2019s lightness, warmth and saturation alike.'))
     if cheapest == closest:
-        value_txt = ' It\u2019s also the best-value tier of the close matches \u2014 unusual, as the nearest match and the best-value one usually differ.'
+        value_txt = ' It\u2019s also the closest match from a value brand \u2014 unusual, as the nearest match and the closest value-brand one usually differ.'
     else:
         vb = diff_bits(i, cheapest)
-        value_txt = (f' The closest value-tier option is <a class="pn" href="/colours/{slugs[cheapest]}">'
+        value_txt = (f' The closest value-brand match is <a class="pn" href="/colours/{slugs[cheapest]}">'
                      f'<i style="background:{paints[cheapest]["hex"]}"></i>{H.escape(paints[cheapest]["name"])}</a> '
                      f'by {H.escape(paints[cheapest]["brand"])} ({matchword(d[cheapest])})'
                      + (f', {joinbits(vb)}.' if vb else ', just as true to the original.')
@@ -1670,7 +1671,7 @@ def build_alternatives_page(i):
     def acard(rank, k):
         q = paints[k]; s = slugs[k]; note = ''
         if k == closest: note = 'Closest overall match.'
-        elif k == cheapest: note = 'Best value tier of the close matches.'
+        elif k == cheapest: note = 'Closest value-brand match.'
         note_html = f'<span class="a-note">{note}</span>' if note else ''
         return (f'<a class="alt" href="/colours/{s}">'
                 f'<span class="a-rank">{rank}</span>'
@@ -1718,8 +1719,8 @@ def build_alternatives_page(i):
 <div class="alts">{cards}</div>
 <div class="faq"><h2>Common questions</h2>
 {dulux_q}
-<div class="q"><h3>What\u2019s the best-value alternative to <span class="pn"><i></i>{name}</span>?</h3>
-<p>Of the close matches, <a class="pn" href="/colours/{slugs[cheapest]}"><i style="background:{paints[cheapest]['hex']}"></i>{nm(cheapest)}</a> by {brn(cheapest)} is the best-value option ({TIER_WORD[TIER[paints[cheapest]['brand']]].lower()}, {matchword(d[cheapest])}).</p></div>
+<div class="q"><h3>What\u2019s the closest value-brand alternative to <span class="pn"><i></i>{name}</span>?</h3>
+<p>Of the close matches, <a class="pn" href="/colours/{slugs[cheapest]}"><i style="background:{paints[cheapest]['hex']}"></i>{nm(cheapest)}</a> by {brn(cheapest)} is the closest value-brand match ({TIER_WORD[TIER[paints[cheapest]['brand']]].lower()}, {matchword(d[cheapest])}).</p></div>
 <div class="q"><h3>How close are these to <span class="pn"><i></i>{name}</span>?</h3>
 <p>The list shows every genuinely close match from other brands, ranked nearest-first by perceptual colour difference \u2014 including several from one brand where they\u2019re all close. Screens differ from paint on a wall, so treat these as a shortlist and always order tester pots.</p></div></div>
 <div class="cta"><b style="font-family:var(--serif);font-size:18px">Matching a different colour?</b>
