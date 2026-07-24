@@ -80,6 +80,18 @@ TIER = {'Farrow & Ball': 3, 'Little Greene': 3, 'Craig & Rose': 3, 'Lick': 3, 'C
 TIER_WORD = {3: 'Premium', 2: 'Mid-range', 1: 'Value'}
 
 paints = json.load(open('paints.json'))
+# Repair mojibake paint names at load (the U+FFFD replacement char lost the original accent).
+# Kept here (not in paints-fixed.json) so the fix ships in a single file. If the source JSON is
+# ever corrected, these simply stop matching — harmless. Add new entries if more surface.
+_NAME_FIX = {
+    'Consomm�': 'Consommé',
+    'Ch�teau Mantle': 'Château Mantle',
+    'Clementine Cr�me': 'Clementine Crème',
+    'Cr�me de Menthe': 'Crème de Menthe',
+    'D�j� Blue': 'Déjà Blue',
+}
+for _p in paints:
+    _p['name'] = _NAME_FIX.get(_p.get('name'), _p.get('name'))
 N = len(paints)
 NBRANDS = len({p['brand'] for p in paints})
 BRANDS_WORD = numword(NBRANDS)          # e.g. "nine"  -> "{BRANDS_WORD} UK brands"
