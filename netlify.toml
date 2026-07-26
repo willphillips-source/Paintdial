@@ -6,11 +6,22 @@
 [build.environment]
   PYTHON_VERSION = "3.12"
 
+# --- Domain consolidation: everything lands on https://www.paintdial.co.uk ---
+# force = true is required. Without it, Netlify serves the existing file first
+# and the rule never fires — which is exactly why paintdial.com/ currently
+# returns 200 with the .gitignore contents instead of redirecting.
+#
+# Note on splats: the ":splat" placeholder is safe here. The earlier problem was
+# with thousands of path-level rules in a _redirects file; these are four
+# host-level rules in netlify.toml, the same pattern as the existing
+# storied-cassata rule that already works in production.
+
 [[redirects]]
   from = "https://storied-cassata-d25ad3.netlify.app/*"
   to = "https://www.paintdial.co.uk/:splat"
   status = 301
   force = true
+
 [[redirects]]
   from = "https://paintdial.com/*"
   to = "https://www.paintdial.co.uk/:splat"
@@ -22,3 +33,16 @@
   to = "https://www.paintdial.co.uk/:splat"
   status = 301
   force = true
+
+[[redirects]]
+  from = "http://paintdial.com/*"
+  to = "https://www.paintdial.co.uk/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.paintdial.com/*"
+  to = "https://www.paintdial.co.uk/:splat"
+  status = 301
+  force = true
+
