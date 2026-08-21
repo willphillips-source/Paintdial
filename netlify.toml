@@ -7,14 +7,11 @@
   PYTHON_VERSION = "3.12"
 
 # --- Domain consolidation: everything lands on https://www.paintdial.co.uk ---
-# force = true is required. Without it, Netlify serves the existing file first
-# and the rule never fires — which is exactly why paintdial.com/ currently
-# returns 200 with the .gitignore contents instead of redirecting.
-#
-# Note on splats: the ":splat" placeholder is safe here. The earlier problem was
-# with thousands of path-level rules in a _redirects file; these are four
-# host-level rules in netlify.toml, the same pattern as the existing
-# storied-cassata rule that already works in production.
+# force = true is required. Without it Netlify serves the existing file first and
+# the rule never fires — which is why paintdial.com/ used to return 200 with the
+# .gitignore contents. Shipped 26 Jul 2026, verified 301 on apex, www and deep paths.
+# The paintdial.com domain ALIAS must stay in place on Netlify for these to fire.
+# Do NOT "Remove domain" — that kills the redirect instead of serving it.
 
 [[redirects]]
   from = "https://storied-cassata-d25ad3.netlify.app/*"
@@ -46,3 +43,33 @@
   status = 301
   force = true
 
+# --- Valspar encoding repair (Aug 2026): five names had a U+FFFD replacement
+# character where an accent should be. base_slug() strips accents to ASCII, so
+# repairing the name also changes the slug. Explicit 301s so the old URLs don't
+# 404. Explicit rules only — splat/placeholder patterns are unreliable here.
+# Old slugs had zero impressions at the time of the change; these are belt-and-braces.
+
+[[redirects]]
+  from = "/colours/valspar-chteau-mantle"
+  to = "/colours/valspar-chateau-mantle"
+  status = 301
+
+[[redirects]]
+  from = "/colours/valspar-clementine-crme"
+  to = "/colours/valspar-clementine-creme"
+  status = 301
+
+[[redirects]]
+  from = "/colours/valspar-consomm"
+  to = "/colours/valspar-consomme"
+  status = 301
+
+[[redirects]]
+  from = "/colours/valspar-crme-de-menthe"
+  to = "/colours/valspar-creme-de-menthe"
+  status = 301
+
+[[redirects]]
+  from = "/colours/valspar-dj-blue"
+  to = "/colours/valspar-deja-blue"
+  status = 301
