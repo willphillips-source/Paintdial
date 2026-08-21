@@ -36,12 +36,18 @@ def _breadcrumb(trail):
     return {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":items}
 
 def _color_seo(name, brand, hexv, slug, desc):
-    """A Product node is the honest fit: a named, branded, purchasable paint colour."""
-    return {"@context":"https://schema.org","@type":"Product","name":f"{name} by {brand}",
-            "brand":{"@type":"Brand","name":brand},"category":"Paint",
+    """A DefinedTerm: a named colour within a brand's defined range.
+       NOT a Product - PaintDial does not sell paint. A Product node without
+       offers/review/aggregateRating is invalid (GSC flagged this 27 Jul 2026) and
+       was never eligible for a product rich result anyway; all three fields Google
+       asks for would have to be fabricated, so the TYPE is the thing to fix.
+       'color' and 'additionalProperty' are Product-only and are dropped with it."""
+    return {"@context":"https://schema.org","@type":"DefinedTerm",
+            "name":f"{name} by {brand}",
+            "inDefinedTermSet":{"@type":"DefinedTermSet","name":f"{brand} paint colours"},
+            "termCode":hexv,
             "image":f"{DOMAIN}/share/{slug}.jpg","url":f"{DOMAIN}/colours/{slug}",
-            "description":desc,"color":hexv,
-            "additionalProperty":{"@type":"PropertyValue","name":"Hex","value":hexv}}
+            "description":desc}
 
 def _itemlist(entries):
     """entries = [(name, url_path)] in ranked order -> ItemList of links actually shown on the page."""
@@ -1000,7 +1006,7 @@ def build_dupes_page(brand):
                 f'<span class="badge{badge_cls}">{w}</span></span></a>')
 
     body = ''.join(rowhtml(n + 1, i, j, dd) for n, (i, j, dd) in enumerate(rows))
-    title = f'{bname} dupes \u2014 every colour\u2019s best value \u0026 mid-range match, ranked'
+    title = f'{bname} dupes \u2014 every colour\u2019s closest value \u0026 mid-range match, ranked'
     desc = (f'Every {bname} colour matched to its closest value or mid-range equivalent, '
             f'ranked from the strongest match down. Tap any row for the full colour page and where to buy.')
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8">
@@ -1631,7 +1637,7 @@ def build_alternatives_page(i):
     def acard(rank, k):
         q = paints[k]; s = slugs[k]; note = ''
         if k == closest: note = 'Closest overall match.'
-        elif k == cheapest: note = 'Best value tier of the close matches.'
+        elif k == cheapest: note = 'Closest match from a value-tier brand.'
         note_html = f'<span class="a-note">{note}</span>' if note else ''
         return (f'<a class="alt" href="/colours/{s}">'
                 f'<span class="a-rank">{rank}</span>'
