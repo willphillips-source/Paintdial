@@ -823,6 +823,7 @@ h2::after{content:'';display:block;width:34px;height:4px;border-radius:2px;backg
 .a-nm{display:block;font-family:var(--serif);font-size:16px;font-weight:600;line-height:1.2;text-wrap:pretty}
 .a-br{display:block;font-size:11px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);margin:2px 0 4px}
 .a-note{display:block;font-size:13px;color:var(--ink)}
+.a-diff{display:block;font-size:12.5px;color:var(--muted);line-height:1.35;margin-top:1px}
 .a-hex{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;align-self:flex-start;padding-top:13px}
 .verdict{border:1px solid var(--hairline);border-radius:12px;padding:15px 17px;margin:16px 0 4px;background:color-mix(in srgb,var(--pc) 5%,var(--card))}
 .verdict h3{font-family:var(--serif);font-size:16px;font-weight:600;margin:0 0 6px;display:flex;align-items:center;gap:8px}
@@ -1577,6 +1578,25 @@ def build_photo_match_page():
         "/match-paint-from-a-photo/", body)
 
 
+# Hand-written, evergreen openings for the most-searched hero colours. The opening is
+# editorial (no LRV/hex/price claims); the closest-match sentence that follows is ALWAYS
+# generated from the data, so match names can never go stale. Any slug not listed gets a
+# varied generated opening instead.
+EDITORIAL_INTRO = {
+ 'farrow-and-ball-hague-blue': "{home} is one of Farrow &amp; Ball\u2019s most recognisable deep blues \u2014 a dark, characterful choice for front doors, kitchen cabinetry and moody rooms, and one of the colours people most often want to match from a more widely stocked brand.",
+ 'farrow-and-ball-elephants-breath': "{home} is among Farrow &amp; Ball\u2019s best-loved warm neutrals, a soft greige that shifts noticeably with the light through the day \u2014 which is exactly why so many people look for a close equivalent they can pick up more easily.",
+ 'farrow-and-ball-railings': "{home} is Farrow &amp; Ball\u2019s go-to \u2018almost-black\u2019 \u2014 a soft off-black with a blue undertone that\u2019s a favourite for railings, window frames and joinery, and a colour decorators regularly try to match across other ranges.",
+ 'farrow-and-ball-setting-plaster': "{home} is one of Farrow &amp; Ball\u2019s most popular pinks \u2014 a soft, chalky plaster tone that reads as a warm neutral in the right light, and a hugely searched-for colour to find a close alternative to.",
+ 'farrow-and-ball-skimming-stone': "{home} is a Farrow &amp; Ball favourite for whole-house schemes \u2014 a warm, soft off-white that sits comfortably almost anywhere, which is why people so often want to match it from a more widely available brand.",
+ 'farrow-and-ball-sulking-room-pink': "{home} is one of Farrow &amp; Ball\u2019s most talked-about colours \u2014 a muted, dusky pink that suits snugs and bedrooms, and a colour plenty of people want to recreate without hunting down the original.",
+ 'farrow-and-ball-green-smoke': "{home} is a much-loved Farrow &amp; Ball green \u2014 a soft, smoky grey-green that\u2019s a favourite on cabinetry and panelling, and one people frequently look to match from another brand.",
+ 'farrow-and-ball-cornforth-white': "{home} is one of Farrow &amp; Ball\u2019s most popular cool greys \u2014 a versatile, contemporary neutral for living rooms and hallways, and a colour often searched for a close cross-brand equivalent.",
+ 'farrow-and-ball-ammonite': "{home} is a Farrow &amp; Ball staple \u2014 a soft, easy mid-grey that\u2019s become a default neutral in countless UK homes, so it\u2019s no surprise people want to match it from a more widely stocked range.",
+ 'farrow-and-ball-stiffkey-blue': "{home} is one of Farrow &amp; Ball\u2019s richest, deepest blues \u2014 dramatic on walls and cabinetry alike, and a characterful colour many people try to match from another brand.",
+ 'farrow-and-ball-de-nimes': "{home} is one of Farrow &amp; Ball\u2019s more recent favourites \u2014 a soft, workwear-inspired blue that\u2019s become widely popular, and a colour people often want to find a close equivalent to.",
+ 'farrow-and-ball-stone-blue': "{home} is a historic Farrow &amp; Ball blue \u2014 a deep, characterful grey-blue with real heritage, and one decorators regularly try to match across other ranges.",
+}
+
 def build_alternatives_page(i):
     p = paints[i]; lab = LAB[i]; name = H.escape(p['name']); brand = H.escape(p['brand'])
     d = dmatch(i)
@@ -1639,12 +1659,17 @@ def build_alternatives_page(i):
         if k == closest: note = 'Closest overall match.'
         elif k == cheapest: note = 'Closest match from a value-tier brand.'
         note_html = f'<span class="a-note">{note}</span>' if note else ''
+        # Computed, per-match difference from the target colour \u2014 same machinery as the
+        # verdict (diff_bits/joinbits), so it's factual and can never contradict the swatch.
+        _db = diff_bits(i, k)
+        diff_html = (f'<span class="a-diff">{joinbits(_db).capitalize()} than {name}.</span>'
+                     if _db else '')
         return (f'<a class="alt" href="/colours/{s}">'
                 f'<span class="a-rank">{rank}</span>'
                 f'<span class="a-sw" style="background:{q["hex"]}"></span>'
                 f'<span class="a-body"><span class="a-nm">{H.escape(q["name"])}</span>'
                 f'<span class="a-br">{H.escape(q["brand"])} \u00b7 {TIER_WORD[TIER[q["brand"]]]} \u00b7 {matchword(d[k])}</span>'
-                f'{note_html}</span>'
+                f'{diff_html}{note_html}</span>'
                 f'<span class="a-hex">{q["hex"]}</span></a>')
 
     cards = ''.join(acard(n + 1, k) for n, k in enumerate(alts))
@@ -1653,8 +1678,26 @@ def build_alternatives_page(i):
     dulux_q = (f'<div class="q"><h3>Is there a Dulux equivalent to <span class="pn"><i></i>{name}</span>?</h3>'
                f'<p>The nearest Dulux colour is <a class="pn" href="/colours/{slugs[dulux]}"><i style="background:{paints[dulux]['hex']}"></i>{nm(dulux)}</a> ({matchword(d[dulux])}). '
                f'It won\u2019t be pixel-perfect, so order a tester before committing.</p></div>') if dulux is not None else ''
-    intro = (f'<a class="pn" href="/colours/{slugs[i]}"><i></i>{name}</a> is a {depth} {fam} from {brand}. As a premium paint, '
-             f'it\u2019s a popular colour to seek out close matches and value-brand alternatives to.')
+    # ---- Intro: editorial opening for hero colours, varied opening otherwise;
+    #      the closest-match sentence is ALWAYS generated so it stays correct. ----
+    _cl = paints[closest]
+    _homelink = f'<a class="pn" href="/colours/{slugs[i]}"><i></i>{name}</a>'
+    _matchlink = (f'<a class="pn" href="/colours/{slugs[closest]}">'
+                  f'<i style="background:{_cl["hex"]}"></i>{H.escape(_cl["name"])}</a> by {H.escape(_cl["brand"])}')
+    _match_sentence = (f'PaintDial\u2019s closest match from another UK brand is {_matchlink} '
+                       f'({matchword(d[closest])}), with every other close match ranked below.')
+    _open = EDITORIAL_INTRO.get(slugs[i])
+    if _open:
+        _open = _open.replace('{home}', _homelink)
+    else:
+        _vv = [
+            f'{_homelink} is a {depth} {fam} from {brand}, and a popular colour to match across brands or on a tighter budget.',
+            f'If you love {brand}\u2019s {_homelink} but want it from a more widely stocked range, you have options \u2014 it\u2019s a {depth} {fam}.',
+            f'{_homelink} is one of {brand}\u2019s {depth} {fam}s that people often look to match from another brand.',
+            f'Thinking of {_homelink} but weighing up alternatives? This {depth} {fam} from {brand} has several close cousins across the UK ranges.',
+        ]
+        _open = _vv[sum(slugs[i].encode()) % len(_vv)]
+    intro = _open + ' ' + _match_sentence
 
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
