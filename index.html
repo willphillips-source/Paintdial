@@ -220,6 +220,14 @@
     font-family:var(--serif); font-weight:600; font-size:22px; letter-spacing:-0.01em;
   }
   .results .sub{font-size:13px; color:var(--muted); margin-top:2px;}
+  /* One-line note: explains the split swatch and where the match comes from.
+     Kept next to the results (not buried on /how-it-works/) because this is
+     exactly where people decide whether to believe us. */
+  .results-note{font-size:12px; line-height:1.45; color:var(--muted); margin-top:8px; max-width:70ch;}
+  .results-note a{color:var(--ink); text-decoration:none; border-bottom:1px solid var(--hairline); white-space:nowrap;}
+  .results-note a:hover{border-color:var(--ink);}
+  /* Typical price. Tabular numerals so ranges line up down a column of cards. */
+  .price-range{opacity:.78; font-variant-numeric:tabular-nums; letter-spacing:.02em;}
 
   .filter-panel{margin:18px 0 22px; display:flex; flex-direction:column; gap:10px;}
   .filter-group{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
@@ -275,7 +283,9 @@
   .chip .c-body{padding:10px 12px 12px; display:flex; flex-direction:column; gap:2px; flex:1;}
   .chip .c-name{font-family:var(--serif); font-size:15.5px; font-weight:600; line-height:1.2; color:var(--ink); text-wrap:pretty;}
   .chip .c-brand{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);}
-  .chip .c-foot{display:flex; justify-content:space-between; align-items:center; margin-top:8px;}
+  /* margin-top:auto pins the footer to the bottom of every card, so the closeness
+     word and View link line up across a row even when a name or brand wraps. */
+  .chip .c-foot{display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:8px;}
   .chip .badge{display:inline-flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums;}
   .chip .badge i{width:8px; height:8px; border-radius:50%; display:inline-block;}
   .chip .view{font-size:12px; font-weight:600; color:var(--ink); text-decoration:none; border-bottom:1px solid var(--hairline);}
@@ -489,6 +499,7 @@
     .allmatches{padding:0 16px 90px;}
     .results h2{order:1;}
     .results .sub{display:none;}
+    .results-note{order:1; margin-top:6px; font-size:11.5px;}
     #bestWrap{order:2;}
     .ladder-sec{order:3;}
     .filter-panel{order:4; margin:0 0 16px; border-top:1px solid var(--hairline); padding-top:18px;}
@@ -668,7 +679,8 @@
 
   <main class="results" id="results">
     <h2>Closest matching paints</h2>
-    <p class="sub" id="subline">Ranked by how near they are, across the library.</p>
+    <p class="sub" id="subline">Ranked by closeness of match, across the library.</p>
+    <p class="results-note">Every swatch is split: your colour on the left, the match on the right, touching so you can judge the difference yourself. Matched on each brand&rsquo;s own published values. <span id="priceNote"></span> <a href="/how-it-works/">How matching works &rarr;</a></p>
 
     <div class="filter-panel" role="group" aria-label="Filters">
       <div class="filter-group"><span class="f-label">Brand</span><div class="f-chips" id="brandChips"></div>
@@ -967,13 +979,52 @@ function setFromHex(hx){
 }
 function currentHex(){return rgbToHex(...hslToRgb(hue,sat,light));}
 
-/* ---------- filters: multi-select brands + price tiers ---------- */
-const TIER={'Farrow & Ball':3,'Little Greene':3,'Lick':3,'COAT':3,'Dulux':2,'Crown':2,"Johnstone's":1,'Valspar':1};
+/* ---------- filters: multi-select brands ---------- */
+/* NB: brand TIER lives in gen_pages.py only. It used to be duplicated here, drifted
+   (it was missing Craig & Rose) and was read by nothing. Don't reintroduce it. */
+
+/* Typical UK price for each brand's flagship interior matt emulsion, 2.5L, TINTED.
+   Tinted, not brilliant white: every colour on PaintDial is a colour, and white is
+   a materially cheaper product (Johnstone's Covaplus is £14.35 white vs £22.35
+   tinted). Quoting white prices here would understate the value brands by up to 45%.
+
+   Ranges, not points — retailers vary by ~30% on the same tin, and several brands
+   sell two matt lines at different prices (Little Greene Absolute £60 / Intelligent
+   £73). Checked September 2026 against pages actually fetched.
+
+   RULES:
+   - Re-check quarterly. A stale price costs more trust than no price at all.
+   - Never render a saving, a difference or a comparison. Show the ranges; the
+     reader does the arithmetic. "Cheaper" stays banned.
+   - If a brand isn't in this map it simply shows no price. Fail quiet. */
+const PRICE_CHECKED='Sept 2026';
+const PRICING={
+  "Johnstone's":  [22,29],   // Covaplus tinted £22.35; W&C standard colours £28.88
+  'Crown':        [25,32],   // Easyclean £24.99–26.22 (white); tinted needs verifying
+  'Dulux':        [26,32],   // Easycare by colour, £26.00–32.46
+  'Valspar':      [29,29],   // V700 2.5L, TradePoint; mixed to order, often discounted
+  'Craig & Rose': [40,45],   // 1829 Chalky, £40.50 trade / £45.00 brand site
+  'Lick':         [41,41],   // Matt; 2.5L is the only size they sell direct
+  'Farrow & Ball':[45,61],   // Estate Emulsion, RRP £54.50
+  'COAT':         [58,62],   // Flat Matt; varies a little by colour
+  'Little Greene':[60,73],   // Absolute Matt £60 → Intelligent Matt £73
+};
+/* Single source for the date, so the note can never drift from the PRICING map. */
+(function(){
+  const el=document.getElementById('priceNote');
+  if(el) el.textContent='Prices are typical for a 2.5L tin mixed to your colour, checked '
+    +PRICE_CHECKED+' — retailers vary.';
+})();
+function priceHTML(brand){
+  const p=PRICING[brand];
+  if(!p) return '';
+  const t = p[0]===p[1] ? `£${p[0]}` : `£${p[0]}–${p[1]}`;
+  return ` <span class="price-range">· ${t}</span>`;
+}
 /* Active brand offers. To show one, add a line like:
    'Dulux': '20% off until Monday',
    The badge and note appear automatically on every matching paint. */
 const OFFERS = {};
-const TIER_LABEL={1:'\u00a3',2:'\u00a3\u00a3',3:'\u00a3\u00a3\u00a3'};
 let activeBrands=new Set(); // empty set = no restriction
 let shown=12;
 const brandChips=document.getElementById('brandChips'),
@@ -1143,6 +1194,14 @@ function renderLadder(lab, pool){
   });
 }
 
+/* Split swatch: your colour on the left, the match on the right, abutting with no
+   divider. A hairline between two similar colours exaggerates the gap; touching
+   them is how you actually judge a delta — if you can't find the seam, that IS
+   the answer. Source colour on the left because we read left to right. */
+function splitBG(srcHex,matchHex){
+  return `linear-gradient(90deg, ${srcHex} 0 32%, ${matchHex} 32% 100%)`;
+}
+
 function renderMatches(){
   const hx=currentHex();
   const lab=rgbToLab(...hexToRgb(hx));
@@ -1157,8 +1216,8 @@ function renderMatches(){
   const alts=ranked.slice(0,4);
   bw.innerHTML='<div class="alt-list">'+alts.map(p=>`
     <a class="alt-row" href="${colourPageUrl(p)}">
-      <span class="alt-swatch" style="background:${p.hex}"></span>
-      <span class="alt-txt"><b>${p.name}</b><small>${p.brand}${OFFERS[p.brand]?'<span class="offer-tag" title="'+OFFERS[p.brand]+'">Offer</span>':''}</small></span>
+      <span class="alt-swatch" style="background:${splitBG(hx,p.hex)}" title="Left: your colour ${hx}. Right: ${p.name} ${p.hex}."></span>
+      <span class="alt-txt"><b>${p.name}</b><small>${p.brand}${priceHTML(p.brand)}${OFFERS[p.brand]?'<span class="offer-tag" title="'+OFFERS[p.brand]+'">Offer</span>':''}</small></span>
       <span class="alt-de">${qualityWord(p.d,p.ok,PICK_OK)}<span class="see">View \u2192</span></span>
       ${PDShortlist.heartHTML(p.name,p.brand,p.hex)}
     </a>`).join('')+'</div>';
@@ -1169,10 +1228,10 @@ function renderMatches(){
     const el=document.createElement('a');
     el.className='chip'; el.href=colourPageUrl(p);
     el.innerHTML=`
-      <div class="c-swatch" style="background:${p.hex}">${PDShortlist.heartHTML(p.name,p.brand,p.hex)}</div>
+      <div class="c-swatch" style="background:${splitBG(hx,p.hex)}" title="Left: your colour ${hx}. Right: ${p.name} ${p.hex}.">${PDShortlist.heartHTML(p.name,p.brand,p.hex)}</div>
       <div class="c-body">
         <span class="c-name">${p.name}</span>
-        <span class="c-brand">${p.brand}${OFFERS[p.brand]?'<span class="offer-tag" title="'+OFFERS[p.brand]+'">Offer</span>':''}</span>
+        <span class="c-brand">${p.brand}${priceHTML(p.brand)}${OFFERS[p.brand]?'<span class="offer-tag" title="'+OFFERS[p.brand]+'">Offer</span>':''}</span>
         <div class="c-foot">
           <span class="badge">${qualityWord(p.d,p.ok,PICK_OK)}</span>
           <span class="view">View \u2192</span>
@@ -1182,7 +1241,7 @@ function renderMatches(){
   });
 
   document.getElementById('subline').textContent=
-    `Ranked by how near they are, across ${pool.length} shades from nine UK brands.`;
+    `Ranked by closeness of match, across ${pool.length} shades from nine UK brands.`;
   const moreWrap=document.getElementById('moreWrap');
   if(rest.length < Math.min(Math.max(ranked.length-4,0),48)){
     moreWrap.innerHTML='<button class="more-btn" id="moreBtn">Show more matches</button>';
