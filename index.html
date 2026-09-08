@@ -226,8 +226,14 @@
   .results-note{font-size:12px; line-height:1.45; color:var(--muted); margin-top:8px; max-width:70ch;}
   .results-note a{color:var(--ink); text-decoration:none; border-bottom:1px solid var(--hairline); white-space:nowrap;}
   .results-note a:hover{border-color:var(--ink);}
-  /* Brand tier — deliberately quiet. Tier words only, never prices. */
-  .tier-word{opacity:.72;}
+  /* Typical price, always on its own line. Tabular numerals so ranges line up down
+     a column of cards. Appended to the brand instead, "£24.00–29.20/L" overflowed
+     both the 170px grid chip and the 2-up mobile card, where .alt-txt ellipsises and
+     silently truncated the second half of the price. */
+  .chip .c-price, .alt-price{font-size:11px; letter-spacing:.03em; color:var(--muted);
+    font-variant-numeric:tabular-nums; opacity:.85; white-space:nowrap;}
+  /* child of .alt-txt (a flex column), which already supplies the horizontal padding */
+  .alt-price{display:block; margin-top:2px;}
 
   .filter-panel{margin:18px 0 22px; display:flex; flex-direction:column; gap:10px;}
   .filter-group{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
@@ -680,7 +686,7 @@
   <main class="results" id="results">
     <h2>Closest matching paints</h2>
     <p class="sub" id="subline">Ranked by closeness of match, across the library.</p>
-    <p class="results-note">Every swatch is split: your colour on the left, the match on the right, touching so you can judge the difference yourself. Matched on each brand&rsquo;s own published values. <a href="/how-it-works/">How matching works &rarr;</a></p>
+    <p class="results-note">Every swatch is split: your colour on the left, the match on the right, touching so you can judge the difference yourself. Matched on each brand&rsquo;s own published values. <span id="priceNote"></span> <a href="/how-it-works/">How matching works &rarr;</a></p>
 
     <div class="filter-panel" role="group" aria-label="Filters">
       <div class="filter-group"><span class="f-label">Brand</span><div class="f-chips" id="brandChips"></div>
@@ -980,13 +986,68 @@ function setFromHex(hx){
 function currentHex(){return rgbToHex(...hslToRgb(hue,sat,light));}
 
 /* ---------- filters: multi-select brands ---------- */
-/* Brand tier. MUST stay in sync with TIER in gen_pages.py — that is the source of
-   truth. Tier words only on the site; never a price or a price symbol. */
-const TIER={'Farrow & Ball':3,'Little Greene':3,'Craig & Rose':3,'Lick':3,'COAT':3,'Dulux':2,'Crown':2,"Johnstone's":1,'Valspar':1};
-const TIER_WORD={3:'Premium',2:'Mid-range',1:'Value'};
-function tierHTML(brand){
-  const w=TIER_WORD[TIER[brand]];
-  return w?' <span class="tier-word">· '+w+'</span>':'';
+/* NB: brand TIER lives in gen_pages.py only. It used to be duplicated here, drifted
+   (it was missing Craig & Rose) and was read by nothing. Don't reintroduce it. */
+
+/* Typical UK price for each brand's flagship interior matt emulsion, 2.5L, TINTED.
+   Tinted, not brilliant white: every colour on PaintDial is a colour, and white is
+   a materially cheaper product (Johnstone's Covaplus is £14.35 white vs £22.35
+   tinted). Quoting white prices here would understate the value brands by up to 45%.
+
+   Ranges, not points — retailers vary by ~30% on the same tin, and several brands
+   sell two matt lines at different prices (Little Greene Absolute £60 / Intelligent
+   £73). Checked September 2026 against pages actually fetched.
+
+   DISPLAYED PER LITRE, because nobody's basket is a 2.5L tin — some people buy 5L,
+   Lick only sells 2.5L direct, and per-litre is the unit UK shelf labels already use
+   (B&Q lists Johnstone's at £8.49/L, TradePoint Valspar at £11.60/L).
+
+   BUT: price per litre is NOT constant across tin sizes. COAT is £34/L at 1L, £24.80
+   at 2.5L, £19.80 at 5L — a 42% swing on the same paint; Little Greene Absolute goes
+   £24/L to £20.80/L between 2.5L and 5L. So the basis MUST stay stated in the note.
+   A bare "£/L" with no size behind it is just a hidden 2.5L figure in disguise.
+   The tin prices below stay as the stored figures — they are what was actually
+   verified, and they are what you re-check against. Per-litre is derived, never typed.
+
+   RULES:
+   - Re-check quarterly. A stale price costs more trust than no price at all.
+   - Never render a saving, a difference or a comparison. Show the ranges; the
+     reader does the arithmetic. "Cheaper" stays banned.
+   - If a brand isn't in this map it simply shows no price. Fail quiet. */
+const PRICE_CHECKED='Sept 2026';
+const PRICE_TIN_L=2.5;   // the one size all nine brands sell — the comparison basis
+const PRICING={
+  "Johnstone's":  [22,29],   // Covaplus tinted £22.35; W&C standard colours £28.88
+  'Crown':        [25,32],   // Easyclean £24.99–26.22 (white); tinted needs verifying
+  'Dulux':        [26,32],   // Easycare by colour, £26.00–32.46
+  'Valspar':      [29,29],   // V700 2.5L, TradePoint; mixed to order, often discounted
+  'Craig & Rose': [40,45],   // 1829 Chalky, £40.50 trade / £45.00 brand site
+  'Lick':         [41,41],   // Matt; 2.5L is the only size they sell direct
+  'Farrow & Ball':[45,61],   // Estate Emulsion, RRP £54.50
+  'COAT':         [58,62],   // Flat Matt; varies a little by colour
+  'Little Greene':[60,73],   // Absolute Matt £60 → Intelligent Matt £73
+};
+/* Single source for the basis and date, so the note can never drift from the map. */
+(function(){
+  const el=document.getElementById('priceNote');
+  if(el) el.textContent='Prices are per litre, based on a '+PRICE_TIN_L
+    +'L tin mixed to your colour and checked '+PRICE_CHECKED
+    +' — retailers vary, and bigger tins work out cheaper.';
+})();
+const perL = v => v/PRICE_TIN_L;
+const money = v => '£'+v.toFixed(2);
+/* Always its own line, never appended to the brand: "£24.00–29.20/L" after a brand
+   name overflows both the 170px grid chip and the 2-up mobile card, where .alt-txt
+   ellipsises and silently ate the second half of the price. */
+function priceEl(brand,cls){
+  const p=PRICING[brand];
+  if(!p) return '';
+  const lo=perL(p[0]), hi=perL(p[1]);
+  /* Range collapses to a single figure when both ends agree, so Valspar and Lick
+     don't render a pointless "£11.60–11.60". */
+  const t = (lo===hi ? money(lo) : money(lo)+'–'+hi.toFixed(2))+'/L';
+  const tin = p[0]===p[1] ? `£${p[0]}` : `£${p[0]}–${p[1]}`;
+  return `<span class="${cls}" title="Typically ${tin} for a ${PRICE_TIN_L}L tin">${t}</span>`;
 }
 /* Active brand offers. To show one, add a line like:
    'Dulux': '20% off until Monday',
@@ -1184,7 +1245,7 @@ function renderMatches(){
   bw.innerHTML='<div class="alt-list">'+alts.map(p=>`
     <a class="alt-row" href="${colourPageUrl(p)}">
       <span class="alt-swatch" style="background:${splitBG(hx,p.hex)}" title="Left: your colour ${hx}. Right: ${p.name} ${p.hex}."></span>
-      <span class="alt-txt"><b>${p.name}</b><small>${p.brand}${tierHTML(p.brand)}${OFFERS[p.brand]?'<span class="offer-tag" title="'+OFFERS[p.brand]+'">Offer</span>':''}</small></span>
+      <span class="alt-txt"><b>${p.name}</b><small>${p.brand}${OFFERS[p.brand]?'<span class="offer-tag" title="'+OFFERS[p.brand]+'">Offer</span>':''}</small>${priceEl(p.brand,'alt-price')}</span>
       <span class="alt-de">${qualityWord(p.d,p.ok,PICK_OK)}<span class="see">View \u2192</span></span>
       ${PDShortlist.heartHTML(p.name,p.brand,p.hex)}
     </a>`).join('')+'</div>';
@@ -1198,7 +1259,8 @@ function renderMatches(){
       <div class="c-swatch" style="background:${splitBG(hx,p.hex)}" title="Left: your colour ${hx}. Right: ${p.name} ${p.hex}.">${PDShortlist.heartHTML(p.name,p.brand,p.hex)}</div>
       <div class="c-body">
         <span class="c-name">${p.name}</span>
-        <span class="c-brand">${p.brand}${tierHTML(p.brand)}${OFFERS[p.brand]?'<span class="offer-tag" title="'+OFFERS[p.brand]+'">Offer</span>':''}</span>
+        <span class="c-brand">${p.brand}${OFFERS[p.brand]?'<span class="offer-tag" title="'+OFFERS[p.brand]+'">Offer</span>':''}</span>
+        ${priceEl(p.brand,'c-price')}
         <div class="c-foot">
           <span class="badge">${qualityWord(p.d,p.ok,PICK_OK)}</span>
           <span class="view">View \u2192</span>
