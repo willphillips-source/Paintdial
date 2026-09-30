@@ -21,8 +21,8 @@ _NUMW = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six', 7: 'sev
          8: 'eight', 9: 'nine', 10: 'ten', 11: 'eleven', 12: 'twelve'}
 def numword(n):
     return _NUMW.get(n, f'{n}')
-SHORTLIST_CSS = '.pd-heart{position:absolute;top:8px;right:8px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C8578;transition:transform .12s,color .12s;z-index:2;padding:0}\n.pd-heart:hover{transform:scale(1.12);color:#5E7E8B}\n.pd-heart svg{fill:none;stroke:currentColor;stroke-width:1.7}\n.pd-heart.on{color:#5E7E8B}.pd-heart.on svg{fill:currentColor;stroke:currentColor}\n#pd-tray{position:fixed;right:14px;bottom:14px;z-index:900;background:#fff;border:1px solid #E3DFD5;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:11px 12px;max-width:min(92vw,560px)}\n.pd-tray-head{display:flex;align-items:center;gap:8px;font-size:13px;color:#211F1B}\n.pd-tray-head b{font-weight:600}.pd-tray-n{background:#F1EEE7;border-radius:20px;padding:1px 8px;font-size:12px;color:#7E786C}\n.pd-tray-clear{margin-left:auto;border:none;background:none;color:#9A6B6B;font-size:12px;cursor:pointer;padding:2px 4px}\n.pd-tray-clear:hover{text-decoration:underline}\n.pd-tray-note{font-size:11px;color:#9A9488;margin:3px 0 9px}\n.pd-tray-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}\n.pd-tray-chip{position:relative;flex:0 0 auto;width:64px;text-decoration:none;color:#211F1B}\n.pd-tray-sw{display:block;height:48px;border-radius:8px;border:1px solid rgba(0,0,0,.08)}\n.pd-tray-name{display:block;font-size:10px;line-height:1.2;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#7E786C}\n.pd-tray-x{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:#211F1B;color:#fff;font-size:12px;line-height:18px;text-align:center}\n.pd-tray-mail{margin-top:10px;border-top:1px solid #EEEAE1;padding-top:9px}\n.pd-mail-toggle{border:none;background:none;color:#5E7E8B;font-size:12.5px;font-weight:600;cursor:pointer;padding:0}\n.pd-mail-toggle:hover{text-decoration:underline}\n.pd-mail-form{display:flex;gap:6px;margin-top:8px}\n.pd-mail-input{flex:1;min-width:0;border:1px solid #D9D4C8;border-radius:8px;padding:7px 9px;font-size:13px;font-family:inherit}\n.pd-mail-input:focus{outline:none;border-color:#5E7E8B}\n.pd-mail-send{border:none;background:#5E7E8B;color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer}\n.pd-mail-send:hover{filter:brightness(1.06)}\n\n.pd-tray-min{border:none;background:none;color:#7E786C;font-size:17px;line-height:1;cursor:pointer;padding:0 4px;margin-left:2px}\n.pd-tray-min:hover{color:#211F1B}\n#pd-tray.min{padding:0;cursor:pointer}\n#pd-tray.min .pd-tray-head{margin-bottom:0;padding:10px 13px}\n#pd-tray.min .pd-tray-note,#pd-tray.min .pd-tray-row,#pd-tray.min .pd-tray-mail,#pd-tray.min .pd-tray-clear{display:none}\n#pd-sl-flash{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(10px);background:#211F1B;color:#fff;padding:9px 15px;border-radius:9px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:950}\n#pd-sl-flash.show{opacity:1;transform:translateX(-50%) translateY(0)}\n.chip,.c-swatch,.alt-row,.hero-swatch{position:relative}\n@media(max-width:560px){#pd-tray{right:8px;bottom:8px;left:8px;max-width:none}.pd-heart{width:27px;height:27px}}\n'
-SHORTLIST_JS = '/* ---------- PaintDial shortlist: save paints on this device, compare & email ----------\n   No login, no basket. Held in localStorage; shared by the tool and every colour page. */\n(function(){\n  const KEY=\'pd_shortlist_v1\', MAX=12, SITE=\'https://www.paintdial.co.uk\';\n  let minimized=false;\n  const read=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[];}catch(e){return [];}};\n  const write=a=>{try{localStorage.setItem(KEY,JSON.stringify(a.slice(0,MAX)));}catch(e){}};\n  const has=id=>read().some(x=>x.id===id);\n  const idOf=(name,brand)=>(brand+\'|\'+name).toLowerCase();\n\n  function toggle(item){\n    let a=read(); const i=a.findIndex(x=>x.id===item.id);\n    if(i>=0) a.splice(i,1); else { if(a.length>=MAX){flash(\'You can keep up to \'+MAX+\' colours\');return false;} a.unshift(item); }\n    write(a); paint(); return true;\n  }\n  function flash(msg){\n    let f=document.getElementById(\'pd-sl-flash\'); if(!f){f=document.createElement(\'div\');f.id=\'pd-sl-flash\';document.body.appendChild(f);}\n    f.textContent=msg; f.classList.add(\'show\'); clearTimeout(f._t); f._t=setTimeout(()=>f.classList.remove(\'show\'),1900);\n  }\n  const BOOKMARK=\'<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>\';\n\n  window.PDShortlist={\n    heartHTML:(name,brand,hex)=>`<button class="pd-heart" data-name="${name.replace(/"/g,\'&quot;\')}" data-brand="${brand.replace(/"/g,\'&quot;\')}" data-hex="${hex}" aria-label="Save ${name.replace(/"/g,\'&quot;\')} to your shortlist" title="Save to shortlist">${BOOKMARK}</button>`,\n    isSaved:has, idOf, toggle, read, refresh:()=>paint()\n  };\n\n  function bindHearts(root){\n    (root||document).querySelectorAll(\'.pd-heart\').forEach(btn=>{\n      if(btn._b) return; btn._b=1;\n      const id=idOf(btn.dataset.name, btn.dataset.brand);\n      if(has(id)) btn.classList.add(\'on\');\n      btn.addEventListener(\'click\',e=>{\n        e.preventDefault(); e.stopPropagation();\n        const ok=toggle({id, name:btn.dataset.name, brand:btn.dataset.brand, hex:btn.dataset.hex});\n        if(ok!==false) btn.classList.toggle(\'on\', has(id));\n      });\n    });\n  }\n  window.PDShortlist.bind=bindHearts;\n\n  function slug(s){return s.normalize(\'NFKD\').replace(/[\\u0300-\\u036f]/g,\'\').toLowerCase().replace(/&/g,\'and\').replace(/\'/g,\'\').replace(/[^a-z0-9]+/g,\'-\').replace(/^-|-$/g,\'\');}\n  function colourURLFor(it){return `/colours/${slug(it.brand)}-${slug(it.name)}`;}\n\n  function emailBody(items){\n    const lines = items.map(it=>`\\u2022 ${it.name} \\u2014 ${it.brand} \\u2014 ${it.hex}\\n  ${SITE}${colourURLFor(it)}`).join(\'\\n\\n\');\n    return `Here are the paint colours I shortlisted on PaintDial:\\n\\n${lines}\\n\\nCompare them anytime at ${SITE}`;\n  }\n  function sendEmail(addr){\n    const items=read(); if(!items.length) return;\n    const subj=`My PaintDial shortlist (${items.length} colour${items.length>1?\'s\':\'\'})`;\n    const to=addr?encodeURIComponent(addr):\'\';\n    window.location.href=`mailto:${to}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(emailBody(items))}`;\n  }\n\n  function paint(){\n    const items=read();\n    let tray=document.getElementById(\'pd-tray\');\n    if(!items.length){ if(tray) tray.remove(); document.querySelectorAll(\'.pd-heart.on\').forEach(b=>{ if(!has(idOf(b.dataset.name,b.dataset.brand))) b.classList.remove(\'on\');}); return; }\n    if(!tray){ tray=document.createElement(\'div\'); tray.id=\'pd-tray\'; document.body.appendChild(tray); }\n    tray.innerHTML=\n      `<div class="pd-tray-head"><b>Your shortlist</b> <span class="pd-tray-n">${items.length}</span>`+\n      `<button class="pd-tray-min" aria-label="Minimise shortlist" title="Minimise">\\u2013</button>`+\n      `<button class="pd-tray-clear" aria-label="Clear shortlist">Clear</button></div>`+\n      `<div class="pd-tray-note">Saved on this device \\u2014 come back anytime. A shortlist to compare, not a basket.</div>`+\n      `<div class="pd-tray-row">`+items.map(it=>\n        `<a class="pd-tray-chip" href="${colourURLFor(it)}" title="${it.name} \\u2014 ${it.brand}">`+\n        `<span class="pd-tray-sw" style="background:${it.hex}"></span>`+\n        `<span class="pd-tray-x" data-id="${it.id}" role="button" aria-label="Remove ${it.name}">\\u00d7</span>`+\n        `<span class="pd-tray-name">${it.name}</span></a>`).join(\'\')+`</div>`+\n      `<div class="pd-tray-mail">`+\n        `<button class="pd-mail-toggle" type="button">\\u2709 Email these to me</button>`+\n        `<div class="pd-mail-form" hidden><input type="email" class="pd-mail-input" placeholder="you@email.com" aria-label="Your email address"><button class="pd-mail-send" type="button">Send</button></div>`+\n      `</div>`;\n    tray.querySelector(\'.pd-tray-clear\').onclick=()=>{write([]);paint();document.querySelectorAll(\'.pd-heart.on\').forEach(b=>b.classList.remove(\'on\'));};\n    tray.querySelectorAll(\'.pd-tray-x\').forEach(x=>x.addEventListener(\'click\',e=>{\n      e.preventDefault();e.stopPropagation(); const a=read().filter(y=>y.id!==x.dataset.id); write(a); paint();\n      document.querySelectorAll(\'.pd-heart\').forEach(b=>{ if(idOf(b.dataset.name,b.dataset.brand)===x.dataset.id) b.classList.remove(\'on\');});\n    }));\n    const mt=tray.querySelector(\'.pd-mail-toggle\'), mf=tray.querySelector(\'.pd-mail-form\'),\n          mi=tray.querySelector(\'.pd-mail-input\'), ms=tray.querySelector(\'.pd-mail-send\');\n    mt.onclick=()=>{mf.hidden=!mf.hidden; if(!mf.hidden) mi.focus();};\n    ms.onclick=()=>sendEmail(mi.value.trim());\n    mi.addEventListener(\'keydown\',e=>{if(e.key===\'Enter\'){e.preventDefault();sendEmail(mi.value.trim());}});\n    // minimise / expand\n    const head=tray.querySelector(\'.pd-tray-head\'), minBtn=tray.querySelector(\'.pd-tray-min\');\n    const applyMin=()=>{tray.classList.toggle(\'min\',minimized); minBtn.textContent=minimized?\'\\u002b\':\'\\u2013\'; minBtn.title=minimized?\'Expand\':\'Minimise\';};\n    minBtn.addEventListener(\'click\',e=>{e.stopPropagation(); minimized=!minimized; applyMin();});\n    head.addEventListener(\'click\',e=>{ if(minimized && !e.target.closest(\'.pd-tray-clear\')){ minimized=false; applyMin(); }});\n    applyMin();\n  }\n\n  document.addEventListener(\'DOMContentLoaded\',()=>{bindHearts(document);paint();});\n  window.addEventListener(\'pd:rendered\',e=>bindHearts(e.detail||document));\n})();\n'
+SHORTLIST_CSS = '.pd-heart{position:absolute;top:8px;right:8px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C8578;transition:transform .12s,color .12s;z-index:2;padding:0}\n.pd-heart:hover{transform:scale(1.12);color:#5E7E8B}\n.pd-heart svg{fill:none;stroke:currentColor;stroke-width:1.7}\n.pd-heart.on{color:#5E7E8B}.pd-heart.on svg{fill:currentColor;stroke:currentColor}\n#pd-tray{position:fixed;right:14px;bottom:14px;z-index:900;background:#fff;border:1px solid #E3DFD5;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:11px 12px;max-width:min(92vw,560px)}\n.pd-tray-head{display:flex;align-items:center;gap:8px;font-size:13px;color:#211F1B}\n.pd-tray-head b{font-weight:600}.pd-tray-n{background:#F1EEE7;border-radius:20px;padding:1px 8px;font-size:12px;color:#665F54}\n.pd-tray-clear{margin-left:auto;border:none;background:none;color:#9A6B6B;font-size:12px;cursor:pointer;padding:2px 4px}\n.pd-tray-clear:hover{text-decoration:underline}\n.pd-tray-note{font-size:11px;color:#665F54;margin:3px 0 9px}\n.pd-tray-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}\n.pd-tray-chip{position:relative;flex:0 0 auto;width:64px;text-decoration:none;color:#211F1B}\n.pd-tray-sw{display:block;height:48px;border-radius:8px;border:1px solid rgba(0,0,0,.08)}\n.pd-tray-name{display:block;font-size:10px;line-height:1.2;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#665F54}\n.pd-tray-link{display:block;text-decoration:none;color:inherit}\n.pd-tray-x{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border:none;padding:0;border-radius:50%;background:#211F1B;color:#fff;font-size:12px;line-height:18px;text-align:center;cursor:pointer;font-family:inherit}\n.pd-tray-mail{margin-top:10px;border-top:1px solid #EEEAE1;padding-top:9px}\n.pd-mail-toggle{border:none;background:none;color:#5E7E8B;font-size:12.5px;font-weight:600;cursor:pointer;padding:0}\n.pd-mail-toggle:hover{text-decoration:underline}\n.pd-mail-form{display:flex;gap:6px;margin-top:8px}\n.pd-mail-input{flex:1;min-width:0;border:1px solid #D9D4C8;border-radius:8px;padding:7px 9px;font-size:13px;font-family:inherit}\n.pd-mail-input:focus{outline:none;border-color:#5E7E8B}\n.pd-mail-send{border:none;background:#5E7E8B;color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer}\n.pd-mail-send:hover{filter:brightness(1.06)}\n\n.pd-tray-min{border:none;background:none;color:#665F54;font-size:17px;line-height:1;cursor:pointer;padding:0 4px;margin-left:2px}\n.pd-tray-min:hover{color:#211F1B}\n#pd-tray.min{padding:0;cursor:pointer}\n#pd-tray.min .pd-tray-head{margin-bottom:0;padding:10px 13px}\n#pd-tray.min .pd-tray-note,#pd-tray.min .pd-tray-row,#pd-tray.min .pd-tray-mail,#pd-tray.min .pd-tray-clear{display:none}\n#pd-sl-flash{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(10px);background:#211F1B;color:#fff;padding:9px 15px;border-radius:9px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:950}\n#pd-sl-flash.show{opacity:1;transform:translateX(-50%) translateY(0)}\n.chip,.c-swatch,.alt-row,.hero-swatch{position:relative}\n@media(max-width:560px){#pd-tray{right:8px;bottom:8px;left:8px;max-width:none}.pd-heart{width:27px;height:27px}}\n'
+SHORTLIST_JS = '/* ---------- PaintDial shortlist: save paints on this device, compare & email ----------\n   No login, no basket. Held in localStorage; shared by the tool and every colour page. */\n(function(){\n  const KEY=\'pd_shortlist_v1\', MAX=12, SITE=\'https://www.paintdial.co.uk\';\n  let minimized=false;\n  const read=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[];}catch(e){return [];}};\n  const write=a=>{try{localStorage.setItem(KEY,JSON.stringify(a.slice(0,MAX)));}catch(e){}};\n  const has=id=>read().some(x=>x.id===id);\n  const idOf=(name,brand)=>(brand+\'|\'+name).toLowerCase();\n\n  function toggle(item){\n    let a=read(); const i=a.findIndex(x=>x.id===item.id);\n    if(i>=0) a.splice(i,1); else { if(a.length>=MAX){flash(\'You can keep up to \'+MAX+\' colours\');return false;} a.unshift(item); }\n    write(a); paint(); return true;\n  }\n  function flash(msg){\n    let f=document.getElementById(\'pd-sl-flash\'); if(!f){f=document.createElement(\'div\');f.id=\'pd-sl-flash\';document.body.appendChild(f);}\n    f.textContent=msg; f.classList.add(\'show\'); clearTimeout(f._t); f._t=setTimeout(()=>f.classList.remove(\'show\'),1900);\n  }\n  const BOOKMARK=\'<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>\';\n\n  window.PDShortlist={\n    heartHTML:(name,brand,hex)=>`<button class="pd-heart" data-name="${name.replace(/"/g,\'&quot;\')}" data-brand="${brand.replace(/"/g,\'&quot;\')}" data-hex="${hex}" aria-label="Save ${name.replace(/"/g,\'&quot;\')} to your shortlist" title="Save to shortlist">${BOOKMARK}</button>`,\n    isSaved:has, idOf, toggle, read, refresh:()=>paint()\n  };\n\n  function bindHearts(root){\n    (root||document).querySelectorAll(\'.pd-heart\').forEach(btn=>{\n      if(btn._b) return; btn._b=1;\n      const id=idOf(btn.dataset.name, btn.dataset.brand);\n      if(has(id)) btn.classList.add(\'on\');\n      btn.addEventListener(\'click\',e=>{\n        e.preventDefault(); e.stopPropagation();\n        const ok=toggle({id, name:btn.dataset.name, brand:btn.dataset.brand, hex:btn.dataset.hex});\n        if(ok!==false) btn.classList.toggle(\'on\', has(id));\n      });\n    });\n  }\n  window.PDShortlist.bind=bindHearts;\n\n  function slug(s){return s.normalize(\'NFKD\').replace(/[\\u0300-\\u036f]/g,\'\').toLowerCase().replace(/&/g,\'and\').replace(/\'/g,\'\').replace(/[^a-z0-9]+/g,\'-\').replace(/^-|-$/g,\'\');}\n  function colourURLFor(it){return `/colours/${slug(it.brand)}-${slug(it.name)}`;}\n\n  function emailBody(items){\n    const lines = items.map(it=>`\\u2022 ${it.name} \\u2014 ${it.brand} \\u2014 ${it.hex}\\n  ${SITE}${colourURLFor(it)}`).join(\'\\n\\n\');\n    return `Here are the paint colours I shortlisted on PaintDial:\\n\\n${lines}\\n\\nCompare them anytime at ${SITE}`;\n  }\n  function sendEmail(addr){\n    const items=read(); if(!items.length) return;\n    const subj=`My PaintDial shortlist (${items.length} colour${items.length>1?\'s\':\'\'})`;\n    const to=addr?encodeURIComponent(addr):\'\';\n    window.location.href=`mailto:${to}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(emailBody(items))}`;\n  }\n\n  function paint(){\n    const items=read();\n    let tray=document.getElementById(\'pd-tray\');\n    if(!items.length){ if(tray) tray.remove(); document.querySelectorAll(\'.pd-heart.on\').forEach(b=>{ if(!has(idOf(b.dataset.name,b.dataset.brand))) b.classList.remove(\'on\');}); return; }\n    if(!tray){ tray=document.createElement(\'div\'); tray.id=\'pd-tray\'; document.body.appendChild(tray); }\n    tray.innerHTML=\n      `<div class="pd-tray-head"><b>Your shortlist</b> <span class="pd-tray-n">${items.length}</span>`+\n      `<button class="pd-tray-min" aria-label="Minimise shortlist" title="Minimise">\\u2013</button>`+\n      `<button class="pd-tray-clear" aria-label="Clear shortlist">Clear</button></div>`+\n      `<div class="pd-tray-note">Saved on this device \\u2014 come back anytime. A shortlist to compare, not a basket.</div>`+\n      `<div class="pd-tray-row">`+items.map(it=>\n        `<div class="pd-tray-chip">`+\n        `<a class="pd-tray-link" href="${colourURLFor(it)}" title="${it.name} \\u2014 ${it.brand}">`+\n        `<span class="pd-tray-sw" style="background:${it.hex}"></span>`+\n        `<span class="pd-tray-name">${it.name}</span></a>`+\n        `<button class="pd-tray-x" type="button" data-id="${it.id}" aria-label="Remove ${it.name} from shortlist">\\u00d7</button></div>`).join(\'\')+`</div>`+\n      `<div class="pd-tray-mail">`+\n        `<button class="pd-mail-toggle" type="button">\\u2709 Email these to me</button>`+\n        `<div class="pd-mail-form" hidden><input type="email" class="pd-mail-input" placeholder="you@email.com" aria-label="Your email address"><button class="pd-mail-send" type="button">Send</button></div>`+\n      `</div>`;\n    tray.querySelector(\'.pd-tray-clear\').onclick=()=>{write([]);paint();document.querySelectorAll(\'.pd-heart.on\').forEach(b=>b.classList.remove(\'on\'));};\n    tray.querySelectorAll(\'.pd-tray-x\').forEach(x=>x.addEventListener(\'click\',e=>{\n      e.preventDefault();e.stopPropagation(); const a=read().filter(y=>y.id!==x.dataset.id); write(a); paint();\n      document.querySelectorAll(\'.pd-heart\').forEach(b=>{ if(idOf(b.dataset.name,b.dataset.brand)===x.dataset.id) b.classList.remove(\'on\');});\n    }));\n    const mt=tray.querySelector(\'.pd-mail-toggle\'), mf=tray.querySelector(\'.pd-mail-form\'),\n          mi=tray.querySelector(\'.pd-mail-input\'), ms=tray.querySelector(\'.pd-mail-send\');\n    mt.onclick=()=>{mf.hidden=!mf.hidden; if(!mf.hidden) mi.focus();};\n    ms.onclick=()=>sendEmail(mi.value.trim());\n    mi.addEventListener(\'keydown\',e=>{if(e.key===\'Enter\'){e.preventDefault();sendEmail(mi.value.trim());}});\n    // minimise / expand\n    const head=tray.querySelector(\'.pd-tray-head\'), minBtn=tray.querySelector(\'.pd-tray-min\');\n    const applyMin=()=>{tray.classList.toggle(\'min\',minimized); minBtn.textContent=minimized?\'\\u002b\':\'\\u2013\'; minBtn.title=minimized?\'Expand\':\'Minimise\';};\n    minBtn.addEventListener(\'click\',e=>{e.stopPropagation(); minimized=!minimized; applyMin();});\n    head.addEventListener(\'click\',e=>{ if(minimized && !e.target.closest(\'.pd-tray-clear\')){ minimized=false; applyMin(); }});\n    applyMin();\n  }\n\n  document.addEventListener(\'DOMContentLoaded\',()=>{bindHearts(document);paint();});\n  window.addEventListener(\'pd:rendered\',e=>bindHearts(e.detail||document));\n})();\n'
 
 import json as _json
 
@@ -195,7 +195,7 @@ FOOT = ("<span class=\"foot-links\">"
 
 # ---------- colour page CSS (current, with all layout fixes) ----------
 CSS = """
-:root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#7E786C;--hairline:#E3DFD5;--pc:#5E7E8B;
+:root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#665F54;--hairline:#E3DFD5;--pc:#5E7E8B;
 --serif:"Fraunces",Georgia,serif;--sans:"Archivo",-apple-system,sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.55}
@@ -224,7 +224,7 @@ h2::after{content:'';display:block;width:34px;height:4px;border-radius:2px;backg
 .sub{font-size:13px;color:var(--muted);margin-bottom:14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
 .chip{border:1px solid var(--hairline);border-radius:10px;overflow:hidden;background:var(--card);box-shadow:0 1px 2px rgba(33,31,27,.06);text-decoration:none;color:var(--ink);transition:transform .12s,box-shadow .12s;display:flex;flex-direction:column}
-.chip:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(33,31,27,.1)}
+.chip:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(33,31,27,.1)}.chip{cursor:pointer}.chip:focus-within{outline:2px solid var(--pc);outline-offset:2px}.chip .c-name{text-decoration:none;color:inherit;outline:none}.chip .c-name::after{content:"";position:absolute;inset:0}
 .c-swatch{height:74px;flex:none}
 .c-body{padding:9px 11px 11px}
 .c-name{display:block;font-family:var(--serif);font-size:14.5px;font-weight:600;line-height:1.2;text-wrap:pretty}
@@ -327,10 +327,10 @@ def chip(j, home_lab=None, show_tier=False, home_i=None):
                         word = 'same family'
         tierlab = f'{TIER_WORD[TIER[q["brand"]]]} · ' if show_tier else ''
         de = f'<span class="c-de">{tierlab}{word}</span>'
-    return (f'<a class="chip" href="/colours/{slugs[j]}">'
+    return (f'<div class="chip">'
             f'<div class="c-swatch" style="background:{q["hex"]}">{heart(q["name"], q["brand"], q["hex"])}</div>'
-            f'<div class="c-body"><span class="c-name">{H.escape(q["name"])}</span>'
-            f'<span class="c-brand">{H.escape(q["brand"])}</span>{de}</div></a>')
+            f'<div class="c-body"><a class="c-name" href="/colours/{slugs[j]}">{H.escape(q["name"])}</a>'
+            f'<span class="c-brand">{H.escape(q["brand"])}</span>{de}</div></div>')
 
 def build_colour_page(i):
     p = paints[i]; lab = LAB[i]
@@ -547,7 +547,7 @@ def colour_facets(hx):
     return tone, tags
 
 LIB_CSS = """
-:root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#7E786C;--hairline:#E3DFD5;--pc:#5E7E8B;
+:root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#665F54;--hairline:#E3DFD5;--pc:#5E7E8B;
 --serif:"Fraunces",Georgia,serif;--sans:"Archivo",-apple-system,sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.55}
@@ -780,7 +780,7 @@ def build_colours_index():
 
 # ---------- SEO "alternatives" decision-pages (premium colours only) ----------
 ALT_CSS = """
-:root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#7E786C;--hairline:#E3DFD5;--pc:#5E7E8B;--serif:"Fraunces",Georgia,serif;--sans:"Archivo",sans-serif}
+:root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#665F54;--hairline:#E3DFD5;--pc:#5E7E8B;--serif:"Fraunces",Georgia,serif;--sans:"Archivo",sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6}
 .wrap{max-width:1040px;margin:0 auto;padding:0 32px 72px}
@@ -919,7 +919,7 @@ def matchword(x):
 
 # ---------- ranked dupes pages (league table per premium brand) ----------
 DUPES_CSS = """
-:root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#7E786C;--hairline:#E3DFD5;--pc:#5E7E8B;
+:root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#665F54;--hairline:#E3DFD5;--pc:#5E7E8B;
 --serif:"Fraunces",Georgia,serif;--sans:"Archivo",-apple-system,sans-serif}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.55}
@@ -1035,7 +1035,8 @@ def build_dupes_page(brand):
 
 # ---------- static trust pages: how it works + about ----------
 PAGES_CSS = """
-:root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#7E786C;--hairline:#E3DFD5;--pc:#5E7E8B;
+.faq{margin:6px 0 24px}.faq details{border-top:1px solid var(--hairline);padding:12px 0}.faq details:last-child{border-bottom:1px solid var(--hairline)}.faq summary{font-family:var(--serif);font-size:17px;font-weight:600;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:16px;align-items:baseline}.faq summary::-webkit-details-marker{display:none}.faq summary::after{content:"+";color:var(--muted);font-family:var(--sans);font-weight:400;flex:none}.faq details[open] summary::after{content:"\\2013"}.faq p{margin:8px 0 2px;max-width:66ch}
+:root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#665F54;--hairline:#E3DFD5;--pc:#5E7E8B;
 --serif:"Fraunces",Georgia,serif;--sans:"Archivo",-apple-system,sans-serif}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.65}
@@ -1121,12 +1122,12 @@ text-decoration:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.09);transition:trans
 @media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
 """
 
-def _page_shell(title, desc, path, body):
+def _page_shell(title, desc, path, body, head=""):
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title} | PaintDial</title>
 <meta name="description" content="{desc}">
-<link rel="canonical" href="{DOMAIN}{path}">
+<link rel="canonical" href="{DOMAIN}{path}">{head}
 {FONTS}<style>{PAGES_CSS}</style></head><body><div class="wrap">
 <header><a class="logo" href="/"><span class="logo-dial"></span>PaintDial</a>
 <nav><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>
@@ -1135,6 +1136,26 @@ def _page_shell(title, desc, path, body):
 </div></body></html>"""
 
 def build_method_page():
+    faqs = [
+        ("How accurate are the matches?",
+         "The matching itself is exact: it compares each brand\u2019s published colour value with every other, using the same maths for every paint. What it cannot know is how a colour will look on your wall. Anything labelled near-identical or very close is a safe shortlist; the tester pot is what tells you which one to buy."),
+        ("Why does the paint look different from the swatch on my screen?",
+         "Screens emit light and paint reflects it, so no screen shows a paint exactly. Sheen, daylight, lamplight and the surface underneath all shift a colour too. That is why every colour page points you to a tester before anything else."),
+        ("If two paints are near-identical, can I just swap one for the other?",
+         "For colour, yes, that is the point of the label. Finish, coverage and how the paint behaves on a wall are a separate question, and a matt from one brand will not look like an eggshell from another. Match the colour here, then choose the finish on the brand\u2019s site."),
+        ("Can a brand pay to rank higher?",
+         "No. Rankings are computed from colour difference alone. Some buy links earn PaintDial a small commission, but a link earning money has no effect on where a paint appears, and no brand has any say over the results."),
+        ("Are the prices accurate?",
+         "They are typical per-litre ranges for a 2.5 litre tin mixed to the colour, checked against retailers in September 2026. They are there so you know the rough scale of the difference between brands, not as a quote. Retailers vary and bigger tins cost less per litre."),
+        ("Why isn\u2019t the brand I use in the library?",
+         f"PaintDial covers {BRANDS_WORD} UK brands, chosen because they publish digital colour values and have ranges people ask about. Brands are added when there is a reliable published source for their colours, not to make the number bigger."),
+        ("Is PaintDial free?",
+         "Yes. No account, no app and no cost. The shortlist is saved in your browser, on your device."),
+    ]
+    faq_html = "".join(f'<details><summary>{q}</summary><p>{a}</p></details>' for q, a in faqs)
+    faq_ld = {"@context": "https://schema.org", "@type": "FAQPage",
+              "mainEntity": [{"@type": "Question", "name": q,
+                              "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faqs]}
     body = f"""<span class="eyebrow">Methodology</span>
 <h1>How PaintDial matches colours</h1>
 <p>PaintDial compares {N:,} paints from {BRANDS_WORD} UK brands and finds the closest matches to any colour \u2014 across every brand at once, not just one manufacturer\u2019s range. Here\u2019s exactly how it works, and what its limits are.</p>
@@ -1162,6 +1183,12 @@ def build_method_page():
 
 <h2>Why you should still order testers</h2>
 <p>Screen colours are indicative. Real paint changes with sheen, light, and the surface underneath it \u2014 and every screen shows colour slightly differently. Before committing to any colour (or any match), order tester pots of both and look at them in the room they\u2019ll live in, in daylight and lamplight.</p>
+
+<h2>Common questions</h2>
+<div class="faq">
+{faq_html}
+</div>
+{_ldjson(faq_ld)}
 
 <p class="muted">Found something that looks wrong? <a href="/contact/">Tell us</a> \u2014 accuracy is the whole point of PaintDial, and corrections are genuinely welcome.</p>"""
     return _page_shell("How PaintDial matches colours",
@@ -1485,6 +1512,9 @@ def build_about_page():
 <p>So PaintDial does one thing: it puts {N:,} paints from {BRANDS_WORD} UK brands \u2014 Farrow &amp; Ball, Little Greene, Craig &amp; Rose, Dulux, Johnstone\u2019s, Valspar, Lick, Crown and COAT \u2014 into one independent tool. Pick any colour, match one from a photo, or search a paint you already know, and see the closest equivalents from every brand side by side, honestly labelled.</p>
 <p>It\u2019s an independent, one-person project. PaintDial isn\u2019t owned by, sponsored by, or affiliated with any paint brand, and no brand can pay to change how well its colours match. The matching is <a href="/how-it-works/">pure colour science</a>, applied the same way to every paint in the library.</p>
 
+<h2>Who makes it</h2>
+<p>PaintDial is built and run by Will, a visual effects director based in Dorset. Getting colour to agree across cameras, screens and lights is his day job, and the site grew out of trying to do the same thing for a wall at home. He answers the <a href="/contact/">contact form</a> himself.</p>
+
 <h2>How PaintDial is funded</h2>
 <p>Some \u201cwhere to buy\u201d links are affiliate links, run through partner networks including impact.com and Awin. If you buy through one, PaintDial may earn a small commission at no extra cost to you. That\u2019s the only way the site makes money \u2014 there are no ads, no sponsored placements, and no paid rankings. Matches are never influenced by whether a link earns commission.</p>
 
@@ -1495,6 +1525,59 @@ def build_about_page():
     return _page_shell("About PaintDial",
         f"PaintDial is an independent tool comparing {N:,} paints across {BRANDS_WORD} UK brands. Who's behind it, how it's funded, and why no brand can influence the matches.",
         "/about/", body)
+
+
+def build_contact_page():
+    body = f"""<style>
+.cf{{max-width:560px;margin-top:18px}}
+.cf label{{display:block;font-family:var(--sans);font-size:13px;font-weight:600;margin:16px 0 5px}}
+.cf input,.cf select,.cf textarea{{width:100%;box-sizing:border-box;font:inherit;font-size:15px;padding:10px 12px;border:1px solid #D9D4C8;border-radius:9px;background:#fff;color:var(--ink)}}
+.cf textarea{{min-height:150px;resize:vertical}}
+.cf input:focus,.cf select:focus,.cf textarea:focus{{outline:none;border-color:var(--pc);box-shadow:0 0 0 3px rgba(94,126,139,.18)}}
+.cf button{{margin-top:18px;border:none;background:var(--pc);color:#fff;font:inherit;font-size:15px;font-weight:600;padding:12px 26px;border-radius:10px;cursor:pointer}}
+.cf button:hover{{filter:brightness(1.06)}}
+.cf .hp{{position:absolute;left:-9999px}}
+.cf-note{{font-size:13px;color:var(--muted);margin-top:10px}}
+</style>
+<span class="eyebrow">Contact</span>
+<h1>Get in touch</h1>
+<p>PaintDial is run by one person, so messages come to me directly and I read all of them. Corrections are the most useful thing you can send: if a colour looks wrong, a match seems off, or a brand link goes somewhere odd, tell me and I will check the source data.</p>
+<p>Journalists and researchers using the <a href="/paint-match-index/">Match Index</a> or <a href="/paint-choice-index/">Choice Index</a> are welcome to ask about method or request the underlying figures. Brands and retailers can ask about data, links or listings here too; nothing you offer changes how your colours rank.</p>
+
+<form class="cf" name="contact" method="POST" action="/contact/thanks/" data-netlify="true" netlify-honeypot="website">
+  <input type="hidden" name="form-name" value="contact">
+  <p class="hp"><label>Leave this empty <input name="website" tabindex="-1" autocomplete="off"></label></p>
+  <label for="cf-name">Your name</label>
+  <input id="cf-name" name="name" type="text" autocomplete="name" required>
+  <label for="cf-email">Email, so I can reply</label>
+  <input id="cf-email" name="email" type="email" autocomplete="email" required>
+  <label for="cf-topic">What is it about?</label>
+  <select id="cf-topic" name="topic">
+    <option>A correction or something that looks wrong</option>
+    <option>A question about how matching works</option>
+    <option>Press or research</option>
+    <option>Brand, retailer or data enquiry</option>
+    <option>Something else</option>
+  </select>
+  <label for="cf-msg">Message</label>
+  <textarea id="cf-msg" name="message" required placeholder="If it is about a specific colour, include the brand and colour name and I can find it straight away."></textarea>
+  <button type="submit">Send message</button>
+  <p class="cf-note">Replies usually take a few days. Your details are used only to answer you; PaintDial keeps no mailing list.</p>
+</form>
+
+<p class="muted" style="margin-top:34px">Not a message, just a question about the site? The <a href="/how-it-works/">how it works</a> page covers the data, the matching and the labels, and <a href="/about/">about</a> covers who runs it and how it is funded.</p>"""
+    return _page_shell("Contact PaintDial",
+        "Send a correction, ask about the matching or the Match Index, or get in touch as a brand, retailer or journalist. PaintDial is one person and every message is read.",
+        "/contact/", body)
+
+
+def build_contact_thanks_page():
+    body = """<span class="eyebrow">Contact</span>
+<h1>Thanks, got it</h1>
+<p>Your message has been sent. I will reply by email, usually within a few days.</p>
+<p class="muted">In the meantime: <a href="/">back to the colour tool</a> or <a href="/colours/">browse the library</a>.</p>"""
+    return _page_shell("Message sent", "Your message to PaintDial has been sent.", "/contact/thanks/", body,
+                       head='<meta name="robots" content="noindex">')
 
 
 def build_photo_match_page():
@@ -1778,6 +1861,9 @@ if __name__ == '__main__':
     open('site/how-it-works/index.html', 'w', encoding='utf-8').write(build_method_page())
     os.makedirs('site/about', exist_ok=True)
     open('site/about/index.html', 'w', encoding='utf-8').write(build_about_page())
+    os.makedirs('site/contact/thanks', exist_ok=True)
+    open('site/contact/index.html', 'w', encoding='utf-8').write(build_contact_page())
+    open('site/contact/thanks/index.html', 'w', encoding='utf-8').write(build_contact_thanks_page())
     os.makedirs('site/paint-match-index', exist_ok=True)
     open('site/paint-match-index/index.html', 'w', encoding='utf-8').write(build_match_index_page())
     print('paint match index written')
@@ -1790,14 +1876,14 @@ if __name__ == '__main__':
     os.makedirs('site/match-paint-from-a-photo', exist_ok=True)
     open('site/match-paint-from-a-photo/index.html', 'w', encoding='utf-8').write(build_photo_match_page())
     print('photo-match page written')
-    print('trust pages: 2')
+    print('trust pages: 3 (+ contact thanks)')
 
     urls = [f'{DOMAIN}/', f'{DOMAIN}/colours/'] \
         + [f'{DOMAIN}/colours/{base_slug(b)}' for b in BRAND_ORDER] \
         + [f'{DOMAIN}/colours/{slugs[i]}' for i in range(N)] \
         + [f'{DOMAIN}/alternatives/{slugs[i]}' for i in alt_idx] \
         + [f'{DOMAIN}/dupes/{base_slug(b)}' for b in DUPE_TARGETS] \
-        + [f'{DOMAIN}/how-it-works/', f'{DOMAIN}/about/', f'{DOMAIN}/paint-match-index/',
+        + [f'{DOMAIN}/how-it-works/', f'{DOMAIN}/about/', f'{DOMAIN}/contact/', f'{DOMAIN}/paint-match-index/',
            f'{DOMAIN}/paint-choice-index/', f'{DOMAIN}/research/', f'{DOMAIN}/match-paint-from-a-photo/']
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += ''.join(f'<url><loc>{u}</loc></url>\n' for u in urls)+'</urlset>'
