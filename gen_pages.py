@@ -191,7 +191,8 @@ FOOT = ("<span class=\"foot-links\">"
         "<span class=\"foot-copy\">\u00a9 2026 PaintDial. All rights reserved.</span>"
         "Screen colours are indicative \u2014 always order a tester pot before committing. Colour values are the "
         "brand\u2019s published digital swatches; LRV is estimated. Colour names are the property of their respective "
-        "brands. Some links may earn PaintDial a commission at no cost to you.")
+        "brands. Some links may earn PaintDial a commission at no cost to you. PaintDial is free to use — if it "
+        "saved you a tester pot, you can <a href=\"https://ko-fi.com/paintdial\" target=\"_blank\" rel=\"noopener\">buy Will a coffee</a>.")
 
 # ---------- colour page CSS (current, with all layout fixes) ----------
 CSS = """
@@ -1516,7 +1517,7 @@ def build_about_page():
 <p>PaintDial is built and run by Will, a visual effects director based in Dorset. Getting colour to agree across cameras, screens and lights is his day job, and the site grew out of trying to do the same thing for a wall at home. He answers the <a href="/contact/">contact form</a> himself.</p>
 
 <h2>How PaintDial is funded</h2>
-<p>Some \u201cwhere to buy\u201d links are affiliate links, run through partner networks including impact.com and Awin. If you buy through one, PaintDial may earn a small commission at no extra cost to you. That\u2019s the only way the site makes money \u2014 there are no ads, no sponsored placements, and no paid rankings. Matches are never influenced by whether a link earns commission.</p>
+<p>Some \u201cwhere to buy\u201d links are affiliate links, run through partner networks including impact.com and Awin. If you buy through one, PaintDial may earn a small commission at no extra cost to you. That, plus the occasional coffee from a reader on <a href="https://ko-fi.com/paintdial" target="_blank" rel="noopener">Ko-fi</a>, is the only way the site makes money \u2014 there are no ads, no sponsored placements, and no paid rankings. Matches are never influenced by whether a link earns commission.</p>
 
 <h2>A note on colour names</h2>
 <p>Colour names and paint ranges are the property of their respective brands. PaintDial shows each brand\u2019s published digital swatch values for comparison \u2014 always order a tester pot before committing to any colour.</p>
