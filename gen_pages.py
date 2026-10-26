@@ -178,7 +178,7 @@ FAVICON = ("<link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://ww
            "%3Ccircle cx='16' cy='16' r='3.4' fill='%23211F1B'/%3E%3C/svg%3E\">")
 FONTS = ('<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,600'
          '&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">')
-HDR = '<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>'
+HDR = '<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a><a href="/">Colour tool</a></div>'
 FOOT = ("<span class=\"foot-links\">"
         "<a href=\"/about/\">About</a> \u00b7 "
         "<a href=\"/how-it-works/\">How matching works</a> \u00b7 "
@@ -257,7 +257,7 @@ header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6
 }
 .head-nav{font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:color .12s}.head-nav:hover{color:var(--ink)}@media(max-width:560px){.head-nav{display:none}}
 .mnav{display:none}@media(max-width:560px){.mnav{display:flex;gap:18px;align-items:center;padding:7px 0 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
-@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
+@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}header nav a.nav-cta{font-size:0;gap:0;padding:6px;border-radius:50%}header nav a.nav-cta .cta-wheel{width:20px;height:20px}}
 """
 
 def ladder_for(i):
@@ -638,10 +638,10 @@ header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6
 }
 .head-nav{font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:color .12s}.head-nav:hover{color:var(--ink)}@media(max-width:560px){.head-nav{display:none}}
 .mnav{display:none}@media(max-width:560px){.mnav{display:flex;gap:18px;align-items:center;padding:7px 0 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
-@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
+@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}header nav a.nav-cta{font-size:0;gap:0;padding:6px;border-radius:50%}header nav a.nav-cta .cta-wheel{width:20px;height:20px}}
 """
 
-LIB_HDR = '<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>'
+LIB_HDR = '<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a><a href="/">Colour tool</a></div>'
 
 def anchor(fam): return 'f-'+re.sub(r'[^a-z0-9]+', '-', fam.lower().replace('&', 'and')).strip('-')
 
@@ -851,7 +851,7 @@ header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6
 }
 .head-nav{font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:color .12s}.head-nav:hover{color:var(--ink)}@media(max-width:560px){.head-nav{display:none}}
 .mnav{display:none}@media(max-width:560px){.mnav{display:flex;gap:18px;align-items:center;padding:7px 0 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
-@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
+@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}header nav a.nav-cta{font-size:0;gap:0;padding:6px;border-radius:50%}header nav a.nav-cta .cta-wheel{width:20px;height:20px}}
 """
 ALT_BRANDS = {b for b in BRAND_ORDER if TIER[b] == 3}  # Farrow & Ball, Little Greene, Lick, COAT
 AVAIL = {'Dulux': 'widely available', 'Crown': 'widely available', "Johnstone's": 'widely available',
@@ -971,7 +971,7 @@ header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6
 }
 .head-nav{font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:color .12s}.head-nav:hover{color:var(--ink)}@media(max-width:560px){.head-nav{display:none}}
 .mnav{display:none}@media(max-width:560px){.mnav{display:flex;gap:18px;align-items:center;padding:7px 0 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
-@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
+@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px;margin-bottom:0}.mnav{margin-bottom:22px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}header nav a.nav-cta{font-size:0;gap:0;padding:6px;border-radius:50%}header nav a.nav-cta .cta-wheel{width:20px;height:20px}}
 """
 
 DUPE_TARGETS = [b for b in BRAND_ORDER if TIER[b] == 3]
@@ -1026,7 +1026,7 @@ def build_dupes_page(brand):
 )}
 {FONTS}<style>{DUPES_CSS}</style></head><body><div class="wrap">
 <header><a class="logo" href="/"><span class="logo-dial"></span>PaintDial</a>
-<nav><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>
+<nav><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a></div>
 <span class="eyebrow">Ranked dupes</span>
 <h1>Every {bname} colour\u2019s best-value match, ranked</h1>
 <p class="sub">All {len(rows)} {bname} colours, each paired with its single closest match from a value or mid-range brand \u2014 ranked from the strongest match down. Tap any row to see the full colour page, more matches, and where to buy.</p>
@@ -1102,7 +1102,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;colo
 .rsch-cards{display:grid;gap:14px;margin:22px 0}
 .rsch-card{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--hairline);border-radius:12px;padding:20px 22px;transition:transform .15s}
 .rsch-card:hover{transform:translateY(-2px)}
-.rsch-card b{font-family:var(--serif);font-size:19px;font-weight:600;display:block;margin-bottom:5px}
+.rsch-card small{display:block;font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}.rsch-card b{font-family:var(--serif);font-size:21px;font-weight:600;line-height:1.25;display:block;margin-bottom:8px;text-wrap:balance}
 .rsch-card span{font-size:13.5px;color:var(--muted)}
 .uq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:9px;margin:14px 0 18px}
 .uq{display:flex;flex-direction:column;justify-content:flex-end;min-height:104px;padding:11px;border-radius:10px;
@@ -1124,7 +1124,7 @@ text-decoration:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.09);transition:trans
 }
 .head-nav{font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:color .12s}.head-nav:hover{color:var(--ink)}@media(max-width:560px){.head-nav{display:none}}
 .mnav{display:none}@media(max-width:560px){.mnav{display:flex;gap:18px;align-items:center;padding:7px 0 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
-@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
+@media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px;margin-bottom:0}.mnav{margin-bottom:22px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}header nav a.nav-cta{font-size:0;gap:0;padding:6px;border-radius:50%}header nav a.nav-cta .cta-wheel{width:20px;height:20px}}
 """
 
 def _page_shell(title, desc, path, body, head=""):
@@ -1135,7 +1135,7 @@ def _page_shell(title, desc, path, body, head=""):
 <link rel="canonical" href="{DOMAIN}{path}">{head}
 {FONTS}<style>{PAGES_CSS}</style></head><body><div class="wrap">
 <header><a class="logo" href="/"><span class="logo-dial"></span>PaintDial</a>
-<nav><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>
+<nav><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a></div>
 {body}
 <footer>{FOOT}</footer>
 </div></body></html>"""
@@ -1204,6 +1204,8 @@ def ink_on(i):
     """Readable text colour over a swatch, from its OKLab lightness."""
     return '#211F1B' if OL[i] > 0.62 else '#FFFFFF'
 
+
+RESEARCH = {}   # headline figures published by the two studies, read by the hub
 
 def build_match_index_page():
     """The UK Paint Match Index — findings computed live from the library, so the
@@ -1286,8 +1288,9 @@ def build_match_index_page():
         f'<span class="bval">{v:.1f}</span>'
         f'<span class="bnote">{n} from {sz:,}</span></div>' for b, v, n, sz in per100)
 
-    body = f"""<span class="eyebrow">Research</span>
-<h1>The UK Paint Match Index</h1>
+    RESEARCH['match'] = dict(pct_vc=pct_vc, n_uniq=len(uniq), n_prem=len(prem))
+    body = f"""<span class="eyebrow">Research \u00b7 The UK Paint Match Index</span>
+<h1>Only {len(uniq)} of Britain\u2019s {len(prem)} premium paint colours can\u2019t be matched. They\u2019re all from one brand.</h1>
 <p>We compared every one of the {N:,} colours published by {len(brands)} UK paint brands against every other \u2014 millions of pairwise comparisons \u2014 to answer one question: how many premium paint colours are genuinely unique, and how many already have a near-identical twin?</p>
 <p class="muted">Updated automatically from PaintDial\u2019s live colour library. Last built {TODAY}.</p>
 
@@ -1456,8 +1459,9 @@ def build_choice_index_page():
     unc_blue = round(100*(((SH >= _E[4]) & (SH < _E[5])) & unc).sum()/unc.sum())
     unc_pink = round(100*(((SH >= _E[6]) | (SH < _E[0])) & unc).sum()/unc.sum())
 
-    body = f"""<span class="eyebrow">Research</span>
-<h1>The UK Paint Choice Index</h1>
+    RESEARCH['choice'] = dict(distinct=distinct, dup_pct=dup_pct, exact_total=exact_total, purp_vivid=purp_vivid)
+    body = f"""<span class="eyebrow">Research \u00b7 The UK Paint Choice Index</span>
+<h1>Britain sells {N:,} paint colours. Only {distinct:,} of them are actually different.</h1>
 <p>Britain sells {N:,} paint colours across {len(brands)} brands. This study asks a simple question of all of them: <b>how much genuine choice is that?</b></p>
 <p class="muted">Computed automatically from PaintDial\u2019s live colour library, using the same thresholds as every page on this site. Last built {TODAY}.</p>
 
@@ -1497,12 +1501,13 @@ def build_choice_index_page():
 
 def build_research_hub():
     brands = sorted({p['brand'] for p in paints})
+    _rm, _rc = RESEARCH['match'], RESEARCH['choice']
     body = f"""<span class="eyebrow">PaintDial</span>
 <h1>Research</h1>
 <p>Original studies computed from PaintDial\u2019s live library \u2014 {N:,} colours across {len(brands)} UK brands, compared with the same metric and thresholds used on every page of this site. Each study rebuilds automatically as brands are added.</p>
 <div class="rsch-cards">
-<a class="rsch-card" href="/paint-match-index/"><b>The UK Paint Match Index</b><span>How closely can premium paint colours be matched across brands \u2014 and which colours can\u2019t be matched at all?</span></a>
-<a class="rsch-card" href="/paint-choice-index/"><b>The UK Paint Choice Index</b><span>Britain sells {N:,} paint colours. How much genuine choice is that \u2014 and what colour does Britain not sell?</span></a>
+<a class="rsch-card" href="/paint-match-index/"><small>The UK Paint Match Index</small><b>Only {_rm['n_uniq']} of Britain\u2019s {_rm['n_prem']} premium paint colours can\u2019t be matched. They\u2019re all from one brand.</b><span>{_rm['pct_vc']}% of premium colours have a very close match from a value brand. The ones that don\u2019t aren\u2019t special because they\u2019re expensive. They\u2019re the only ones that go properly dark.</span></a>
+<a class="rsch-card" href="/paint-choice-index/"><small>The UK Paint Choice Index</small><b>Britain sells {N:,} paint colours. Only {_rc['distinct']:,} of them are actually different.</b><span>{_rc['dup_pct']}% of what\u2019s on sale has a near-identical twin, {_rc['exact_total']} colours share an exact value with a sibling from their own range, and there is one colour almost nobody makes: a vivid purple. {_rc['purp_vivid']} exists.</span></a>
 </div>
 <p class="muted">Journalists and researchers: every underlying comparison is public, colour by colour, across the site. Questions or corrections \u2014 <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("Research", 
@@ -1803,7 +1808,7 @@ def build_alternatives_page(i):
 <meta name="twitter:image" content="{DOMAIN}/share/{slugs[i]}.jpg">
 {FAVICON}
 {FONTS}<style>{ALT_CSS}</style></head><body style="--pc:{p['hex']}"><div class="top-band"></div><div class="wrap">
-<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How matching works</a></div>
+<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a><a href="/">Colour tool</a></div>
 <h1>{brand} <span class="pn"><i></i>{name}</span> alternatives</h1>
 <div class="hero-card"><div class="hero-sw" style="background:{p['hex']}"></div>
 <div class="hero-info"><div class="hero-label">The colour you\u2019re matching</div>
