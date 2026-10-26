@@ -73,3 +73,39 @@
   from = "/colours/valspar-dj-blue"
   to = "/colours/valspar-deja-blue"
   status = 301
+
+# --- COAT ampersand repair (Oct 2026): three names were stored HTML-escaped
+# ("Smith &amp; The Devil"), so base_slug() produced "-andamp-" slugs and the
+# pages rendered the entity literally. Names repaired in paints-fixed.json and
+# index.html; slugs changed as a result. Explicit 301s for the colour page and
+# the alternatives page of each, same approach as the Valspar block above.
+
+[[redirects]]
+  from = "/colours/coat-smith-andamp-the-devil"
+  to = "/colours/coat-smith-and-the-devil"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/coat-smith-andamp-the-devil"
+  to = "/alternatives/coat-smith-and-the-devil"
+  status = 301
+
+[[redirects]]
+  from = "/colours/coat-gown-andamp-out"
+  to = "/colours/coat-gown-and-out"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/coat-gown-andamp-out"
+  to = "/alternatives/coat-gown-and-out"
+  status = 301
+
+[[redirects]]
+  from = "/colours/coat-grace-andamp-favoured"
+  to = "/colours/coat-grace-and-favoured"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/coat-grace-andamp-favoured"
+  to = "/alternatives/coat-grace-and-favoured"
+  status = 301
