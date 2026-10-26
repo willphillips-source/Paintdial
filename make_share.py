@@ -39,7 +39,8 @@ def build(i, out):
     dr.text((60,162),BL,font=font(FR,16,600,14),fill=MUTED)
     dr.rounded_rectangle([60,210,350,510],radius=10,fill=c); li=ink(c)
     dr.text((80,236),'YOUR COLOUR',font=font(AR,14,700),fill=li); dr.text((80,470),p['hex'].upper(),font=font(AR,22,600),fill=li)
-    dr.text((372,340),'→',font=font(AR,30,600),fill=MUTED)
+    # Neither bundled font has U+2192, so draw the arrow: shaft + chevron, centred in the gap.
+    dr.line([(374,360),(410,360)],fill=MUTED,width=3); dr.line([(398,348),(410,360),(398,372)],fill=MUTED,width=3,joint='curve')
     cols=[(434,776),(797,1139)]; rows=[(211,349),(371,509)]
     for n,k in enumerate(picks):
         x0,x1=cols[n%2]; y0,y1=rows[n//2]; q=paints[k]

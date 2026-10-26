@@ -533,7 +533,11 @@ def colour_facets(hx):
     Neutral/White/Grey/Black. Tone is one of Light/Mid/Dark."""
     L, C, H = _ok_lch(hx)
     fam = family(hx)
-    tone = "Light" if L > 0.70 else "Dark" if L < 0.35 else "Mid"
+    # Tone follows the LRV estimate shown on every colour page, banded the way decorators
+    # talk about depth: Dark below LRV 25, Light above 55, Mid between. (The old OKLab cuts
+    # of 0.35/0.70 were LRV ~4/~34: Hague Blue came out "Mid" and only 52 paints were "Dark".)
+    lrv_est = lrv(rgb2lab(*hex2rgb(hx))[0])
+    tone = "Light" if lrv_est > 55 else "Dark" if lrv_est < 25 else "Mid"
     tags = []
     if fam not in _NEUTRAL_FAMS:
         tags.append(fam)
