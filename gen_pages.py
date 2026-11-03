@@ -1165,7 +1165,7 @@ def build_method_page():
         ("Can a brand pay to rank higher?",
          "No. Rankings are computed from colour difference alone. Some buy links earn PaintDial a small commission, but a link earning money has no effect on where a paint appears, and no brand has any say over the results."),
         ("Are the prices accurate?",
-         "They are typical per-litre ranges for a 2.5 litre tin mixed to the colour, checked against retailers in September 2026. They are there so you know the rough scale of the difference between brands, not as a quote. Retailers vary and bigger tins cost less per litre."),
+         "They are typical per-litre ranges for a 2.5 litre tin mixed to the colour, checked against retailers in September 2026 (Lakeland Paints only sells a 5 litre tin, so its figure is for that, checked November 2026). They are there so you know the rough scale of the difference between brands, not as a quote. Retailers vary and bigger tins cost less per litre."),
         ("Why isn\u2019t the brand I use in the library?",
          f"PaintDial covers {BRANDS_WORD} UK brands, chosen because they publish digital colour values and have ranges people ask about. Brands are added when there is a reliable published source for their colours, not to make the number bigger."),
         ("Is PaintDial free?",

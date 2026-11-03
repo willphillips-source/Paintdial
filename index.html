@@ -1029,7 +1029,10 @@ function currentHex(){return rgbToHex(...hslToRgb(hue,sat,light));}
      reader does the arithmetic. "Cheaper" stays banned.
    - If a brand isn't in this map it simply shows no price. Fail quiet. */
 const PRICE_CHECKED='Sept 2026';
-const PRICE_TIN_L=2.5;   // the comparison basis: the one size the nine priced brands all sell (Lakeland sells 5L only, so it has no entry below)
+const PRICE_TIN_L=2.5;   // the comparison basis: the one size nine of the ten brands all sell
+/* [lo, hi] is the tin price, inc VAT. An optional third value is the tin size in litres
+   when a brand does not sell the 2.5L basis size; the per-litre figure is then derived
+   from THAT tin and the tooltip says so. Only Lakeland needs it so far. */
 const PRICING={
   "Johnstone's":  [22,29],   // Covaplus tinted £22.35; W&C standard colours £28.88
   'Crown':        [25,32],   // Easyclean £24.99–26.22 (white); tinted needs verifying
@@ -1040,15 +1043,17 @@ const PRICING={
   'Farrow & Ball':[45,61],   // Estate Emulsion, RRP £54.50
   'COAT':         [58,62],   // Flat Matt; varies a little by colour
   'Little Greene':[60,73],   // Absolute Matt £60 → Intelligent Matt £73
+  'Lakeland Paints':[107.95,107.95,5],  // Matt Paint, 5L is the only size; £89.96 ex VAT on the site, so £107.95 inc. Checked Nov 2026
 };
 /* Single source for the basis and date, so the note can never drift from the map. */
 (function(){
   const el=document.getElementById('priceNote');
+  const odd=Object.keys(PRICING).filter(b=>PRICING[b][2]);
   if(el) el.textContent='Prices are per litre, based on a '+PRICE_TIN_L
     +'L tin mixed to your colour and checked '+PRICE_CHECKED
+    +(odd.length?' ('+odd.map(b=>b+': '+PRICING[b][2]+'L, the only size it sells').join('; ')+')':'')
     +' — retailers vary, and bigger tins work out cheaper.';
 })();
-const perL = v => v/PRICE_TIN_L;
 const money = v => '£'+v.toFixed(2);
 /* Always its own line, never appended to the brand: "£24.00–29.20/L" after a brand
    name overflows both the 170px grid chip and the 2-up mobile card, where .alt-txt
@@ -1056,12 +1061,14 @@ const money = v => '£'+v.toFixed(2);
 function priceEl(brand,cls){
   const p=PRICING[brand];
   if(!p) return '';
-  const lo=perL(p[0]), hi=perL(p[1]);
+  const tinL = p[2] || PRICE_TIN_L;
+  const lo=p[0]/tinL, hi=p[1]/tinL;
   /* Range collapses to a single figure when both ends agree, so Valspar and Lick
      don't render a pointless "£11.60–11.60". */
   const t = (lo===hi ? money(lo) : money(lo)+'–'+hi.toFixed(2))+'/L';
   const tin = p[0]===p[1] ? `£${p[0]}` : `£${p[0]}–${p[1]}`;
-  return `<span class="${cls}" title="Typically ${tin} for a ${PRICE_TIN_L}L tin">${t}</span>`;
+  const basis = p[2] ? `for a ${tinL}L tin, the only size this brand sells` : `for a ${PRICE_TIN_L}L tin`;
+  return `<span class="${cls}" title="Typically ${tin} ${basis}">${t}</span>`;
 }
 /* Active brand offers. To show one, add a line like:
    'Dulux': '20% off until Monday',
