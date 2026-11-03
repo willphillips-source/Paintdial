@@ -1,0 +1,7 @@
+# Build outputs. build.sh recreates all of these on every Netlify deploy;
+# nothing here is source. (site/ is ~230MB of generated pages and share images.)
+site/
+fonts/
+netlify/
+paints.json
+__pycache__/
