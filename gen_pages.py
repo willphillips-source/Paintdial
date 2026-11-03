@@ -18,7 +18,9 @@ TODAY = _dt.date.today().strftime("%B %Y")
 # brand was added -- exactly the kind of silent staleness that survives a rebuild,
 # because regenerating the site cannot fix a literal. Never hardcode a count again.
 _NUMW = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six', 7: 'seven',
-         8: 'eight', 9: 'nine', 10: 'ten', 11: 'eleven', 12: 'twelve'}
+         8: 'eight', 9: 'nine', 10: 'ten', 11: 'eleven', 12: 'twelve', 13: 'thirteen',
+         14: 'fourteen', 15: 'fifteen', 16: 'sixteen', 17: 'seventeen', 18: 'eighteen',
+         19: 'nineteen', 20: 'twenty'}
 def numword(n):
     return _NUMW.get(n, f'{n}')
 SHORTLIST_CSS = '.pd-heart{position:absolute;top:8px;right:8px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C8578;transition:transform .12s,color .12s;z-index:2;padding:0}\n.pd-heart:hover{transform:scale(1.12);color:#5E7E8B}\n.pd-heart svg{fill:none;stroke:currentColor;stroke-width:1.7}\n.pd-heart.on{color:#5E7E8B}.pd-heart.on svg{fill:currentColor;stroke:currentColor}\n#pd-tray{position:fixed;right:14px;bottom:14px;z-index:900;background:#fff;border:1px solid #E3DFD5;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:11px 12px;max-width:min(92vw,560px)}\n.pd-tray-head{display:flex;align-items:center;gap:8px;font-size:13px;color:#211F1B}\n.pd-tray-head b{font-weight:600}.pd-tray-n{background:#F1EEE7;border-radius:20px;padding:1px 8px;font-size:12px;color:#665F54}\n.pd-tray-clear{margin-left:auto;border:none;background:none;color:#9A6B6B;font-size:12px;cursor:pointer;padding:2px 4px}\n.pd-tray-clear:hover{text-decoration:underline}\n.pd-tray-note{font-size:11px;color:#665F54;margin:3px 0 9px}\n.pd-tray-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}\n.pd-tray-chip{position:relative;flex:0 0 auto;width:64px;text-decoration:none;color:#211F1B}\n.pd-tray-sw{display:block;height:48px;border-radius:8px;border:1px solid rgba(0,0,0,.08)}\n.pd-tray-name{display:block;font-size:10px;line-height:1.2;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#665F54}\n.pd-tray-link{display:block;text-decoration:none;color:inherit}\n.pd-tray-x{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border:none;padding:0;border-radius:50%;background:#211F1B;color:#fff;font-size:12px;line-height:18px;text-align:center;cursor:pointer;font-family:inherit}\n.pd-tray-mail{margin-top:10px;border-top:1px solid #EEEAE1;padding-top:9px}\n.pd-mail-toggle{border:none;background:none;color:#5E7E8B;font-size:12.5px;font-weight:600;cursor:pointer;padding:0}\n.pd-mail-toggle:hover{text-decoration:underline}\n.pd-mail-form{display:flex;gap:6px;margin-top:8px}\n.pd-mail-input{flex:1;min-width:0;border:1px solid #D9D4C8;border-radius:8px;padding:7px 9px;font-size:13px;font-family:inherit}\n.pd-mail-input:focus{outline:none;border-color:#5E7E8B}\n.pd-mail-send{border:none;background:#5E7E8B;color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer}\n.pd-mail-send:hover{filter:brightness(1.06)}\n\n.pd-tray-min{border:none;background:none;color:#665F54;font-size:17px;line-height:1;cursor:pointer;padding:0 4px;margin-left:2px}\n.pd-tray-min:hover{color:#211F1B}\n#pd-tray.min{padding:0;cursor:pointer}\n#pd-tray.min .pd-tray-head{margin-bottom:0;padding:10px 13px}\n#pd-tray.min .pd-tray-note,#pd-tray.min .pd-tray-row,#pd-tray.min .pd-tray-mail,#pd-tray.min .pd-tray-clear{display:none}\n#pd-sl-flash{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(10px);background:#211F1B;color:#fff;padding:9px 15px;border-radius:9px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:950}\n#pd-sl-flash.show{opacity:1;transform:translateX(-50%) translateY(0)}\n.chip,.c-swatch,.alt-row,.hero-swatch{position:relative}\n@media(max-width:560px){#pd-tray{right:8px;bottom:8px;left:8px;max-width:none}.pd-heart{width:27px;height:27px}}\n'
@@ -68,14 +70,22 @@ AWIN_AFFID = "2971455"
 # DORMANT while None -> direct links. Set to 101923 once Freshlick approves you, then regenerate.
 FRESHLICK_MID = None
 FRESHLICK_BRANDS = {"Little Greene", "Crown"}
-BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints']
+BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints',
+               'Earthborn', 'Paint & Paper Library', 'Edward Bulmer']
+# Earthborn (85, Claypaint 2.5L £61.50), Paint & Paper Library (187, Pure Flat Emulsion 2.5L £73)
+# and Edward Bulmer (149, Emulsion 2.5L £70) were added Nov 2026, all premium. Values are each
+# brand's own: Earthborn and P&PL set the colour as a CSS background on their own pages;
+# Edward Bulmer's product gallery opens with a generated flat SVG swatch filled with the colour.
+# Annie Sloan was looked at and left out: its swatches are PNG images with no published value.
 # Lakeland Paints: small Cumbrian maker, sold direct only, one tin size (5L matt, £89.96 ex VAT
 # = £107.95 inc, so £21.59/L, checked Nov 2026). Per litre that lands between Dulux and
 # Farrow & Ball, hence mid-range, not premium: it is a specialist (zero-VOC) brand, not a
 # luxury one. Its 265 colours are the brand's own on-screen swatches (the colour picker on
 # lakelandpaints.co.uk), like Lick and COAT. No per-colour pages exist, so every Lakeland
 # colour links to the matchpot page, where the picker lives.
-TIER = {'Farrow & Ball': 3, 'Little Greene': 3, 'Craig & Rose': 3, 'Lick': 3, 'COAT': 3, 'Dulux': 2, 'Crown': 2, 'Lakeland Paints': 2, "Johnstone's": 1, 'Valspar': 1}
+TIER = {'Farrow & Ball': 3, 'Little Greene': 3, 'Craig & Rose': 3, 'Lick': 3, 'COAT': 3,
+        'Earthborn': 3, 'Paint & Paper Library': 3, 'Edward Bulmer': 3,
+        'Dulux': 2, 'Crown': 2, 'Lakeland Paints': 2, "Johnstone's": 1, 'Valspar': 1}
 TIER_WORD = {3: 'Premium', 2: 'Mid-range', 1: 'Value'}
 
 paints = json.load(open('paints.json'))

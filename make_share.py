@@ -27,11 +27,20 @@ def dmatch(i):
     dh = np.abs(OH-OH[i])%360; dh = np.radians(np.where(dh>180,360-dh,dh))
     return 190*np.sqrt(((OL-OL[i])/1.3)**2 + (OC-OC[i])**2 + 4*(2*np.sqrt(np.maximum(OC*OC[i],0))*np.sin(dh/2))**2)
 # Brand line is built from the data, so a new brand in paints.json shows up here without a hand edit.
-_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints']
+_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT',
+          'Lakeland Paints', 'Earthborn', 'Paint & Paper Library', 'Edward Bulmer']
 _present = {p['brand'] for p in paints}
-BL = " · ".join(b.upper() for b in _ORDER if b in _present) + "".join(" · "+b.upper() for b in sorted(_present - set(_ORDER)))
-# At 16px this line is 1053px wide; it starts at x=60 on a 1200px canvas, so there is 87px spare.
-# The wider "  ·  " separator overflowed once a tenth brand was added.
+_BRANDS = [b.upper() for b in _ORDER if b in _present] + [b.upper() for b in sorted(_present - set(_ORDER))]
+def brand_lines(dr, f, maxw):
+    """Wrap the brand roll call into as few lines as fit maxw. Ten brands fitted one line at 16px;
+    thirteen do not, so this breaks where the text would overrun rather than shrinking the type."""
+    lines, cur = [], ''
+    for b in _BRANDS:
+        nxt = b if not cur else cur + ' · ' + b
+        if dr.textlength(nxt, font=f) <= maxw or not cur: cur = nxt
+        else: lines.append(cur); cur = b
+    if cur: lines.append(cur)
+    return lines
 def build(i, out):
     p=paints[i]; c=hx(p['hex']); d=dmatch(i); best={}
     for k in range(N):
@@ -41,7 +50,9 @@ def build(i, out):
     im=Image.new('RGB',(W,H),PAPER); dr=ImageDraw.Draw(im)
     dr.text((60,46),'Pick any colour, find the',font=font(FR,44,800,48),fill=INK)
     dr.text((60,98),'paint — across every UK brand',font=font(FR,44,800,48),fill=INK)
-    dr.text((60,162),BL,font=font(FR,16,600,14),fill=MUTED)
+    # Brand roll call: 14px, up to two lines, sitting between the title and the swatch row (y 210).
+    fb=font(FR,14,600,14)
+    for n,ln in enumerate(brand_lines(dr, fb, W-120)[:2]): dr.text((60,158+n*19),ln,font=fb,fill=MUTED)
     dr.rounded_rectangle([60,210,350,510],radius=10,fill=c); li=ink(c)
     dr.text((80,236),'YOUR COLOUR',font=font(AR,14,700),fill=li); dr.text((80,470),p['hex'].upper(),font=font(AR,22,600),fill=li)
     # Neither bundled font has U+2192, so draw the arrow: shaft + chevron, centred in the gap.
