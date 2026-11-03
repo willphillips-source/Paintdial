@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-PaintDial page generator (definitive, nine brands incl. Craig & Rose, Lick, Crown, COAT).
+PaintDial page generator (definitive; brands are whatever BRAND_ORDER lists).
 Regenerates: all colour pages, redesigned brand library pages,
 /colours/ index, sitemap.xml. Run from /home/claude.
 """
@@ -68,8 +68,14 @@ AWIN_AFFID = "2971455"
 # DORMANT while None -> direct links. Set to 101923 once Freshlick approves you, then regenerate.
 FRESHLICK_MID = None
 FRESHLICK_BRANDS = {"Little Greene", "Crown"}
-BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT']
-TIER = {'Farrow & Ball': 3, 'Little Greene': 3, 'Craig & Rose': 3, 'Lick': 3, 'COAT': 3, 'Dulux': 2, 'Crown': 2, "Johnstone's": 1, 'Valspar': 1}
+BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints']
+# Lakeland Paints: small Cumbrian maker, sold direct only, one tin size (5L matt, £89.96 ex VAT
+# = £107.95 inc, so £21.59/L, checked Nov 2026). Per litre that lands between Dulux and
+# Farrow & Ball, hence mid-range, not premium: it is a specialist (zero-VOC) brand, not a
+# luxury one. Its 265 colours are the brand's own on-screen swatches (the colour picker on
+# lakelandpaints.co.uk), like Lick and COAT. No per-colour pages exist, so every Lakeland
+# colour links to the matchpot page, where the picker lives.
+TIER = {'Farrow & Ball': 3, 'Little Greene': 3, 'Craig & Rose': 3, 'Lick': 3, 'COAT': 3, 'Dulux': 2, 'Crown': 2, 'Lakeland Paints': 2, "Johnstone's": 1, 'Valspar': 1}
 TIER_WORD = {3: 'Premium', 2: 'Mid-range', 1: 'Value'}
 
 paints = json.load(open('paints.json'))
@@ -77,6 +83,17 @@ N = len(paints)
 NBRANDS = len({p['brand'] for p in paints})
 BRANDS_WORD = numword(NBRANDS)          # e.g. "nine"  -> "{BRANDS_WORD} UK brands"
 OTHERS_WORD = numword(NBRANDS - 1)      # e.g. "eight" -> "the other {OTHERS_WORD} brands"
+assert {p['brand'] for p in paints} == set(BRAND_ORDER), \
+    f"paints.json brands {sorted({p['brand'] for p in paints})} != BRAND_ORDER {sorted(BRAND_ORDER)}"
+assert set(TIER) == set(BRAND_ORDER), "every brand in BRAND_ORDER needs a TIER"
+
+def brand_list(sep=', ', last=' and ', esc=True):
+    """'Farrow &amp; Ball, Little Greene, ... Crown and COAT' from BRAND_ORDER. Any copy that
+    names the brands must use this, never a typed list: the old typed lists went stale
+    twice (one missed Craig & Rose, Crown and COAT for a year)."""
+    names = [b.replace("'", '’') for b in BRAND_ORDER]
+    names = [H.escape(n, quote=False) if esc else n for n in names]
+    return sep.join(names[:-1]) + last + names[-1]
 
 # ---------- colour maths ----------
 def hex2rgb(h): return tuple(int(h[i:i+2], 16) for i in (1, 3, 5))
@@ -772,7 +789,7 @@ def build_colours_index():
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The colour library \u2014 every UK paint colour by brand | PaintDial</title>
-<meta name="description" content="Browse {N:,} UK paint colours across Farrow &amp; Ball, Little Greene, Dulux, Johnstone's, Valspar and Lick \u2014 each with cross-brand matches and tonal ladders.">
+<meta name="description" content="Browse {N:,} UK paint colours across {brand_list()} \u2014 each with cross-brand matches and tonal ladders.">
 {FAVICON}
 {FONTS}<style>{LIB_CSS}</style></head><body><div class="wrap">
 {LIB_HDR}
@@ -853,10 +870,7 @@ header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6
 .mnav{display:none}@media(max-width:560px){.mnav{display:flex;gap:18px;align-items:center;padding:7px 0 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
 @media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}header nav a.nav-cta{font-size:0;gap:0;padding:6px;border-radius:50%}header nav a.nav-cta .cta-wheel{width:20px;height:20px}}
 """
-ALT_BRANDS = {b for b in BRAND_ORDER if TIER[b] == 3}  # Farrow & Ball, Little Greene, Lick, COAT
-AVAIL = {'Dulux': 'widely available', 'Crown': 'widely available', "Johnstone's": 'widely available',
-         'Valspar': 'widely available at B&amp;Q', 'Little Greene': 'available online or in-store',
-         'Lick': 'ordered direct', 'COAT': 'ordered direct', 'Farrow & Ball': 'available online or in-store'}
+ALT_BRANDS = {b for b in BRAND_ORDER if TIER[b] == 3}  # the premium tier: brands that get alternatives pages
 
 DESC_WORD = {'Reds': 'red', 'Oranges': 'orange', 'Yellows': 'yellow', 'Greens': 'green',
              'Teals': 'blue-green', 'Blues': 'blue', 'Purples': 'purple', 'Pinks': 'pink',
@@ -1519,7 +1533,7 @@ def build_about_page():
     body = f"""<span class="eyebrow">About</span>
 <h1>About PaintDial</h1>
 <p>PaintDial started with a familiar frustration: every paint brand\u2019s website has a lovely colour tool \u2014 that only shows you <em>their</em> paints. If you\u2019ve fallen for a designer colour but want to see what every other brand\u2019s nearest equivalent looks like, you end up with a dozen tabs open and no honest way to compare.</p>
-<p>So PaintDial does one thing: it puts {N:,} paints from {BRANDS_WORD} UK brands \u2014 Farrow &amp; Ball, Little Greene, Craig &amp; Rose, Dulux, Johnstone\u2019s, Valspar, Lick, Crown and COAT \u2014 into one independent tool. Pick any colour, match one from a photo, or search a paint you already know, and see the closest equivalents from every brand side by side, honestly labelled.</p>
+<p>So PaintDial does one thing: it puts {N:,} paints from {BRANDS_WORD} UK brands \u2014 {brand_list()} \u2014 into one independent tool. Pick any colour, match one from a photo, or search a paint you already know, and see the closest equivalents from every brand side by side, honestly labelled.</p>
 <p>It\u2019s an independent, one-person project. PaintDial isn\u2019t owned by, sponsored by, or affiliated with any paint brand, and no brand can pay to change how well its colours match. The matching is <a href="/how-it-works/">pure colour science</a>, applied the same way to every paint in the library.</p>
 
 <h2>Who makes it</h2>

@@ -26,7 +26,12 @@ BR = [p['brand'] for p in paints]
 def dmatch(i):
     dh = np.abs(OH-OH[i])%360; dh = np.radians(np.where(dh>180,360-dh,dh))
     return 190*np.sqrt(((OL-OL[i])/1.3)**2 + (OC-OC[i])**2 + 4*(2*np.sqrt(np.maximum(OC*OC[i],0))*np.sin(dh/2))**2)
-BL = "FARROW & BALL  ·  LITTLE GREENE  ·  CRAIG & ROSE  ·  DULUX  ·  JOHNSTONE'S  ·  VALSPAR  ·  LICK  ·  CROWN  ·  COAT"
+# Brand line is built from the data, so a new brand in paints.json shows up here without a hand edit.
+_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints']
+_present = {p['brand'] for p in paints}
+BL = " · ".join(b.upper() for b in _ORDER if b in _present) + "".join(" · "+b.upper() for b in sorted(_present - set(_ORDER)))
+# At 16px this line is 1053px wide; it starts at x=60 on a 1200px canvas, so there is 87px spare.
+# The wider "  ·  " separator overflowed once a tenth brand was added.
 def build(i, out):
     p=paints[i]; c=hx(p['hex']); d=dmatch(i); best={}
     for k in range(N):
