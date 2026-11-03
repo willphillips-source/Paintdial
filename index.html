@@ -61,15 +61,16 @@
      isn't squeezed into column 2 while column 1 sits empty. Declared BEFORE the
      media queries below — equal specificity means source order decides. */
   .allmatches{ grid-column:1 / -1; padding:26px 28px 28px; }
-  /* very wide screens: give the results room, widen picker slightly */
-  @media(min-width:1700px){ .layout{ max-width:1760px; grid-template-columns:420px 1fr; } }
-  @media(min-width:2100px){ .layout{ max-width:2040px; } }
 
-  /* ---------- large monitors: scale up, fill the page ---------- */
+  /* ---------- large monitors: scale up the tool ----------
+     The column WIDTH at each step (1720 / 2000 / 2320) is set once, as --wide, in the
+     wide-screen block at the END of this stylesheet, where every section shares it.
+     These blocks only scale the tool itself: picker column, wheel, dial, type.
+     The tool's inner padding stays 28px at every width (.picker / .results below set
+     it after these blocks, so anything set here was never applied). */
   @media(min-width:1500px){
-    .layout{ max-width:1720px; grid-template-columns:520px 1fr; }
-    .browse-brands > *{ max-width:1720px; }
-    .picker{ padding:40px 40px 56px; overflow:hidden; }
+    .layout{ grid-template-columns:520px 1fr; }
+    .picker{ overflow:hidden; }
     .picker-inner{ max-width:100%; }
     /* Keep the wheel and dial SIDE BY SIDE. This was flex-wrap:wrap, but the pair
        (320 + 22 gap + 180 = 522px) never fit the 464px column, so the dial always
@@ -80,16 +81,14 @@
     .wheel-wrap{ width:300px !important; }
     canvas#dial{ width:180px !important; height:180px !important; }
     .pick-row{ gap:22px !important; }
-    .results{ padding:40px 48px;  border-left:1px solid var(--hairline);}
+    .results{ border-left:1px solid var(--hairline);}
     .brand{ font-size:30px; }
     .tagline{ font-size:15px; }
-    .results h2{ font-size:26px; }
-    /* secondary "all close matches" cards */
-    .allmatches{ padding:26px 48px 44px; }
+    /* secondary "all close matches" cards — 28px sides so the heading lines up with the tool */
+    .allmatches{ padding:26px 28px 44px; }
     .allmatches .grid{ grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:18px; }
     .allmatches .grid .c-swatch{ height:110px; }
     .allmatches .grid .c-name{ font-size:16px; }
-    .best .best-swatch{ min-height:220px; }
     /* headline top-4 — biggest cards on the page */
     .alt-list .alt-swatch{ height:170px; }
     .alt-list .alt-txt{ padding:16px 18px 4px; }
@@ -98,17 +97,12 @@
     .alt-list .alt-de{ font-size:12.5px; padding:6px 0 14px 18px; }
   }
   @media(min-width:1900px){
-    .layout{ max-width:2000px; grid-template-columns:600px 1fr; }
-    .browse-brands > *{ max-width:2000px; }
+    .layout{ grid-template-columns:600px 1fr; }
     .wheel-wrap{ width:340px !important; }
     canvas#dial{ width:190px !important; height:190px !important; }
-    .picker{ padding:52px 52px 64px; }
-    .results{ padding:48px 60px; }
     .brand{ font-size:34px; }
     .tagline{ font-size:16px; }
-    .results h2{ font-size:30px; }
-    .results .sub{ font-size:15px; }
-    .allmatches{ padding:30px 60px 52px; }
+    .allmatches{ padding:30px 28px 52px; }
     .allmatches .grid{ grid-template-columns:repeat(auto-fill,minmax(235px,1fr)); gap:20px; }
     .allmatches .grid .c-swatch{ height:130px; }
     .allmatches .grid .c-name{ font-size:17px; }
@@ -116,8 +110,7 @@
     .alt-list .alt-txt b{ font-size:25px; }
   }
   @media(min-width:2400px){
-    .layout{ max-width:2320px; grid-template-columns:680px 1fr; }
-    .browse-brands > *{ max-width:2320px; }
+    .layout{ grid-template-columns:680px 1fr; }
     .wheel-wrap{ width:420px !important; }
     canvas#dial{ width:240px !important; height:240px !important; }
   }
@@ -535,7 +528,7 @@
     border-top:1px solid var(--hairline); background:color-mix(in srgb, var(--pick) 4%, var(--paper));}
   .browse-brands > *{max-width:1200px; margin-left:auto; margin-right:auto; padding-left:28px; padding-right:28px;}
   .bb-head{display:flex; justify-content:space-between; align-items:flex-end; gap:16px;
-    margin:10px 0 18px; padding-top:26px; border-top:1px solid var(--hairline);}
+    margin:10px auto 18px; padding-top:26px; border-top:1px solid var(--hairline);}
   .bb-eyebrow{font-size:10.5px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--muted);}
   .bb-head h2{font-family:var(--serif); font-size:24px; font-weight:600; letter-spacing:-.01em; margin-top:4px;}
   .bb-all{font-size:13px; font-weight:600; color:var(--ink); text-decoration:none; white-space:nowrap;
@@ -604,12 +597,7 @@
 .chip,.c-swatch,.alt-row,.hero-swatch{position:relative}
 @media(max-width:560px){#pd-tray{right:8px;bottom:8px;left:8px;max-width:none}.pd-heart{width:27px;height:27px}}
 
-.popalt{max-width:1500px;margin:0 auto;padding:26px 0 20px}
-@media(min-width:1500px){.popalt{max-width:1720px}}
-@media(min-width:1700px){.popalt{max-width:1760px}}
-@media(min-width:1900px){.popalt{max-width:2000px}}
-@media(min-width:2100px){.popalt{max-width:2040px}}
-@media(min-width:2400px){.popalt{max-width:2320px}}
+.popalt{max-width:1500px;margin:0 auto;padding:26px 28px 20px}
 
 .popalt h2{font-family:var(--serif);font-size:19px;font-weight:600;margin:0 0 3px}
 .popalt p{font-size:13px;color:var(--muted);margin:0 0 13px}
@@ -620,6 +608,25 @@
 @media(max-width:560px){.popalt{padding:18px 14px 12px;max-width:100%}.popalt-grid{grid-template-columns:1fr 1fr;gap:6px}.popalt-grid a{font-size:11.5px;padding:7px 8px;gap:6px}}
 .head-nav{font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:color .12s}.head-nav:hover{color:var(--ink)}.mnav{display:none}@media(max-width:560px){.head-nav{display:none}.mnav{display:flex;gap:18px;align-items:center;padding:7px 14px 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
 @media(max-width:560px){header{align-items:center;flex-wrap:nowrap;gap:10px;padding:13px 14px 11px}.brand{font-size:21px;gap:7px}.brand .mark{width:21px;height:21px}.lib-link{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
+
+/* ---------- wide screens: one shared content column ----------
+   Above 1500px the page is capped and centred. --wide is the column width at each
+   step and --edge the inner padding every section uses (the 28px the tool columns
+   have always had). .layout, .popalt, .browse-brands and footer take their width
+   from --wide; the full-bleed bands (header, .prop) pad their content to the same
+   edge. Result: every section shares one left edge however wide the window gets.
+   Kept at the END of the stylesheet on purpose, so it beats the base rules above
+   by source order. Nothing in here applies below 1500px. */
+@media(min-width:1500px){
+  :root{ --wide:1720px; --edge:28px; }
+  header, .prop{
+    padding-left:max(var(--edge), calc((100% - var(--wide)) / 2 + var(--edge)));
+    padding-right:max(var(--edge), calc((100% - var(--wide)) / 2 + var(--edge)));
+  }
+  .layout, .popalt, .browse-brands > *, footer{ max-width:var(--wide); }
+}
+@media(min-width:1900px){ :root{ --wide:2000px; } }
+@media(min-width:2400px){ :root{ --wide:2320px; } }
 </style>
 </head>
 <body>
