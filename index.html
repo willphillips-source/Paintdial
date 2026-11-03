@@ -1069,6 +1069,24 @@ function priceEl(brand,cls){
 const OFFERS = {};
 let activeBrands=new Set(); // empty set = no restriction
 let shown=12;
+/* The grid is auto-fill, so its column count depends on the window: 2 on a phone,
+   7 on a laptop, 8 on a big monitor. A fixed page of 12 therefore left the last row
+   half empty at most desktop widths. fullRows() rounds a count up to whole rows of
+   the grid as it is right now, so the first page and every "show more" page end on
+   a complete row (the very end of the list can still be ragged, which is fine).
+   Column count is read from the resolved track list; if a browser won't give one,
+   the count is left as it is. */
+function gridCols(){
+  const t=getComputedStyle(document.getElementById('grid')).gridTemplateColumns;
+  const n=(t&&t!=='none')?t.trim().split(/\s+/).filter(x=>/^[\d.]+px$/.test(x)).length:0;
+  return n;
+}
+function fullRows(n){ const c=gridCols(); return c?Math.ceil(n/c)*c:n; }
+let lastCols=0;
+window.addEventListener('resize',()=>{
+  clearTimeout(window._pdResize);
+  window._pdResize=setTimeout(()=>{ if(lastCols&&gridCols()!==lastCols&&document.getElementById('grid').children.length) renderMatches(); },150);
+});
 const brandChips=document.getElementById('brandChips'),
       resetBtn=document.getElementById('filterReset');
 function refreshFilterUI(){
@@ -1252,7 +1270,10 @@ function renderMatches(){
   const PICK_OK=rgbToOklab(...hexToRgb(hx));
   const ranked=pool.map(p=>({...p,d:okDistM(PICK_OK,p.ok)})).sort((a,b)=>a.d-b.d);
   renderLadder(lab, pool);
-  const rest=ranked.slice(4,4+Math.min(shown,Math.max(ranked.length-4,0),48));
+  const avail=Math.min(Math.max(ranked.length-4,0),48);
+  shown=Math.min(fullRows(shown),avail);
+  lastCols=gridCols();
+  const rest=ranked.slice(4,4+shown);
 
   const bw=document.getElementById('bestWrap');
   const alts=ranked.slice(0,4);
@@ -1286,7 +1307,7 @@ function renderMatches(){
   document.getElementById('subline').textContent=
     `Ranked by closeness of match, across ${pool.length} shades from nine UK brands.`;
   const moreWrap=document.getElementById('moreWrap');
-  if(rest.length < Math.min(Math.max(ranked.length-4,0),48)){
+  if(rest.length < avail){
     moreWrap.innerHTML='<button class="more-btn" id="moreBtn">Show more matches</button>';
     moreWrap.querySelector('#moreBtn').addEventListener('click',()=>{shown=Math.min(shown+12,48);renderMatches();});
   } else moreWrap.innerHTML='';
