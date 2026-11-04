@@ -94,7 +94,18 @@ AWIN_AFFID = "2971455"
 FRESHLICK_MID = None
 FRESHLICK_BRANDS = {"Little Greene", "Crown"}
 BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints',
-               'Earthborn', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage']
+               'Earthborn', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany']
+# SOURCED FROM A STOCKIST, NOT THE BRAND. Every other brand's values are its own published swatches.
+# Zoffany (156, added 4 Nov 2026) publishes none: zoffany.design shows JPEG swatches only and its
+# product API has no colour field. Its values are the ones Brewers, its main UK stockist, publishes
+# as CSS backgrounds on brewers.co.uk/colours/zoffany (156 colours, hash-verified against the live
+# page). Names, codes (ZOP1001-1156) and links are Zoffany's own; Brewers spells two names
+# differently (Manila/Sheepskin vs Zoffany's Manilla/Sheep Skin). Will chose this on 4 Nov 2026 over
+# leaving Zoffany out. Anything that says "each brand's own published swatch" must say so, so the
+# claim is built from SOURCE_NOTE below rather than typed, and the brand and colour pages carry it.
+SOURCE_NOTE = {
+    'Zoffany': ('Brewers', 'https://www.brewers.co.uk/colours/zoffany'),
+}
 # Dulux Heritage (113, added 4 Nov 2026) is Dulux's designer range with its own names, site and
 # price (Velvet Matt 2.5L £45-47), so it is its own brand here rather than more Dulux rows. Values
 # are the "rgb" field in duluxheritage.co.uk's page data, which the site renders its own swatches
@@ -113,7 +124,7 @@ BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johns
 # lakelandpaints.co.uk), like Lick and COAT. No per-colour pages exist, so every Lakeland
 # colour links to the matchpot page, where the picker lives.
 TIER = {'Farrow & Ball': 3, 'Little Greene': 3, 'Craig & Rose': 3, 'Lick': 3, 'COAT': 3,
-        'Earthborn': 3, 'Paint & Paper Library': 3, 'Edward Bulmer': 3, 'Dulux Heritage': 3,
+        'Earthborn': 3, 'Paint & Paper Library': 3, 'Edward Bulmer': 3, 'Dulux Heritage': 3, 'Zoffany': 3,
         'Dulux': 2, 'Crown': 2, 'Lakeland Paints': 2, "Johnstone's": 1, 'Valspar': 1}
 TIER_WORD = {3: 'Premium', 2: 'Mid-range', 1: 'Value'}
 
@@ -133,6 +144,40 @@ def brand_list(sep=', ', last=' and ', esc=True):
     names = [b.replace("'", '’') for b in BRAND_ORDER]
     names = [H.escape(n, quote=False) if esc else n for n in names]
     return sep.join(names[:-1]) + last + names[-1]
+
+assert set(SOURCE_NOTE) <= set(BRAND_ORDER), "SOURCE_NOTE names a brand not in BRAND_ORDER"
+
+def source_exception(html=True):
+    # The clause that qualifies "each brand's own published swatch", or '' if every brand
+    # publishes its own. Gives e.g. ", except Zoffany, which publishes none: its values are
+    # the ones Brewers, its main UK stockist, publishes".
+    if not SOURCE_NOTE:
+        return ''
+    bits = []
+    for b, (stockist, url) in SOURCE_NOTE.items():
+        sname = (f'<a href="{url}" rel="nofollow noopener" target="_blank">{stockist}</a>' if html else stockist)
+        bname = H.escape(b) if html else b
+        bits.append(f'{bname}, which publishes none: its values are the ones {sname}, its main UK stockist, publishes')
+    return ', except ' + '; and '.join(bits)
+
+def source_short():
+    # Short bracketed form for method notes: " (Zoffany's come from its stockist Brewers, as
+    # Zoffany publishes none)". '' if every brand publishes its own.
+    if not SOURCE_NOTE:
+        return ''
+    bits = [f'{H.escape(b)}’s come from its stockist {s}, as {H.escape(b)} publishes none'
+            for b, (s, _) in SOURCE_NOTE.items()]
+    return ' (' + '; '.join(bits) + ')'
+
+def source_line(brand):
+    # Note for the brand and colour pages of a brand sourced from a stockist; '' otherwise.
+    if brand not in SOURCE_NOTE:
+        return ''
+    stockist, url = SOURCE_NOTE[brand]
+    b = H.escape(brand)
+    return (f'<p class="srcnote">{b} doesn’t publish digital colour values, so the values here are the ones '
+            f'<a href="{url}" rel="nofollow noopener" target="_blank">{stockist}</a>, its main UK stockist, '
+            f'publishes. Names and links are {b}’s own.</p>')
 
 # ---------- colour maths ----------
 def hex2rgb(h): return tuple(int(h[i:i+2], 16) for i in (1, 3, 5))
@@ -251,13 +296,14 @@ FOOT = ("<span class=\"foot-links\">"
         "<a href=\"/\">Colour tool</a>"
         "</span>"
         "<span class=\"foot-copy\">\u00a9 2026 PaintDial. All rights reserved.</span>"
-        "Screen colours are indicative \u2014 always order a tester pot before committing. Colour values are the "
-        "brand\u2019s published digital swatches; LRV is estimated. Colour names are the property of their respective "
+        "Screen colours are indicative \u2014 always order a tester pot before committing. Colour values are each "
+        "brand\u2019s published digital swatches" + source_exception(html=False) + "; LRV is estimated. Colour names are the property of their respective "
         "brands. Some links may earn PaintDial a commission at no cost to you. PaintDial is free to use — if it "
         "saved you a tester pot, you can <a href=\"https://ko-fi.com/paintdial\" target=\"_blank\" rel=\"noopener\">buy Will a coffee</a>.")
 
 # ---------- colour page CSS (current, with all layout fixes) ----------
 CSS = """
+.srcnote{font-size:12.5px;line-height:1.5;color:var(--muted);margin:10px 0 14px;max-width:62ch}.srcnote a{color:inherit}
 :root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#665F54;--hairline:#E3DFD5;--pc:#5E7E8B;
 --serif:"Fraunces Amp","Fraunces",Georgia,serif;--sans:"Archivo",-apple-system,sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -461,7 +507,7 @@ def build_colour_page(i):
 {HDR}
 <div class="hero"><div class="hero-swatch">{heart(p['name'], p['brand'], p['hex'])}</div><div class="hero-body">
 <span class="eyebrow">{brand}</span><h1>{name}</h1>
-<div class="facts"><span>Hex <b>{p['hex']}</b></span><span>LRV <b>\u2248\u2009{lrv(L0):.0f}</b></span><span>Lightness <b>{L0:.0f}/100</b></span></div>
+<div class="facts"><span>Hex <b>{p['hex']}</b></span><span>LRV <b>\u2248\u2009{lrv(L0):.0f}</b></span><span>Lightness <b>{L0:.0f}/100</b></span></div>{source_line(p['brand'])}
 <a class="btn" href="{buy_link(p)}" target="_blank" rel="noopener sponsored">Buy {name} \u2192</a>
 <p class="afftext">Affiliate link \u2014 PaintDial may earn a small commission at no cost to you.</p>
 </div></div>
@@ -617,6 +663,7 @@ def colour_facets(hx):
     return tone, tags
 
 LIB_CSS = """
+.srcnote{font-size:13px;line-height:1.5;color:var(--muted);margin:10px 0 0;max-width:70ch}.srcnote a{color:inherit}
 :root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#665F54;--hairline:#E3DFD5;--pc:#5E7E8B;
 --serif:"Fraunces Amp","Fraunces",Georgia,serif;--sans:"Archivo",-apple-system,sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -776,7 +823,7 @@ def build_brand_page(b):
 {LIB_HDR}
 <div class="top"><span class="eyebrow">The colour library</span>
 <h1>{be}</h1>
-<p class="lede">All {len(idxs)} {be} colours. Filter by colour, type or tone \u2014 a muted shade can be both a colour and a neutral, so nothing hides. Tap any swatch for its cross-brand matches, lighter &amp; darker versions, and where to buy.</p>{dupes_link}</div>
+<p class="lede">All {len(idxs)} {be} colours. Filter by colour, type or tone \u2014 a muted shade can be both a colour and a neutral, so nothing hides. Tap any swatch for its cross-brand matches, lighter &amp; darker versions, and where to buy.</p>{dupes_link}{source_line(b)}</div>
 <div class="fan">{fan}</div>
 {sections}
 <footer>{FOOT}</footer>
@@ -1101,7 +1148,7 @@ def build_dupes_page(brand):
 <span class="eyebrow">Ranked dupes</span>
 <h1>Every {bname} colour\u2019s best-value match, ranked</h1>
 <p class="sub">All {len(rows)} {bname} colours, each paired with its single closest match from a value or mid-range brand \u2014 ranked from the strongest match down. Compare shows the pair full screen; tap a row for the full colour page, more matches, and where to buy.</p>
-<p class="method">Matches are computed from each brand\u2019s published digital swatches using perceptual colour distance. Screen colours are indicative \u2014 always order tester pots of both before committing.</p>
+<p class="method">Matches are computed from each brand\u2019s published digital swatches{source_short()} using perceptual colour distance. Screen colours are indicative \u2014 always order tester pots of both before committing.</p>
 <div class="brands-nav">{nav}</div>
 <div class="dupe-list">{body}</div>
 <footer>{FOOT}</footer>
@@ -1214,7 +1261,7 @@ def _page_shell(title, desc, path, body, head=""):
 def build_method_page():
     faqs = [
         ("How accurate are the matches?",
-         "The matching itself is exact: it compares each brand\u2019s published colour value with every other, using the same maths for every paint. What it cannot know is how a colour will look on your wall. Anything labelled near-identical or very close is a safe shortlist; the tester pot is what tells you which one to buy."),
+         "The matching itself is exact: it compares each brand\u2019s published colour value" + source_short() + " with every other, using the same maths for every paint. What it cannot know is how a colour will look on your wall. Anything labelled near-identical or very close is a safe shortlist; the tester pot is what tells you which one to buy."),
         ("Why does the paint look different from the swatch on my screen?",
          "Screens emit light and paint reflects it, so no screen shows a paint exactly. Sheen, daylight, lamplight and the surface underneath all shift a colour too. That is why every colour page points you to a tester before anything else."),
         ("If two paints are near-identical, can I just swap one for the other?",
@@ -1237,7 +1284,7 @@ def build_method_page():
 <p>PaintDial compares {N:,} paints from {BRANDS_WORD} UK brands and finds the closest matches to any colour \u2014 across every brand at once, not just one manufacturer\u2019s range. Here\u2019s exactly how it works, and what its limits are.</p>
 
 <h2>Where the colour data comes from</h2>
-<p>Every colour in the library uses the brand\u2019s own published digital swatch \u2014 the colour value each manufacturer provides for its paints on the web. We don\u2019t re-photograph or estimate colours ourselves. LRV (light reflectance value) shown on colour pages is estimated from the swatch rather than measured from paint.</p>
+<p>Every colour in the library uses the brand\u2019s own published digital swatch \u2014 the colour value each manufacturer provides for its paints on the web{source_exception()}. We don\u2019t re-photograph or estimate colours ourselves. LRV (light reflectance value) shown on colour pages is estimated from the swatch rather than measured from paint.</p>
 
 <h2>How matches are calculated</h2>
 <p>Matches are ranked by perceptual colour difference \u2014 a measure of how different two colours look to the human eye \u2014 computed in the OKLab colour space, which handles hue more faithfully than older formulas (blues stay blue as they lighten, and purples don\u2019t get mistaken for blues). Our ranking also weights hue more heavily than lightness: a paint that\u2019s a touch lighter or darker still reads as the same colour, while one that\u2019s drifted in hue reads as a different colour \u2014 so matches keep the colour\u2019s character, and the lighter/darker ladder covers depth.</p>
@@ -1387,7 +1434,7 @@ def build_match_index_page():
 <p>Volume and aim are different things. <a href="/dupes/farrow-and-ball">See every Farrow &amp; Ball colour\u2019s closest match \u2192</a></p>
 
 <h2>Method</h2>
-<p>Every colour is each brand\u2019s <a href="/how-it-works/">own published digital swatch</a> \u2014 we don\u2019t photograph or estimate colours. Differences are computed in <b>OKLab</b>, weighting hue drift twice and discounting lightness, because a paint a shade lighter still reads as the same colour while one that\u2019s drifted in hue reads as a different one. Thresholds are the ones used across the site: near-identical = \u0394E&nbsp;&lt;&nbsp;2, very close = \u0394E&nbsp;&lt;&nbsp;5. \u201cGenuinely deep\u201d means OKLab lightness below {DEEP}.</p>
+<p>Every colour is each brand\u2019s <a href="/how-it-works/">own published digital swatch</a>{source_short()} \u2014 we don\u2019t photograph or estimate colours. Differences are computed in <b>OKLab</b>, weighting hue drift twice and discounting lightness, because a paint a shade lighter still reads as the same colour while one that\u2019s drifted in hue reads as a different one. Thresholds are the ones used across the site: near-identical = \u0394E&nbsp;&lt;&nbsp;2, very close = \u0394E&nbsp;&lt;&nbsp;5. \u201cGenuinely deep\u201d means OKLab lightness below {DEEP}.</p>
 
 <h2>What this doesn\u2019t claim</h2>
 <ul>
@@ -1557,7 +1604,7 @@ def build_choice_index_page():
 <p>Part of that is physics: screens emit light and pigment can\u2019t, so no paint will ever match a glowing violet. But the pattern holds <em>inside</em> paint itself: across these {len(brands)} brands, red reaches a peak chroma of {red_max:.2f}, yet purple stops at {purp_max:.2f} \u2014 less than half. <b>{red_vivid} red paints exceed a chroma of 0.10. Exactly {purp_vivid} purple does.</b></p>
 
 <h2>Method</h2>
-<p>Every colour is each brand\u2019s <a href="/how-it-works/">own published digital swatch</a>. Distinctness uses greedy clustering at the site\u2019s published near-identical threshold (\u0394E&nbsp;&lt;&nbsp;2 in our hue-weighted OKLab metric), averaged over five seeded random orderings; the spread across orderings is about 1%, so the count is not an artefact of ordering. Colour families are the site\u2019s own live classification \u2014 the same rule that files every colour in the <a href="/colours/">library</a>. Screen-colour coverage samples the sRGB gamut uniformly in OKLab volume (40,000 seeded points) and measures distance to the nearest paint with the site\u2019s own metric and thresholds.</p>
+<p>Every colour is each brand\u2019s <a href="/how-it-works/">own published digital swatch</a>{source_short()}. Distinctness uses greedy clustering at the site\u2019s published near-identical threshold (\u0394E&nbsp;&lt;&nbsp;2 in our hue-weighted OKLab metric), averaged over five seeded random orderings; the spread across orderings is about 1%, so the count is not an artefact of ordering. Colour families are the site\u2019s own live classification \u2014 the same rule that files every colour in the <a href="/colours/">library</a>. Screen-colour coverage samples the sRGB gamut uniformly in OKLab volume (40,000 seeded points) and measures distance to the nearest paint with the site\u2019s own metric and thresholds.</p>
 
 <h2>What this doesn\u2019t claim</h2>
 <ul>
@@ -1603,7 +1650,7 @@ def build_about_page():
 <p>Some \u201cwhere to buy\u201d links are affiliate links, run through partner networks including impact.com and Awin. If you buy through one, PaintDial may earn a small commission at no extra cost to you. That, plus the occasional coffee from a reader on <a href="https://ko-fi.com/paintdial" target="_blank" rel="noopener">Ko-fi</a>, is the only way the site makes money \u2014 there are no ads, no sponsored placements, and no paid rankings. Matches are never influenced by whether a link earns commission.</p>
 
 <h2>A note on colour names</h2>
-<p>Colour names and paint ranges are the property of their respective brands. PaintDial shows each brand\u2019s published digital swatch values for comparison \u2014 always order a tester pot before committing to any colour.</p>
+<p>Colour names and paint ranges are the property of their respective brands. PaintDial shows each brand\u2019s published digital swatch values{source_short()} for comparison \u2014 always order a tester pot before committing to any colour.</p>
 
 <p class="muted">Questions, corrections, or partnership enquiries: <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("About PaintDial",
