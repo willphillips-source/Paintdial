@@ -476,7 +476,7 @@ def build_colour_page(i):
 <p class="sub">Sympathetic neutrals for trim and ceilings, plus one contrast accent.</p>
 <div class="grid">{''.join(chip(j) for j in neutrals+accents)}</div>
 <div class="cta"><h2 style="margin-top:0">Not quite right?</h2>
-<p>Use the PaintDial colour tool to walk this colour lighter, darker, warmer or cooler across 5,000+ UK paints.</p>
+<p>Use the colour tool to find a lighter, darker, warmer or cooler version of this colour across {N:,} UK paints.</p>
 <a class="btn" href="/">Open the colour tool \u2192</a></div>
 <footer>{FOOT}</footer>
 </div><div class="top-band"></div><script>{SHORTLIST_JS}</script>{COMPARE_SCRIPT}</body></html>"""

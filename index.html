@@ -413,7 +413,16 @@
   .alt-row:focus-within{outline:2px solid var(--pick); outline-offset:2px;}
   .alt-link{text-decoration:none; color:inherit; outline:none;}
   .alt-link::after{content:""; position:absolute; inset:0;}
-  .alt-swatch{grid-area:sw; width:100%; height:84px;}
+  .alt-swatch{grid-area:sw; width:100%; height:84px; position:relative;}
+  /* Split-swatch cues. The two colours still touch (the seam is the comparison), but a
+     faint dotted line and corner tags make the split read as deliberate at a glance —
+     without them a near-identical match looked like a rendering fault. */
+  .alt-swatch::before,.alt-swatch::after,.chip .c-swatch::before,.chip .c-swatch::after{
+    position:absolute; bottom:7px; font-family:var(--sans); font-size:9px; font-weight:600;
+    letter-spacing:.08em; text-transform:uppercase; line-height:1; padding:3px 6px; border-radius:10px;
+    background:rgba(255,255,255,.82); color:#665F54; pointer-events:none;}
+  .alt-swatch::before,.chip .c-swatch::before{content:"yours"; left:16%; transform:translateX(-50%);}
+  .alt-swatch::after,.chip .c-swatch::after{content:"match"; left:66%; transform:translateX(-50%);}
   .alt-txt{grid-area:txt; display:flex; flex-direction:column; padding:10px 12px 4px; min-width:0; line-height:1.25;}
   .alt-txt b{font-family:var(--serif); font-size:15px; font-weight:600; text-wrap:pretty;}
   .alt-txt small{font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-top:2px;}
@@ -1278,12 +1287,15 @@ function renderLadder(lab, pool){
   });
 }
 
-/* Split swatch: your colour on the left, the match on the right, abutting with no
-   divider. A hairline between two similar colours exaggerates the gap; touching
-   them is how you actually judge a delta — if you can't find the seam, that IS
-   the answer. Source colour on the left because we read left to right. */
+/* Split swatch: your colour on the left, the match on the right, touching, because
+   that is how you judge a difference by eye. A solid divider would exaggerate a tiny
+   gap, so the seam is marked with a faint dotted line instead (alternating light and
+   dark dashes so it reads on any colour), and the halves carry "yours"/"match" tags
+   (see the CSS). Without any cue, near-identical matches looked like a rendering
+   fault. Source colour on the left because we read left to right. */
 function splitBG(srcHex,matchHex){
-  return `linear-gradient(90deg, ${srcHex} 0 32%, ${matchHex} 32% 100%)`;
+  return `repeating-linear-gradient(180deg, rgba(255,255,255,.55) 0 3px, rgba(0,0,0,.22) 3px 6px, transparent 6px 10px) 32% 0 / 1px 100% no-repeat, `+
+         `linear-gradient(90deg, ${srcHex} 0 32%, ${matchHex} 32% 100%)`;
 }
 /* Trigger for the full-screen compare view (/pd-compare.js). Your colour on the
    left, the match on the right, same as the card. Built here rather than by the
