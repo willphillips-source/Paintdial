@@ -69,13 +69,13 @@ def heart(name, brand, hexv):
 # inline so the button never flashes unstyled before the deferred script arrives.
 # The button sits BESIDE the card's link, never inside it (a button inside an anchor is
 # invalid HTML, the same lesson as the shortlist heart) and above the stretched link.
-COMPARE_BTN_CSS = ('.pd-cmp-btn{position:absolute;top:8px;left:8px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C8578;transition:transform .12s,color .12s;z-index:2;padding:0}'
-                   '.pd-cmp-btn:hover{transform:scale(1.12);color:#5E7E8B}'
+COMPARE_BTN_CSS = ('.pd-cmp-btn{position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 11px 0 9px;border:1px solid rgba(33,31,27,.14);border-radius:99px;background:rgba(255,255,255,.92);backdrop-filter:blur(3px);box-shadow:0 1px 2px rgba(33,31,27,.08);cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:.01em;line-height:1;color:#211F1B;white-space:nowrap;z-index:2;transition:transform .12s,box-shadow .12s}'
+                   '.pd-cmp-btn:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(33,31,27,.14)}'
                    '.pd-cmp-btn:focus-visible{outline:2px solid #5E7E8B;outline-offset:1px}'
-                   '.pd-cmp-btn svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}'
-                   '@media(max-width:560px){.pd-cmp-btn{width:27px;height:27px}}')
+                   '.pd-cmp-btn svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}'
+                   '@media(max-width:560px){.pd-cmp-btn{height:27px;font-size:11px;padding:0 10px 0 8px}}')
 COMPARE_SCRIPT = '<script src="/pd-compare.js" defer></script>'
-_CMP_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'
+_CMP_SVG = '<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'
 
 def cmp_btn(a, b, word):
     """Trigger for the full-screen compare view. a = the colour being matched (shown on
@@ -84,7 +84,7 @@ def cmp_btn(a, b, word):
     bn=H.escape(b['name'], quote=True); bb=H.escape(b['brand'], quote=True)
     return (f'<button class="pd-cmp-btn" type="button" data-ahex="{a["hex"]}" data-aname="{an}" data-abrand="{ab}" '
             f'data-bhex="{b["hex"]}" data-bname="{bn}" data-bbrand="{bb}" data-word="{H.escape(word, quote=True)}" '
-            f'aria-label="Compare {an} with {bn} full screen" title="Compare full screen">{_CMP_SVG}</button>')
+            f'aria-label="Compare {an} with {bn} full screen" title="See the pair full screen">{_CMP_SVG}<span>Compare</span></button>')
 
 def _ldjson(*objs):
     return "".join(f'<script type="application/ld+json">{_json.dumps(o, ensure_ascii=False, separators=(",",":"))}</script>' for o in objs)
@@ -466,7 +466,7 @@ def build_colour_page(i):
 <p class="afftext">Affiliate link \u2014 PaintDial may earn a small commission at no cost to you.</p>
 </div></div>
 <h2>Closest matches from other brands</h2>
-<p class="sub">One from each brand \u2014 the badge shows its price bracket. Tap any to open the full colour.</p>
+<p class="sub">One from each brand \u2014 the badge shows its price bracket. Compare shows the pair full screen; tap the card to open the full colour.</p>
 <div class="grid">{''.join(chip(j, home_lab=lab, show_tier=True, home_i=i) for j, _ in xmatch)}</div>
 {alt_link}
 <h2>Lighter &amp; darker</h2>
@@ -889,9 +889,8 @@ h2::after{content:'';display:block;width:34px;height:4px;border-radius:2px;backg
 .a-rank{flex:none;width:30px;text-align:center;font-family:var(--serif);font-size:14px;font-weight:600;color:var(--muted)}.alt{position:relative;display:flex;align-items:center;gap:12px;border:1px solid var(--hairline);border-radius:12px;background:var(--card);box-shadow:0 1px 2px rgba(33,31,27,.06);padding:0 14px 0 10px;overflow:hidden;text-decoration:none;color:inherit;cursor:pointer;transition:transform .12s,box-shadow .12s}
 .alt:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(33,31,27,.1)}
 .alt:focus-within{outline:2px solid var(--pc);outline-offset:2px}
-.a-sw{position:relative;width:72px;align-self:stretch;min-height:84px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);flex:none}
-.a-sw .pd-cmp-btn{top:calc(50% - 15px);left:calc(50% - 15px)}
-@media(max-width:560px){.a-sw .pd-cmp-btn{top:calc(50% - 13.5px);left:calc(50% - 13.5px)}}
+.a-sw{width:72px;align-self:stretch;min-height:84px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);flex:none}
+.a-body .pd-cmp-btn{position:relative;top:auto;left:auto;margin-top:9px}
 .a-body{flex:1;min-width:0;padding:13px 0}
 .a-nm{display:block;font-family:var(--serif);font-size:16px;font-weight:600;line-height:1.2;text-wrap:pretty;text-decoration:none;color:inherit;outline:none}
 .a-nm::after{content:"";position:absolute;inset:0}
@@ -1009,12 +1008,12 @@ h1{font-family:var(--serif);font-size:36px;font-weight:600;letter-spacing:-.012e
 .method{font-size:12.5px;color:var(--muted);max-width:640px;margin-bottom:30px}
 .method a{color:var(--pc)}
 .dupe-list{display:flex;flex-direction:column;gap:10px}
-.row{position:relative;display:grid;grid-template-columns:34px 1fr 40px 1fr;gap:0;align-items:stretch;background:var(--card);border:1px solid var(--hairline);border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;cursor:pointer;transition:box-shadow .12s,transform .12s}
+.row{position:relative;display:grid;grid-template-columns:34px 1fr auto 1fr;gap:0;align-items:stretch;background:var(--card);border:1px solid var(--hairline);border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;cursor:pointer;transition:box-shadow .12s,transform .12s}
 .row:hover{box-shadow:0 6px 18px rgba(33,31,27,.10);transform:translateY(-1px)}
 .row:focus-within{outline:2px solid var(--pc);outline-offset:2px}
 .row a.nm{text-decoration:none;color:inherit;outline:none}
 .row a.nm::after{content:"";position:absolute;inset:0}
-.arrow .pd-cmp-btn{position:relative;top:auto;left:auto;background:#fff;border:1px solid var(--hairline)}
+.arrow{padding:0 8px}.arrow .pd-cmp-btn{position:relative;top:auto;left:auto}
 .rank{display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:14px;font-weight:600;color:var(--muted);background:color-mix(in srgb,var(--paper) 60%,#fff);border-right:1px solid var(--hairline)}
 .half{display:flex;align-items:center;gap:12px;padding:10px 14px;min-width:0}
 .half .sw{width:64px;height:44px;border-radius:8px;flex:none;border:1px solid rgba(33,31,27,.08)}
@@ -1031,7 +1030,7 @@ footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--hairline);fon
 footer a{color:var(--muted)}
 .foot-links{display:block;margin-bottom:6px}.foot-links a{color:var(--pc);font-weight:600;text-decoration:none}.foot-links a:hover{text-decoration:underline}
 .foot-copy{display:block;margin-bottom:10px;color:var(--muted)}
-@media(max-width:760px){.row{grid-template-columns:28px 1fr}.rank{grid-row:1 / span 2}.arrow{position:absolute;top:7px;right:7px}.half{grid-column:2;padding:9px 11px;display:grid;grid-template-columns:46px 1fr;column-gap:12px;align-items:center}.half:first-of-type{padding-right:44px}.half:last-of-type{border-top:1px dashed var(--hairline)}.half .sw{width:46px;height:36px;grid-row:1 / span 2}.half .tx{grid-column:2;min-width:0}.badge{grid-column:2;justify-self:start;margin:4px 0 0}h1{font-size:28px}.wrap{padding:0 18px 60px}}
+@media(max-width:760px){.row{grid-template-columns:28px 1fr}.rank{grid-row:1 / span 2}.arrow{position:absolute;right:9px;bottom:9px;padding:0}.half{grid-column:2;padding:9px 11px;display:grid;grid-template-columns:46px 1fr;column-gap:12px;align-items:center}.half:last-of-type{border-top:1px dashed var(--hairline)}.half .sw{width:46px;height:36px;grid-row:1 / span 2}.half .tx{grid-column:2;min-width:0}.badge{grid-column:2;justify-self:start;margin:4px 0 0}h1{font-size:28px}.wrap{padding:0 18px 60px}}
 
 @media(max-width:640px){
 header{flex-wrap:wrap;row-gap:6px;padding:12px 0}
@@ -1101,7 +1100,7 @@ def build_dupes_page(brand):
 <nav><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a></div>
 <span class="eyebrow">Ranked dupes</span>
 <h1>Every {bname} colour\u2019s best-value match, ranked</h1>
-<p class="sub">All {len(rows)} {bname} colours, each paired with its single closest match from a value or mid-range brand \u2014 ranked from the strongest match down. Tap any row to see the full colour page, more matches, and where to buy.</p>
+<p class="sub">All {len(rows)} {bname} colours, each paired with its single closest match from a value or mid-range brand \u2014 ranked from the strongest match down. Compare shows the pair full screen; tap a row for the full colour page, more matches, and where to buy.</p>
 <p class="method">Matches are computed from each brand\u2019s published digital swatches using perceptual colour distance. Screen colours are indicative \u2014 always order tester pots of both before committing.</p>
 <div class="brands-nav">{nav}</div>
 <div class="dupe-list">{body}</div>
@@ -1833,10 +1832,10 @@ def build_alternatives_page(i):
         # card), so the compare button can sit beside the link rather than inside it.
         return (f'<div class="alt">'
                 f'<span class="a-rank">{rank}</span>'
-                f'<span class="a-sw" style="background:{q["hex"]}">{cmp_btn(p, q, matchword(d[k]))}</span>'
+                f'<span class="a-sw" style="background:{q["hex"]}"></span>'
                 f'<span class="a-body"><a class="a-nm" href="/colours/{s}">{H.escape(q["name"])}</a>'
                 f'<span class="a-br">{H.escape(q["brand"])} \u00b7 {TIER_WORD[TIER[q["brand"]]]} \u00b7 {matchword(d[k])}</span>'
-                f'{diff_html}{note_html}</span>'
+                f'{diff_html}{note_html}{cmp_btn(p, q, matchword(d[k]))}</span>'
                 f'<span class="a-hex">{q["hex"]}</span></div>')
 
     cards = ''.join(acard(n + 1, k) for n, k in enumerate(alts))
@@ -1890,7 +1889,7 @@ def build_alternatives_page(i):
 <div class="hero-stats"><span><i>Hex</i>{p['hex']}</span><span><i>LRV</i>\u2248 {lrv(L[i]):.0f}</span><span><i>Shade</i>{depth.capitalize()} {fam}</span></div></div></div>
 <p class="intro">{intro}</p>
 {verdict}
-<p class="intro">Below is every genuinely close match to <span class="pn"><i></i>{name}</span> from the other {OTHERS_WORD} brands \u2014 ranked purely by closeness, so where one brand has several near-misses, they all appear. For the single best match <em>per brand</em>, see the <a href="/colours/{slugs[i]}">{name} colour page</a>.</p>
+<p class="intro">Below is every genuinely close match to <span class="pn"><i></i>{name}</span> from the other {OTHERS_WORD} brands \u2014 ranked purely by closeness, so where one brand has several near-misses, they all appear. Compare on any card shows it against {name} full screen. For the single best match <em>per brand</em>, see the <a href="/colours/{slugs[i]}">{name} colour page</a>.</p>
 <h2>All {len(alts)} close matches, ranked</h2>
 <div class="alts">{cards}</div>
 <div class="faq"><h2>Common questions</h2>

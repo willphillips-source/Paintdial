@@ -602,11 +602,11 @@
 /* Full-screen compare trigger (top-left of the swatch; the heart has top-right).
    Behaviour is in /pd-compare.js, shared with every generated page. Keep this CSS
    identical to COMPARE_BTN_CSS in gen_pages.py. */
-.pd-cmp-btn{position:absolute;top:8px;left:8px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C8578;transition:transform .12s,color .12s;z-index:2;padding:0}
-.pd-cmp-btn:hover{transform:scale(1.12);color:#5E7E8B}
+.pd-cmp-btn{position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 11px 0 9px;border:1px solid rgba(33,31,27,.14);border-radius:99px;background:rgba(255,255,255,.92);backdrop-filter:blur(3px);box-shadow:0 1px 2px rgba(33,31,27,.08);cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:.01em;line-height:1;color:#211F1B;white-space:nowrap;z-index:2;transition:transform .12s,box-shadow .12s}
+.pd-cmp-btn:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(33,31,27,.14)}
 .pd-cmp-btn:focus-visible{outline:2px solid #5E7E8B;outline-offset:1px}
-.pd-cmp-btn svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-@media(max-width:560px){.pd-cmp-btn{width:27px;height:27px}}
+.pd-cmp-btn svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+@media(max-width:560px){.pd-cmp-btn{height:27px;font-size:11px;padding:0 10px 0 8px}}
 
 .popalt{max-width:1500px;margin:0 auto;padding:26px 28px 20px}
 
@@ -711,7 +711,7 @@
   <main class="results" id="results">
     <h2>Closest matching paints</h2>
     <p class="sub" id="subline">Ranked by closeness of match, across the library.</p>
-    <p class="results-note">Every swatch is split: your colour on the left, the match on the right, touching so you can judge the difference yourself. Matched on each brand&rsquo;s own published values. <span id="priceNote"></span> <a href="/how-it-works/">How matching works &rarr;</a></p>
+    <p class="results-note">Every swatch is split: your colour on the left, the match on the right, touching so you can judge the difference yourself. Compare on any card shows the pair full screen. Matched on each brand&rsquo;s own published values. <span id="priceNote"></span> <a href="/how-it-works/">How matching works &rarr;</a></p>
 
     <div class="filter-panel" role="group" aria-label="Filters">
       <div class="filter-group"><span class="f-label">Brand</span><div class="f-chips" id="brandChips"></div>
@@ -1288,10 +1288,10 @@ function splitBG(srcHex,matchHex){
 /* Trigger for the full-screen compare view (/pd-compare.js). Your colour on the
    left, the match on the right, same as the card. Built here rather than by the
    script so cards can render before the deferred script has loaded. */
-const CMP_SVG='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+const CMP_SVG='<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
 function cmpBtnHTML(srcHex,p,word){
   const q=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
-  return `<button class="pd-cmp-btn" type="button" data-ahex="${srcHex}" data-aname="Your colour" data-abrand="${srcHex}" data-bhex="${p.hex}" data-bname="${q(p.name)}" data-bbrand="${q(p.brand)}" data-word="${q(word)}" aria-label="Compare your colour with ${q(p.name)} full screen" title="Compare full screen">${CMP_SVG}</button>`;
+  return `<button class="pd-cmp-btn" type="button" data-ahex="${srcHex}" data-aname="Your colour" data-abrand="${srcHex}" data-bhex="${p.hex}" data-bname="${q(p.name)}" data-bbrand="${q(p.brand)}" data-word="${q(word)}" aria-label="Compare your colour with ${q(p.name)} full screen" title="See the pair full screen">${CMP_SVG}<span>Compare</span></button>`;
 }
 
 function renderMatches(){
