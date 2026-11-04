@@ -1275,7 +1275,7 @@ def build_method_page():
         # Figures from the Dulux Trade Colour Palette fandeck (duluxtradepaintexpert.co.uk), checked
         # 4 Nov 2026 against the Dulux colours in the library with the site's own distance measure.
         ("Is Dulux Trade the same as Dulux?",
-         "For colour, almost entirely. The Dulux Trade Colour Palette fan deck has 2,079 colours. 1,133 of them have exactly the same published value as a Dulux colour on PaintDial, and another 873 are near-identical or very close to one. The rest are mostly trade shades with a code instead of a name (like 10RR 73/016), and all but 12 have a very close match from a brand already here. That’s why Dulux Trade isn’t listed as a separate brand: it would mostly show you the same colours twice. The paint itself is a different product, so finish and coverage can differ even where the colour is the same. Checked November 2026."),
+         "For colour, almost entirely. The Dulux Trade Colour Palette fan deck has 2,079 colours. 1,133 of them have exactly the same published value as a Dulux colour on PaintDial, and another 873 are near-identical or very close to one. The rest are mostly trade shades with a code instead of a name (like 10RR 73/016), and all but 12 have a very close match from a brand already here. That’s why Dulux Trade isn’t listed as a separate brand: it would mostly show you the same colours twice. You can still type a Dulux Trade code into the search to find that colour and its closest matches from every brand. The paint itself is a different product, so finish and coverage can differ even where the colour is the same. Checked November 2026."),
         ("Is PaintDial free?",
          "Yes. No account, no app and no cost. The shortlist is saved in your browser, on your device."),
     ]
@@ -1302,8 +1302,9 @@ def build_method_page():
 <li><span class="label">Related / similar tone</span> \u2014 close in overall feel, but honestly not the same family. We label these rather than overclaim.</li>
 </ul>
 
-<h2>RAL Classic and BS 4800 codes</h2>
+<h2>RAL Classic, BS 4800 and Dulux Trade codes</h2>
 <p>Trade and specification colours are covered too: type a RAL Classic code (say, \u201cRAL 7016\u201d) or a British Standard BS 4800 code (say, \u201c08 B 15\u201d, Magnolia) \u2014 or a colour name \u2014 into the tool\u2019s search and PaintDial shows every brand\u2019s nearest paints to it. Our RAL values are derived from the standard\u2019s published CIELAB coordinates; our BS 4800 values are derived from measured colour data (averaged spectrophotometer readings, standardised to D65 / CIE 1964). Both are physical colour standards, so on-screen values are approximate conversions \u2014 for binding samples, use an official RAL or British Standard fan deck.</p>
+<p>Dulux Trade Colour Palette codes work the same way. Type one off the tin (say, “10RR 73/016”) and PaintDial sets the wheel to that colour, using the value Dulux Trade publishes for it, and tells you when it’s exactly the same colour as a retail Dulux paint, as hundreds of them are.</p>
 
 <h2>Why photo matching is approximate</h2>
 <p>The \u201c<a href="/match-paint-from-a-photo/">match from a photo</a>\u201d tool reads the pixel colour from your image. That pixel is shaped by the room\u2019s lighting, the camera\u2019s processing, and your screen \u2014 so treat photo matches as a strong starting point, not a guarantee. The same wall photographed at noon and at dusk will match to different paints.</p>
