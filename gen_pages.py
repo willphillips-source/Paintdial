@@ -63,6 +63,29 @@ def heart(name, brand, hexv):
             f'aria-label="Save {nm} to your shortlist" title="Save to shortlist">'
             '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg></button>')
 
+# ---------- full-screen compare view ----------
+# The behaviour lives in pd-compare.js (one file, shared with the homepage so the two
+# can't drift). Pages only carry the trigger button and the small CSS that styles it,
+# inline so the button never flashes unstyled before the deferred script arrives.
+# The button sits BESIDE the card's link, never inside it (a button inside an anchor is
+# invalid HTML, the same lesson as the shortlist heart) and above the stretched link.
+COMPARE_BTN_CSS = ('.pd-cmp-btn{position:absolute;top:8px;left:8px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C8578;transition:transform .12s,color .12s;z-index:2;padding:0}'
+                   '.pd-cmp-btn:hover{transform:scale(1.12);color:#5E7E8B}'
+                   '.pd-cmp-btn:focus-visible{outline:2px solid #5E7E8B;outline-offset:1px}'
+                   '.pd-cmp-btn svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}'
+                   '@media(max-width:560px){.pd-cmp-btn{width:27px;height:27px}}')
+COMPARE_SCRIPT = '<script src="/pd-compare.js" defer></script>'
+_CMP_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'
+
+def cmp_btn(a, b, word):
+    """Trigger for the full-screen compare view. a = the colour being matched (shown on
+       the left), b = the match (right); word = the closeness word shown in the view."""
+    an=H.escape(a['name'], quote=True); ab=H.escape(a['brand'], quote=True)
+    bn=H.escape(b['name'], quote=True); bb=H.escape(b['brand'], quote=True)
+    return (f'<button class="pd-cmp-btn" type="button" data-ahex="{a["hex"]}" data-aname="{an}" data-abrand="{ab}" '
+            f'data-bhex="{b["hex"]}" data-bname="{bn}" data-bbrand="{bb}" data-word="{H.escape(word, quote=True)}" '
+            f'aria-label="Compare {an} with {bn} full screen" title="Compare full screen">{_CMP_SVG}</button>')
+
 def _ldjson(*objs):
     return "".join(f'<script type="application/ld+json">{_json.dumps(o, ensure_ascii=False, separators=(",",":"))}</script>' for o in objs)
 AWIN_AFFID = "2971455"
@@ -361,8 +384,11 @@ def chip(j, home_lab=None, show_tier=False, home_i=None):
                         word = 'same family'
         tierlab = f'{TIER_WORD[TIER[q["brand"]]]} · ' if show_tier else ''
         de = f'<span class="c-de">{tierlab}{word}</span>'
+    # Compare button only where there is a colour to compare against (the page's own
+    # colour); the "pairs well with" chips are companions, not matches, so they get none.
+    cmp = cmp_btn(paints[home_i], q, word) if home_i is not None else ''
     return (f'<div class="chip">'
-            f'<div class="c-swatch" style="background:{q["hex"]}">{heart(q["name"], q["brand"], q["hex"])}</div>'
+            f'<div class="c-swatch" style="background:{q["hex"]}">{cmp}{heart(q["name"], q["brand"], q["hex"])}</div>'
             f'<div class="c-body"><a class="c-name" href="/colours/{slugs[j]}">{H.escape(q["name"])}</a>'
             f'<span class="c-brand">{H.escape(q["brand"])}</span>{de}</div></div>')
 
@@ -425,7 +451,7 @@ def build_colour_page(i):
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{img_url}">
 {FAVICON}
-{FONTS}<style>{CSS}.hero-swatch{{background:{p['hex']}}}{SHORTLIST_CSS}</style></head><body style="--pc:{p['hex']}"><div class="top-band"></div><div class="wrap">
+{FONTS}<style>{CSS}.hero-swatch{{background:{p['hex']}}}{SHORTLIST_CSS}{COMPARE_BTN_CSS}</style></head><body style="--pc:{p['hex']}"><div class="top-band"></div><div class="wrap">
 {HDR}
 <div class="hero"><div class="hero-swatch">{heart(p['name'], p['brand'], p['hex'])}</div><div class="hero-body">
 <span class="eyebrow">{brand}</span><h1>{name}</h1>
@@ -447,7 +473,7 @@ def build_colour_page(i):
 <p>Use the PaintDial colour tool to walk this colour lighter, darker, warmer or cooler across 5,000+ UK paints.</p>
 <a class="btn" href="/">Open the colour tool \u2192</a></div>
 <footer>{FOOT}</footer>
-</div><div class="top-band"></div><script>{SHORTLIST_JS}</script></body></html>"""
+</div><div class="top-band"></div><script>{SHORTLIST_JS}</script>{COMPARE_SCRIPT}</body></html>"""
     return page
 
 # ---------- brand library pages (redesigned: family-grouped tiles, fan banner) ----------
@@ -854,11 +880,15 @@ h1 .pn i{width:.52em;height:.52em;border-radius:.13em;margin-right:.24em;vertica
 h2{font-family:var(--serif);font-size:22px;font-weight:600;margin:32px 0 14px}
 h2::after{content:'';display:block;width:34px;height:4px;border-radius:2px;background:var(--pc);margin-top:7px}
 .alts{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.a-rank{flex:none;width:30px;text-align:center;font-family:var(--serif);font-size:14px;font-weight:600;color:var(--muted)}.alt{display:flex;align-items:center;gap:12px;border:1px solid var(--hairline);border-radius:12px;background:var(--card);box-shadow:0 1px 2px rgba(33,31,27,.06);padding:0 14px 0 10px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .12s,box-shadow .12s}
+.a-rank{flex:none;width:30px;text-align:center;font-family:var(--serif);font-size:14px;font-weight:600;color:var(--muted)}.alt{position:relative;display:flex;align-items:center;gap:12px;border:1px solid var(--hairline);border-radius:12px;background:var(--card);box-shadow:0 1px 2px rgba(33,31,27,.06);padding:0 14px 0 10px;overflow:hidden;text-decoration:none;color:inherit;cursor:pointer;transition:transform .12s,box-shadow .12s}
 .alt:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(33,31,27,.1)}
-.a-sw{width:72px;align-self:stretch;min-height:84px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);flex:none}
+.alt:focus-within{outline:2px solid var(--pc);outline-offset:2px}
+.a-sw{position:relative;width:72px;align-self:stretch;min-height:84px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);flex:none}
+.a-sw .pd-cmp-btn{top:calc(50% - 15px);left:calc(50% - 15px)}
+@media(max-width:560px){.a-sw .pd-cmp-btn{top:calc(50% - 13.5px);left:calc(50% - 13.5px)}}
 .a-body{flex:1;min-width:0;padding:13px 0}
-.a-nm{display:block;font-family:var(--serif);font-size:16px;font-weight:600;line-height:1.2;text-wrap:pretty}
+.a-nm{display:block;font-family:var(--serif);font-size:16px;font-weight:600;line-height:1.2;text-wrap:pretty;text-decoration:none;color:inherit;outline:none}
+.a-nm::after{content:"";position:absolute;inset:0}
 .a-br{display:block;font-size:11px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);margin:2px 0 4px}
 .a-note{display:block;font-size:13px;color:var(--ink)}
 .a-diff{display:block;font-size:12.5px;color:var(--muted);line-height:1.35;margin-top:1px}
@@ -973,8 +1003,12 @@ h1{font-family:var(--serif);font-size:36px;font-weight:600;letter-spacing:-.012e
 .method{font-size:12.5px;color:var(--muted);max-width:640px;margin-bottom:30px}
 .method a{color:var(--pc)}
 .dupe-list{display:flex;flex-direction:column;gap:10px}
-.row{display:grid;grid-template-columns:34px 1fr 24px 1fr;gap:0;align-items:stretch;background:var(--card);border:1px solid var(--hairline);border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;transition:box-shadow .12s,transform .12s}
+.row{position:relative;display:grid;grid-template-columns:34px 1fr 40px 1fr;gap:0;align-items:stretch;background:var(--card);border:1px solid var(--hairline);border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;cursor:pointer;transition:box-shadow .12s,transform .12s}
 .row:hover{box-shadow:0 6px 18px rgba(33,31,27,.10);transform:translateY(-1px)}
+.row:focus-within{outline:2px solid var(--pc);outline-offset:2px}
+.row a.nm{text-decoration:none;color:inherit;outline:none}
+.row a.nm::after{content:"";position:absolute;inset:0}
+.arrow .pd-cmp-btn{position:relative;top:auto;left:auto;background:#fff;border:1px solid var(--hairline)}
 .rank{display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:14px;font-weight:600;color:var(--muted);background:color-mix(in srgb,var(--paper) 60%,#fff);border-right:1px solid var(--hairline)}
 .half{display:flex;align-items:center;gap:12px;padding:10px 14px;min-width:0}
 .half .sw{width:64px;height:44px;border-radius:8px;flex:none;border:1px solid rgba(33,31,27,.08)}
@@ -991,7 +1025,7 @@ footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--hairline);fon
 footer a{color:var(--muted)}
 .foot-links{display:block;margin-bottom:6px}.foot-links a{color:var(--pc);font-weight:600;text-decoration:none}.foot-links a:hover{text-decoration:underline}
 .foot-copy{display:block;margin-bottom:10px;color:var(--muted)}
-@media(max-width:760px){.row{grid-template-columns:28px 1fr}.arrow{display:none}.half{padding:9px 11px;display:grid;grid-template-columns:46px 1fr;column-gap:12px;align-items:center}.half:last-of-type{border-top:1px dashed var(--hairline)}.half .sw{width:46px;height:36px;grid-row:1 / span 2}.half .tx{grid-column:2;min-width:0}.badge{grid-column:2;justify-self:start;margin:4px 0 0}h1{font-size:28px}.wrap{padding:0 18px 60px}}
+@media(max-width:760px){.row{grid-template-columns:28px 1fr}.arrow{position:absolute;top:7px;right:7px}.half{padding:9px 11px;display:grid;grid-template-columns:46px 1fr;column-gap:12px;align-items:center}.half:first-of-type{padding-right:44px}.half:last-of-type{border-top:1px dashed var(--hairline)}.half .sw{width:46px;height:36px;grid-row:1 / span 2}.half .tx{grid-column:2;min-width:0}.badge{grid-column:2;justify-self:start;margin:4px 0 0}h1{font-size:28px}.wrap{padding:0 18px 60px}}
 
 @media(max-width:640px){
 header{flex-wrap:wrap;row-gap:6px;padding:12px 0}
@@ -1030,16 +1064,18 @@ def build_dupes_page(brand):
         p, q = paints[i], paints[j]
         w = matchword(dd)
         badge_cls = ' good' if dd < 5 else ''
-        return (f'<a class="row" href="/colours/{slugs[i]}">'
+        # Row is a div with the first name as a stretched link; the compare button
+        # lives in the middle cell (top-right of the row on phones).
+        return (f'<div class="row">'
                 f'<span class="rank">{rank}</span>'
                 f'<span class="half"><span class="sw" style="background:{p["hex"]}"></span>'
-                f'<span class="tx"><span class="nm">{H.escape(p["name"])}</span>'
+                f'<span class="tx"><a class="nm" href="/colours/{slugs[i]}">{H.escape(p["name"])}</a>'
                 f'<span class="br">{H.escape(p["brand"])}</span></span></span>'
-                f'<span class="arrow">\u2192</span>'
+                f'<span class="arrow">{cmp_btn(p, q, w)}</span>'
                 f'<span class="half"><span class="sw" style="background:{q["hex"]}"></span>'
                 f'<span class="tx"><span class="nm">{H.escape(q["name"])}</span>'
                 f'<span class="br">{H.escape(q["brand"])} \u00b7 {TIER_WORD[TIER[q["brand"]]]}</span></span>'
-                f'<span class="badge{badge_cls}">{w}</span></span></a>')
+                f'<span class="badge{badge_cls}">{w}</span></span></div>')
 
     body = ''.join(rowhtml(n + 1, i, j, dd) for n, (i, j, dd) in enumerate(rows))
     title = f'{bname} dupes \u2014 every colour\u2019s closest value \u0026 mid-range match, ranked'
@@ -1054,7 +1090,7 @@ def build_dupes_page(brand):
   _breadcrumb([("Home","/"),("Dupes",None),(brand+" dupes",f"/dupes/{bslug}")]),
   _itemlist([(f"{paints[i0]['name']} \u2192 {paints[j0]['name']} by {paints[j0]['brand']}", f"/colours/{slugs[i0]}") for (i0,j0,_dd) in rows[:30]])
 )}
-{FONTS}<style>{DUPES_CSS}</style></head><body><div class="wrap">
+{FONTS}<style>{DUPES_CSS}{COMPARE_BTN_CSS}</style></head><body><div class="wrap">
 <header><a class="logo" href="/"><span class="logo-dial"></span>PaintDial</a>
 <nav><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a></div>
 <span class="eyebrow">Ranked dupes</span>
@@ -1064,7 +1100,7 @@ def build_dupes_page(brand):
 <div class="brands-nav">{nav}</div>
 <div class="dupe-list">{body}</div>
 <footer>{FOOT}</footer>
-</div></body></html>"""
+</div>{COMPARE_SCRIPT}</body></html>"""
 
 
 
@@ -1787,13 +1823,15 @@ def build_alternatives_page(i):
         _db = diff_bits(i, k)
         diff_html = (f'<span class="a-diff">{joinbits(_db).capitalize()} than {name}.</span>'
                      if _db else '')
-        return (f'<a class="alt" href="/colours/{s}">'
+        # The card is a div with the name as a stretched link (the ::after covers the
+        # card), so the compare button can sit beside the link rather than inside it.
+        return (f'<div class="alt">'
                 f'<span class="a-rank">{rank}</span>'
-                f'<span class="a-sw" style="background:{q["hex"]}"></span>'
-                f'<span class="a-body"><span class="a-nm">{H.escape(q["name"])}</span>'
+                f'<span class="a-sw" style="background:{q["hex"]}">{cmp_btn(p, q, matchword(d[k]))}</span>'
+                f'<span class="a-body"><a class="a-nm" href="/colours/{s}">{H.escape(q["name"])}</a>'
                 f'<span class="a-br">{H.escape(q["brand"])} \u00b7 {TIER_WORD[TIER[q["brand"]]]} \u00b7 {matchword(d[k])}</span>'
                 f'{diff_html}{note_html}</span>'
-                f'<span class="a-hex">{q["hex"]}</span></a>')
+                f'<span class="a-hex">{q["hex"]}</span></div>')
 
     cards = ''.join(acard(n + 1, k) for n, k in enumerate(alts))
     nm = lambda k: H.escape(paints[k]['name']); brn = lambda k: H.escape(paints[k]['brand'])
@@ -1837,7 +1875,7 @@ def build_alternatives_page(i):
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{DOMAIN}/share/{slugs[i]}.jpg">
 {FAVICON}
-{FONTS}<style>{ALT_CSS}</style></head><body style="--pc:{p['hex']}"><div class="top-band"></div><div class="wrap">
+{FONTS}<style>{ALT_CSS}{COMPARE_BTN_CSS}</style></head><body style="--pc:{p['hex']}"><div class="top-band"></div><div class="wrap">
 <header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a><a href="/">Colour tool</a></div>
 <h1>{brand} <span class="pn"><i></i>{name}</span> alternatives</h1>
 <div class="hero-card"><div class="hero-sw" style="background:{p['hex']}"></div>
@@ -1859,7 +1897,7 @@ def build_alternatives_page(i):
 <p style="font-size:14px;color:var(--muted);margin:6px 0 0">Search any paint name in the tool to see its closest matches across every UK brand.</p>
 <a href="/colours/{slugs[i]}">See the full {name} colour page \u2192</a></div>
 <footer>{FOOT}</footer>
-</div><div class="top-band"></div></body></html>"""
+</div><div class="top-band"></div>{COMPARE_SCRIPT}</body></html>"""
 
 # ---------- run ----------
 if __name__ == '__main__':
@@ -1928,6 +1966,12 @@ if __name__ == '__main__':
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += ''.join(f'<url><loc>{u}</loc></url>\n' for u in urls)+'</urlset>'
     open('site/sitemap.xml', 'w').write(sm)
+
+    # The compare view's script is one shared file (see COMPARE_SCRIPT above). Copied
+    # here rather than in build.sh so a plain `python3 gen_pages.py` run is complete too.
+    import shutil as _sh
+    _sh.copyfile('pd-compare.js', 'site/pd-compare.js')
+    print('pd-compare.js copied')
 
 
     # ---------- 404 page (Netlify serves 404.html automatically) ----------

@@ -596,6 +596,14 @@
 #pd-sl-flash.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .chip,.c-swatch,.alt-row,.hero-swatch{position:relative}
 @media(max-width:560px){#pd-tray{right:8px;bottom:8px;left:8px;max-width:none}.pd-heart{width:27px;height:27px}}
+/* Full-screen compare trigger (top-left of the swatch; the heart has top-right).
+   Behaviour is in /pd-compare.js, shared with every generated page. Keep this CSS
+   identical to COMPARE_BTN_CSS in gen_pages.py. */
+.pd-cmp-btn{position:absolute;top:8px;left:8px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C8578;transition:transform .12s,color .12s;z-index:2;padding:0}
+.pd-cmp-btn:hover{transform:scale(1.12);color:#5E7E8B}
+.pd-cmp-btn:focus-visible{outline:2px solid #5E7E8B;outline-offset:1px}
+.pd-cmp-btn svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:560px){.pd-cmp-btn{width:27px;height:27px}}
 
 .popalt{max-width:1500px;margin:0 auto;padding:26px 28px 20px}
 
@@ -1274,6 +1282,14 @@ function renderLadder(lab, pool){
 function splitBG(srcHex,matchHex){
   return `linear-gradient(90deg, ${srcHex} 0 32%, ${matchHex} 32% 100%)`;
 }
+/* Trigger for the full-screen compare view (/pd-compare.js). Your colour on the
+   left, the match on the right, same as the card. Built here rather than by the
+   script so cards can render before the deferred script has loaded. */
+const CMP_SVG='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+function cmpBtnHTML(srcHex,p,word){
+  const q=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  return `<button class="pd-cmp-btn" type="button" data-ahex="${srcHex}" data-aname="Your colour" data-abrand="${srcHex}" data-bhex="${p.hex}" data-bname="${q(p.name)}" data-bbrand="${q(p.brand)}" data-word="${q(word)}" aria-label="Compare your colour with ${q(p.name)} full screen" title="Compare full screen">${CMP_SVG}</button>`;
+}
 
 function renderMatches(){
   const hx=currentHex();
@@ -1295,6 +1311,7 @@ function renderMatches(){
       <span class="alt-swatch" style="background:${splitBG(hx,p.hex)}" title="Left: your colour ${hx}. Right: ${p.name} ${p.hex}."></span>
       <span class="alt-txt"><a class="alt-link" href="${colourPageUrl(p)}"><b>${p.name}</b></a><small>${p.brand}${OFFERS[p.brand]?'<span class="offer-tag" title="'+OFFERS[p.brand]+'">Offer</span>':''}</small>${priceEl(p.brand,'alt-price')}</span>
       <span class="alt-de">${qualityWord(p.d,p.ok,PICK_OK)}<span class="see">View \u2192</span></span>
+      ${cmpBtnHTML(hx,p,qualityWord(p.d,p.ok,PICK_OK))}
       ${PDShortlist.heartHTML(p.name,p.brand,p.hex)}
     </div>`).join('')+'</div>';
 
@@ -1304,7 +1321,7 @@ function renderMatches(){
     const el=document.createElement('div');
     el.className='chip';
     el.innerHTML=`
-      <div class="c-swatch" style="background:${splitBG(hx,p.hex)}" title="Left: your colour ${hx}. Right: ${p.name} ${p.hex}.">${PDShortlist.heartHTML(p.name,p.brand,p.hex)}</div>
+      <div class="c-swatch" style="background:${splitBG(hx,p.hex)}" title="Left: your colour ${hx}. Right: ${p.name} ${p.hex}.">${cmpBtnHTML(hx,p,qualityWord(p.d,p.ok,PICK_OK))}${PDShortlist.heartHTML(p.name,p.brand,p.hex)}</div>
       <div class="c-body">
         <a class="c-name" href="${colourPageUrl(p)}">${p.name}</a>
         <span class="c-brand">${p.brand}${OFFERS[p.brand]?'<span class="offer-tag" title="'+OFFERS[p.brand]+'">Offer</span>':''}</span>
@@ -1638,5 +1655,6 @@ setFromHex('#5E7E8B'); /* start on Stone Blue territory */
 })();
 
 </script>
+<script src="/pd-compare.js" defer></script>
 </body>
 </html>
