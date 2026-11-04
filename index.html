@@ -411,15 +411,10 @@
   .alt-link{text-decoration:none; color:inherit; outline:none;}
   .alt-link::after{content:""; position:absolute; inset:0;}
   .alt-swatch{grid-area:sw; width:100%; height:84px; position:relative;}
-  /* Split-swatch cues. The two colours still touch (the seam is the comparison), but a
-     faint dotted line and corner tags make the split read as deliberate at a glance —
-     without them a near-identical match looked like a rendering fault. */
-  .alt-swatch::before,.alt-swatch::after,.chip .c-swatch::before,.chip .c-swatch::after{
-    position:absolute; bottom:7px; font-family:var(--sans); font-size:9px; font-weight:600;
-    letter-spacing:.08em; text-transform:uppercase; line-height:1; padding:3px 6px; border-radius:10px;
-    background:rgba(255,255,255,.82); color:#665F54; pointer-events:none;}
-  .alt-swatch::before,.chip .c-swatch::before{content:"yours"; left:16%; transform:translateX(-50%);}
-  .alt-swatch::after,.chip .c-swatch::after{content:"match"; left:66%; transform:translateX(-50%);}
+  /* The split swatch's seam is drawn as a faint dotted line inside splitBG() below, so the
+     split reads as deliberate. "yours"/"match" tags were tried and dropped: too busy. */
+  .reach-note{font-size:13px; line-height:1.5; color:var(--ink); max-width:70ch; margin:12px 0 2px;
+    padding:9px 13px; border:1px solid var(--hairline); border-radius:9px; background:var(--card);}
   .alt-txt{grid-area:txt; display:flex; flex-direction:column; padding:10px 12px 4px; min-width:0; line-height:1.25;}
   .alt-txt b{font-family:var(--serif); font-size:15px; font-weight:600; text-wrap:pretty;}
   .alt-txt small{font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-top:2px;}
@@ -716,6 +711,7 @@
         <button class="f-reset" id="filterReset" hidden>Reset</button></div>
     </div>
 
+    <p class="reach-note" id="reachNote" hidden></p>
     <div id="bestWrap"></div>
     <div class="ladder-sec" id="ladderSec" style="display:none">
       <div class="ladder-head">
@@ -1279,9 +1275,8 @@ function renderLadder(lab, pool){
 /* Split swatch: your colour on the left, the match on the right, touching, because
    that is how you judge a difference by eye. A solid divider would exaggerate a tiny
    gap, so the seam is marked with a faint dotted line instead (alternating light and
-   dark dashes so it reads on any colour), and the halves carry "yours"/"match" tags
-   (see the CSS). Without any cue, near-identical matches looked like a rendering
-   fault. Source colour on the left because we read left to right. */
+   dark dashes so it reads on any colour). Without any cue, near-identical matches
+   looked like a rendering fault. Source colour on the left because we read left to right. */
 function splitBG(srcHex,matchHex){
   return `repeating-linear-gradient(180deg, rgba(255,255,255,.55) 0 3px, rgba(0,0,0,.22) 3px 6px, transparent 6px 10px) 32% 0 / 1px 100% no-repeat, `+
          `linear-gradient(90deg, ${srcHex} 0 32%, ${matchHex} 32% 100%)`;
@@ -1331,6 +1326,23 @@ function renderMatches(){
 
   document.getElementById('subline').textContent=
     `Ranked by closeness of match, across ${pool.length} shades from fourteen UK brands.`;
+
+  /* Out-of-reach note. A pick near the vivid rim of the wheel (or any colour the UK
+     ranges don't really make) gets visibly loose matches, and without a word of
+     explanation that looks like the tool has failed. Shown when nothing is "very close"
+     (d < 5) or fewer than two of the top four are under 8. The vivid wording is used
+     when the pick is as saturated as anything within 15 degrees of its hue. */
+  const reach=document.getElementById('reachNote');
+  const top4=ranked.slice(0,4);
+  const loose = top4.length && (top4[0].d>=5 || top4.filter(p=>p.d<8).length<2);
+  if(loose){
+    const [,pC,pH]=okLch(PICK_OK);
+    let maxC=0; pool.forEach(p=>{const [,c,h]=okLch(p.ok); if(hueDiff(h,pH)<=15 && c>maxC) maxC=c;});
+    reach.textContent = (pC>0.08 && pC>=maxC*0.9)
+      ? 'Few UK paints are as vivid as this colour, so none of the matches is very close. These are the nearest there are.'
+      : 'Nothing in the UK ranges comes very close to this colour. These are the nearest there are.';
+    reach.hidden=false;
+  } else reach.hidden=true;
   const moreWrap=document.getElementById('moreWrap');
   if(rest.length < avail){
     moreWrap.innerHTML='<button class="more-btn" id="moreBtn">Show more matches</button>';
