@@ -1359,9 +1359,10 @@ def build_match_index_page():
         f'<span class="bval">{v:.1f}</span>'
         f'<span class="bnote">{n} from {sz:,}</span></div>' for b, v, n, sz in per100)
 
-    RESEARCH['match'] = dict(pct_vc=pct_vc, n_uniq=len(uniq), n_prem=len(prem))
+    prem_brands = sorted({paints[i]['brand'] for i in prem})
+    RESEARCH['match'] = dict(pct_vc=pct_vc, n_uniq=len(uniq), n_prem=len(prem), n_prem_brands=len(prem_brands))
     body = f"""<span class="eyebrow">Research \u00b7 The UK Paint Match Index</span>
-<h1>Only {len(uniq)} of Britain\u2019s {len(prem)} premium paint colours can\u2019t be matched. They\u2019re all from one brand.</h1>
+<h1>Only {len(uniq)} of the {len(prem):,} premium paint colours from {numword(len(prem_brands))} UK brands can\u2019t be matched. They\u2019re all from one brand.</h1>
 <p>We compared every one of the {N:,} colours published by {len(brands)} UK paint brands against every other \u2014 millions of pairwise comparisons \u2014 to answer one question: how many premium paint colours are genuinely unique, and how many already have a near-identical twin?</p>
 <p class="muted">Updated automatically from PaintDial\u2019s live colour library. Last built {TODAY}.</p>
 
@@ -1376,7 +1377,7 @@ def build_match_index_page():
 <p>Of {len(prem)} premium colours, just <b>{len(uniq)}</b> have no very-close match from any other brand. Every one belongs to <b>{uniq_brands.most_common(1)[0][0]}</b>.</p>
 <div class="uq-grid">{uniq_rows}</div>
 
-<h2>4. The reason: British paint barely goes dark</h2>
+<h2>4. The reason: these brands barely go dark</h2>
 <p>Only <b>{len(deep)} of {N:,}</b> colours across all {len(brands)} brands are genuinely deep. By brand: {deep_rows}.</p>
 <p>That single fact explains the finding above. {uniq_brands.most_common(1)[0][0]} isn\u2019t unmatchable because it\u2019s premium \u2014 it\u2019s unmatchable because it\u2019s the only brand making colours that dark. <b>Depth, not prestige, is what can\u2019t be copied.</b></p>
 
@@ -1394,8 +1395,9 @@ def build_match_index_page():
 <li><b>Screen, not wall.</b> These are digital swatch comparisons. Real paint differs by finish, pigment and light \u2014 a near-identical hex is a shortlist, not a guarantee. Always order testers.</li>
 <li><b>Range sizes differ enormously</b> ({max(len(v) for v in idx_by_brand.values()):,} colours vs {min(len(v) for v in idx_by_brand.values())}). Every brand-level claim here is corrected for that.</li>
 <li><b>Published ranges only.</b> Mix-to-order and bespoke matching are excluded.</li>
+<li><b>{numword(len(brands)).capitalize()} brands, not the whole market.</b> The library holds every brand that publishes a colour value for each paint; ranges that publish only photographs are left out rather than guessed at.</li>
 </ul>
-<p class="muted">Companion study: <a href="/paint-choice-index/">The UK Paint Choice Index</a> \u2014 how much genuine choice Britain\u2019s paint colours actually offer. Journalists and researchers: the underlying comparisons are all on the site, colour by colour. Questions or corrections \u2014 <a href="/contact/">get in touch</a>.</p>"""
+<p class="muted">Companion study: <a href="/paint-choice-index/">The UK Paint Choice Index</a> \u2014 how much genuine choice these brands\u2019 colours actually offer. Journalists and researchers: the underlying comparisons are all on the site, colour by colour. Questions or corrections \u2014 <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("The UK Paint Match Index",
         f"We compared {N:,} UK paint colours across {len(brands)} brands. {pct_vc}% of premium colours have a very close match from another brand \u2014 and only {len(uniq)} can\u2019t be matched at all.",
         "/paint-match-index/", body)
@@ -1532,13 +1534,13 @@ def build_choice_index_page():
 
     RESEARCH['choice'] = dict(distinct=distinct, dup_pct=dup_pct, exact_total=exact_total, purp_vivid=purp_vivid)
     body = f"""<span class="eyebrow">Research \u00b7 The UK Paint Choice Index</span>
-<h1>Britain sells {N:,} paint colours. Only {distinct:,} of them are actually different.</h1>
-<p>Britain sells {N:,} paint colours across {len(brands)} brands. This study asks a simple question of all of them: <b>how much genuine choice is that?</b></p>
+<h1>{numword(len(brands)).capitalize()} UK paint brands sell {N:,} colours between them. Only {distinct:,} are actually different.</h1>
+<p>The {len(brands)} brands in PaintDial’s library ({brand_list()}) publish {N:,} colours between them. This study asks a simple question of all of them: <b>how much genuine choice is that?</b> It covers those brands, not the whole UK market: own-label ranges that publish no colour values are not in the library, so they are not in these figures.</p>
 <p class="muted">Computed automatically from PaintDial\u2019s live colour library, using the same thresholds as every page on this site. Last built {TODAY}.</p>
 
-<h2>1. Half of Britain\u2019s paint colours are duplicates</h2>
+<h2>1. Half of these colours are duplicates</h2>
 <p class="bignum">{distinct:,} of {N:,}<small>colours are genuinely distinct at our near-identical threshold</small></p>
-<p>You could remove <b>{dup_pct}%</b> of the colours on sale in Britain and every one removed would still have a near-identical match among the survivors. Without any clustering at all: <b>{round(100*twin_any/N)}%</b> of colours have a near-identical twin somewhere on the market, and <b>{round(100*twin_cross/N)}%</b> have one from a <em>different brand</em>. <a href="/">Check any colour\u2019s twins in the tool \u2192</a></p>
+<p>You could remove <b>{dup_pct}%</b> of the colours these {len(brands)} brands sell and every one removed would still have a near-identical match among the survivors. Without any clustering at all: <b>{round(100*twin_any/N)}%</b> of colours have a near-identical twin somewhere in the library, and <b>{round(100*twin_cross/N)}%</b> have one from a <em>different brand</em>. <a href="/">Check any colour\u2019s twins in the tool \u2192</a></p>
 
 <h2>2. {exact_total} colours share an exact value with a sibling from their own brand</h2>
 <p>Not near-identical \u2014 identical. The same published swatch value, sold under two names by the same brand:</p>
@@ -1550,9 +1552,9 @@ def build_choice_index_page():
 <div class="bars">{inb_rows}</div>
 <p>Bigger ranges duplicate more \u2014 partly simple arithmetic: publish {max(brand_n.values()):,} colours into a finite space and overlap follows. But it means a bigger colour card is not proportionally more choice.</p>
 
-<h2>4. The colour Britain doesn\u2019t sell</h2>
-<p>Take every colour a standard screen can display and ask: does any UK paint come <b>very close</b> to it (our site-wide \u0394E&nbsp;&lt;&nbsp;5)? The answer is yes for just <b>{cover_pct}%</b> of them. The missing colour isn\u2019t evenly spread \u2014 it is overwhelmingly the vivid end of <b>purple ({unc_purple}% of the gap), blue ({unc_blue}%) and the reds and pinks ({unc_pink}%)</b>.</p>
-<p>Part of that is physics: screens emit light and pigment can\u2019t, so no paint will ever match a glowing violet. But the pattern holds <em>inside</em> paint itself: British paint pushes red to a peak chroma of {red_max:.2f}, yet purple stops at {purp_max:.2f} \u2014 less than half. <b>{red_vivid} red paints exceed a chroma of 0.10. Exactly {purp_vivid} purple does.</b></p>
+<h2>4. The colour these brands don\u2019t sell</h2>
+<p>Take every colour a standard screen can display and ask: does any paint in the library come <b>very close</b> to it (our site-wide \u0394E&nbsp;&lt;&nbsp;5)? The answer is yes for just <b>{cover_pct}%</b> of them. The missing colour isn\u2019t evenly spread \u2014 it is overwhelmingly the vivid end of <b>purple ({unc_purple}% of the gap), blue ({unc_blue}%) and the reds and pinks ({unc_pink}%)</b>.</p>
+<p>Part of that is physics: screens emit light and pigment can\u2019t, so no paint will ever match a glowing violet. But the pattern holds <em>inside</em> paint itself: across these {len(brands)} brands, red reaches a peak chroma of {red_max:.2f}, yet purple stops at {purp_max:.2f} \u2014 less than half. <b>{red_vivid} red paints exceed a chroma of 0.10. Exactly {purp_vivid} purple does.</b></p>
 
 <h2>Method</h2>
 <p>Every colour is each brand\u2019s <a href="/how-it-works/">own published digital swatch</a>. Distinctness uses greedy clustering at the site\u2019s published near-identical threshold (\u0394E&nbsp;&lt;&nbsp;2 in our hue-weighted OKLab metric), averaged over five seeded random orderings; the spread across orderings is about 1%, so the count is not an artefact of ordering. Colour families are the site\u2019s own live classification \u2014 the same rule that files every colour in the <a href="/colours/">library</a>. Screen-colour coverage samples the sRGB gamut uniformly in OKLab volume (40,000 seeded points) and measures distance to the nearest paint with the site\u2019s own metric and thresholds.</p>
@@ -1563,10 +1565,11 @@ def build_choice_index_page():
 <li><b>Duplication is not an accusation.</b> Much of it is arithmetic \u2014 large ranges into a finite colour space \u2014 and some may be deliberate continuity across renamed ranges.</li>
 <li><b>Screens glow; pigment doesn\u2019t.</b> Some of the \u201cmissing\u201d colour in finding 4 is physically out of reach for any paint. The red-versus-purple contrast, measured within paint alone, does not depend on that comparison.</li>
 <li><b>No price claims.</b> PaintDial holds no live pricing.</li>
+<li><b>{numword(len(brands)).capitalize()} brands, not the whole market.</b> The library holds every brand that publishes a colour value for each paint. Own-label and other ranges that publish only photographs are left out rather than guessed at, so the UK total is higher than {N:,}.</li>
 </ul>
 <p class="muted">Companion study: <a href="/paint-match-index/">The UK Paint Match Index</a> \u2014 how closely premium colours can be matched across brands. Questions or corrections \u2014 <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("The UK Paint Choice Index",
-        f"Britain sells {N:,} paint colours. Only {distinct:,} are genuinely distinct \u2014 and just {purp_vivid} purple is genuinely vivid.",
+        f"{numword(len(brands)).capitalize()} UK paint brands sell {N:,} colours between them. Only {distinct:,} are genuinely distinct \u2014 and just {purp_vivid} purple is genuinely vivid.",
         "/paint-choice-index/", body)
 
 
@@ -1577,8 +1580,8 @@ def build_research_hub():
 <h1>Research</h1>
 <p>Original studies computed from PaintDial\u2019s live library \u2014 {N:,} colours across {len(brands)} UK brands, compared with the same metric and thresholds used on every page of this site. Each study rebuilds automatically as brands are added.</p>
 <div class="rsch-cards">
-<a class="rsch-card" href="/paint-match-index/"><small>The UK Paint Match Index</small><b>Only {_rm['n_uniq']} of Britain\u2019s {_rm['n_prem']} premium paint colours can\u2019t be matched. They\u2019re all from one brand.</b><span>{_rm['pct_vc']}% of premium colours have a very close match from a value brand. The ones that don\u2019t aren\u2019t special because they\u2019re expensive. They\u2019re the only ones that go properly dark.</span></a>
-<a class="rsch-card" href="/paint-choice-index/"><small>The UK Paint Choice Index</small><b>Britain sells {N:,} paint colours. Only {_rc['distinct']:,} of them are actually different.</b><span>{_rc['dup_pct']}% of what\u2019s on sale has a near-identical twin, {_rc['exact_total']} colours share an exact value with a sibling from their own range, and there is one colour almost nobody makes: a vivid purple. {_rc['purp_vivid']} exists.</span></a>
+<a class="rsch-card" href="/paint-match-index/"><small>The UK Paint Match Index</small><b>Only {_rm['n_uniq']} of the {_rm['n_prem']:,} premium paint colours from {numword(_rm['n_prem_brands'])} UK brands can\u2019t be matched. They\u2019re all from one brand.</b><span>{_rm['pct_vc']}% of premium colours have a very close match from a value brand. The ones that don\u2019t aren\u2019t special because they\u2019re expensive. They\u2019re the only ones that go properly dark.</span></a>
+<a class="rsch-card" href="/paint-choice-index/"><small>The UK Paint Choice Index</small><b>{numword(len(brands)).capitalize()} UK paint brands sell {N:,} colours between them. Only {_rc['distinct']:,} are actually different.</b><span>{_rc['dup_pct']}% of them have a near-identical twin, {_rc['exact_total']} colours share an exact value with a sibling from their own range, and there is one colour almost nobody makes: a vivid purple. {_rc['purp_vivid']} exists.</span></a>
 </div>
 <p class="muted">Journalists and researchers: every underlying comparison is public, colour by colour, across the site. Questions or corrections \u2014 <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("Research", 
