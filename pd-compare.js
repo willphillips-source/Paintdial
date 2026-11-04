@@ -35,7 +35,13 @@
     '.pd-cmp-word:empty{display:none}' +
     '.pd-cmp-note{font-size:12px;color:#665F54;line-height:1.4}';
 
-  var ov = null, handle = null, wordEl = null, lastBtn = null, x = 50, dragging = false;
+  /* Brands whose values come from a stockist because the brand publishes none, as
+     brand: stockist. Must match SOURCE_NOTE in gen_pages.py, which asserts it on every
+     build. When either side of the comparison is one of these, the strip says so. */
+  var SOURCED = {"Zoffany": "Brewers"};
+  var BASE_NOTE = 'Screens vary. Compare these two to each other, then order testers before you buy.';
+
+  var ov = null, handle = null, wordEl = null, noteEl = null, lastBtn = null, x = 50, dragging = false;
 
   function build() {
     var st = document.createElement('style');
@@ -55,10 +61,11 @@
       '<button class="pd-cmp-x" type="button" aria-label="Close the comparison" title="Close">' +
         '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
       '<div class="pd-cmp-s"><span class="pd-cmp-word"></span>' +
-        '<span class="pd-cmp-note">Screens vary. Compare these two to each other, then order testers before you buy.</span></div>';
+        '<span class="pd-cmp-note"></span></div>';
     document.body.appendChild(ov);
     handle = ov.querySelector('.pd-cmp-h');
     wordEl = ov.querySelector('.pd-cmp-word');
+    noteEl = ov.querySelector('.pd-cmp-note');
 
     // The seam follows your finger: press anywhere on the colours and it jumps
     // there, keep moving and it follows. Pointer capture keeps the drag alive
@@ -115,6 +122,13 @@
     fill('.pd-cmp-b', bName, d.bbrand || d.bhex || '');
     var w = (d.word || '').trim();
     wordEl.textContent = w ? w.charAt(0).toUpperCase() + w.slice(1) : '';
+    var src = [];
+    [d.abrand, d.bbrand].forEach(function (b) {
+      if (b && SOURCED.hasOwnProperty(b) && src.indexOf(b) < 0) src.push(b);
+    });
+    noteEl.textContent = BASE_NOTE + src.map(function (b) {
+      return ' ' + b + '’s values come from its stockist ' + SOURCED[b] + ', as ' + b + ' publishes none.';
+    }).join('');
     ov.setAttribute('aria-label', 'Comparing ' + aName + ' with ' + bName + ' full screen');
     setPct(50);
     lastBtn = btn;

@@ -2025,6 +2025,12 @@ if __name__ == '__main__':
     # The compare view's script is one shared file (see COMPARE_SCRIPT above). Copied
     # here rather than in build.sh so a plain `python3 gen_pages.py` run is complete too.
     import shutil as _sh
+    # The compare view names stockist-sourced brands from its own SOURCED map; it must
+    # agree with SOURCE_NOTE or the compare strip and the colour pages say different things.
+    _js = open('pd-compare.js', encoding='utf-8').read()
+    _m = re.search(r'var SOURCED = (\{[^}]*\});', _js)
+    assert _m and json.loads(_m.group(1)) == {b: s for b, (s, _u) in SOURCE_NOTE.items()}, \
+        'pd-compare.js SOURCED map does not match SOURCE_NOTE in gen_pages.py'
     _sh.copyfile('pd-compare.js', 'site/pd-compare.js')
     _sh.copyfile('fraunces-amp.woff2', 'site/fraunces-amp.woff2')
     print('pd-compare.js and fraunces-amp.woff2 copied')
