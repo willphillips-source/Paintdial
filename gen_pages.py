@@ -1272,6 +1272,10 @@ def build_method_page():
          "They are typical per-litre ranges for a 2.5 litre tin mixed to the colour, checked against retailers in September 2026 (Lakeland Paints only sells a 5 litre tin, so its figure is for that, checked November 2026). They are there so you know the rough scale of the difference between brands, not as a quote. Retailers vary and bigger tins cost less per litre."),
         ("Why isn\u2019t the brand I use in the library?",
          f"PaintDial covers {BRANDS_WORD} UK brands, chosen because they publish digital colour values and have ranges people ask about. Brands are added when there is a reliable published source for their colours, not to make the number bigger."),
+        # Figures from the Dulux Trade Colour Palette fandeck (duluxtradepaintexpert.co.uk), checked
+        # 4 Nov 2026 against the Dulux colours in the library with the site's own distance measure.
+        ("Is Dulux Trade the same as Dulux?",
+         "For colour, almost entirely. The Dulux Trade Colour Palette fan deck has 2,079 colours. 1,133 of them have exactly the same published value as a Dulux colour on PaintDial, and another 873 are near-identical or very close to one. The rest are mostly trade shades with a code instead of a name (like 10RR 73/016), and all but 12 have a very close match from a brand already here. That’s why Dulux Trade isn’t listed as a separate brand: it would mostly show you the same colours twice. The paint itself is a different product, so finish and coverage can differ even where the colour is the same. Checked November 2026."),
         ("Is PaintDial free?",
          "Yes. No account, no app and no cost. The shortlist is saved in your browser, on your device."),
     ]
