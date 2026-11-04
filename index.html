@@ -21,11 +21,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  /* Google's Fraunces only has the looped ampersand; this 3 KB cut of the font holds its plain one
+     (the ss01 alternate), still variable so weight and optical size follow. Fetched only when an & renders. */
+  @font-face{font-family:"Fraunces Amp";src:url(/fraunces-amp.woff2) format("woff2");font-weight:100 900;unicode-range:U+26;font-display:swap}
   :root{
     color-scheme: light only;
     --paper:#F7F5F0; --card:#FFFFFF; --ink:#211F1B; --muted:#665F54;
     --hairline:#E3DFD5; --pick:#5E7E8B;
-    --serif:"Fraunces", Georgia, "Times New Roman", serif;
+    --serif:"Fraunces Amp", "Fraunces", Georgia, "Times New Roman", serif;
     --sans:"Archivo", -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   *{box-sizing:border-box; margin:0; padding:0;}

@@ -233,7 +233,13 @@ FAVICON = ("<link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://ww
            "%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%235E7E8B' stroke-width='4'/%3E"
            "%3Ccircle cx='16' cy='16' r='3.4' fill='%23211F1B'/%3E%3C/svg%3E\">")
 FONTS = ('<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,600'
-         '&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">')
+         '&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">'
+         # Google's build of Fraunces only offers the looped ampersand. fraunces-amp.woff2 is a
+         # 3 KB cut of the font holding just its plain ampersand (the ss01 alternate), still
+         # variable so weight and optical size follow the main face. unicode-range means the
+         # browser only fetches it when an & is on the page, and only the & uses it.
+         '<style>@font-face{font-family:"Fraunces Amp";src:url(/fraunces-amp.woff2) format("woff2");'
+         'font-weight:100 900;unicode-range:U+26;font-display:swap}</style>')
 HDR = '<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a><a href="/">Colour tool</a></div>'
 FOOT = ("<span class=\"foot-links\">"
         "<a href=\"/about/\">About</a> \u00b7 "
@@ -253,7 +259,7 @@ FOOT = ("<span class=\"foot-links\">"
 # ---------- colour page CSS (current, with all layout fixes) ----------
 CSS = """
 :root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#665F54;--hairline:#E3DFD5;--pc:#5E7E8B;
---serif:"Fraunces",Georgia,serif;--sans:"Archivo",-apple-system,sans-serif}
+--serif:"Fraunces Amp","Fraunces",Georgia,serif;--sans:"Archivo",-apple-system,sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.55}
 .top-band{height:12px;background:var(--pc)}
@@ -612,7 +618,7 @@ def colour_facets(hx):
 
 LIB_CSS = """
 :root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#665F54;--hairline:#E3DFD5;--pc:#5E7E8B;
---serif:"Fraunces",Georgia,serif;--sans:"Archivo",-apple-system,sans-serif}
+--serif:"Fraunces Amp","Fraunces",Georgia,serif;--sans:"Archivo",-apple-system,sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.55}
 .wrap{max-width:1320px;margin:0 auto;padding:0 32px 80px}
@@ -844,7 +850,7 @@ def build_colours_index():
 
 # ---------- SEO "alternatives" decision-pages (premium colours only) ----------
 ALT_CSS = """
-:root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#665F54;--hairline:#E3DFD5;--pc:#5E7E8B;--serif:"Fraunces",Georgia,serif;--sans:"Archivo",sans-serif}
+:root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#665F54;--hairline:#E3DFD5;--pc:#5E7E8B;--serif:"Fraunces Amp","Fraunces",Georgia,serif;--sans:"Archivo",sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6}
 .wrap{max-width:1040px;margin:0 auto;padding:0 32px 72px}
@@ -985,7 +991,7 @@ def matchword(x):
 # ---------- ranked dupes pages (league table per premium brand) ----------
 DUPES_CSS = """
 :root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#665F54;--hairline:#E3DFD5;--pc:#5E7E8B;
---serif:"Fraunces",Georgia,serif;--sans:"Archivo",-apple-system,sans-serif}
+--serif:"Fraunces Amp","Fraunces",Georgia,serif;--sans:"Archivo",-apple-system,sans-serif}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.55}
 .wrap{max-width:1100px;margin:0 auto;padding:0 32px 80px}
@@ -1025,7 +1031,7 @@ footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--hairline);fon
 footer a{color:var(--muted)}
 .foot-links{display:block;margin-bottom:6px}.foot-links a{color:var(--pc);font-weight:600;text-decoration:none}.foot-links a:hover{text-decoration:underline}
 .foot-copy{display:block;margin-bottom:10px;color:var(--muted)}
-@media(max-width:760px){.row{grid-template-columns:28px 1fr}.arrow{position:absolute;top:7px;right:7px}.half{padding:9px 11px;display:grid;grid-template-columns:46px 1fr;column-gap:12px;align-items:center}.half:first-of-type{padding-right:44px}.half:last-of-type{border-top:1px dashed var(--hairline)}.half .sw{width:46px;height:36px;grid-row:1 / span 2}.half .tx{grid-column:2;min-width:0}.badge{grid-column:2;justify-self:start;margin:4px 0 0}h1{font-size:28px}.wrap{padding:0 18px 60px}}
+@media(max-width:760px){.row{grid-template-columns:28px 1fr}.rank{grid-row:1 / span 2}.arrow{position:absolute;top:7px;right:7px}.half{grid-column:2;padding:9px 11px;display:grid;grid-template-columns:46px 1fr;column-gap:12px;align-items:center}.half:first-of-type{padding-right:44px}.half:last-of-type{border-top:1px dashed var(--hairline)}.half .sw{width:46px;height:36px;grid-row:1 / span 2}.half .tx{grid-column:2;min-width:0}.badge{grid-column:2;justify-self:start;margin:4px 0 0}h1{font-size:28px}.wrap{padding:0 18px 60px}}
 
 @media(max-width:640px){
 header{flex-wrap:wrap;row-gap:6px;padding:12px 0}
@@ -1108,7 +1114,7 @@ def build_dupes_page(brand):
 PAGES_CSS = """
 .faq{margin:6px 0 24px}.faq details{border-top:1px solid var(--hairline);padding:12px 0}.faq details:last-child{border-bottom:1px solid var(--hairline)}.faq summary{font-family:var(--serif);font-size:17px;font-weight:600;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:16px;align-items:baseline}.faq summary::-webkit-details-marker{display:none}.faq summary::after{content:"+";color:var(--muted);font-family:var(--sans);font-weight:400;flex:none}.faq details[open] summary::after{content:"\\2013"}.faq p{margin:8px 0 2px;max-width:66ch}
 :root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#665F54;--hairline:#E3DFD5;--pc:#5E7E8B;
---serif:"Fraunces",Georgia,serif;--sans:"Archivo",-apple-system,sans-serif}
+--serif:"Fraunces Amp","Fraunces",Georgia,serif;--sans:"Archivo",-apple-system,sans-serif}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.65}
 .wrap{max-width:760px;margin:0 auto;padding:0 28px 80px}
@@ -1971,7 +1977,8 @@ if __name__ == '__main__':
     # here rather than in build.sh so a plain `python3 gen_pages.py` run is complete too.
     import shutil as _sh
     _sh.copyfile('pd-compare.js', 'site/pd-compare.js')
-    print('pd-compare.js copied')
+    _sh.copyfile('fraunces-amp.woff2', 'site/fraunces-amp.woff2')
+    print('pd-compare.js and fraunces-amp.woff2 copied')
 
 
     # ---------- 404 page (Netlify serves 404.html automatically) ----------
