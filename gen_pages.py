@@ -71,7 +71,13 @@ AWIN_AFFID = "2971455"
 FRESHLICK_MID = None
 FRESHLICK_BRANDS = {"Little Greene", "Crown"}
 BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints',
-               'Earthborn', 'Paint & Paper Library', 'Edward Bulmer']
+               'Earthborn', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage']
+# Dulux Heritage (113, added 4 Nov 2026) is Dulux's designer range with its own names, site and
+# price (Velvet Matt 2.5L £45-47), so it is its own brand here rather than more Dulux rows. Values
+# are the "rgb" field in duluxheritage.co.uk's page data, which the site renders its own swatches
+# from; none of the 113 were in the main Dulux scrape. One pair shares a value on Dulux's side
+# (Linen White / Roman White). Looked at the same day and left out, swatch images only:
+# Little Knights (99 colours, PNG swatches) and Rust-Oleum (JPEG swatches).
 # Earthborn (85, Claypaint 2.5L £61.50), Paint & Paper Library (187, Pure Flat Emulsion 2.5L £73)
 # and Edward Bulmer (149, Emulsion 2.5L £70) were added Nov 2026, all premium. Values are each
 # brand's own: Earthborn and P&PL set the colour as a CSS background on their own pages;
@@ -84,7 +90,7 @@ BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johns
 # lakelandpaints.co.uk), like Lick and COAT. No per-colour pages exist, so every Lakeland
 # colour links to the matchpot page, where the picker lives.
 TIER = {'Farrow & Ball': 3, 'Little Greene': 3, 'Craig & Rose': 3, 'Lick': 3, 'COAT': 3,
-        'Earthborn': 3, 'Paint & Paper Library': 3, 'Edward Bulmer': 3,
+        'Earthborn': 3, 'Paint & Paper Library': 3, 'Edward Bulmer': 3, 'Dulux Heritage': 3,
         'Dulux': 2, 'Crown': 2, 'Lakeland Paints': 2, "Johnstone's": 1, 'Valspar': 1}
 TIER_WORD = {3: 'Premium', 2: 'Mid-range', 1: 'Value'}
 
