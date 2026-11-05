@@ -413,6 +413,16 @@ h2::after{content:'';display:block;width:34px;height:4px;border-radius:2px;backg
 .c-brand{display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px}
 .c-de{display:block;font-size:11px;color:var(--muted);margin-top:5px;font-variant-numeric:tabular-nums}.pband{font-weight:700;letter-spacing:.04em;color:var(--ink)}.pband i{font-style:normal;opacity:.22}
 .ladder{display:flex;border:1px solid var(--hairline);border-radius:12px;overflow-x:auto;background:var(--card)}
+/* Matches and the lighter/darker scale share one block (.mx). Wider than a phone it is
+   one grid: the two halves of the matches are display:contents, so all sixteen flow
+   together, and the scale is ordered after them. On a phone the cards go two across
+   and the scale sits after the first four, as on the homepage, instead of sixteen
+   cards down where people missed it. */
+.mx>.ladder-sec,.mx>.mx-alt{grid-column:1/-1;min-width:0}
+.mx-alt .sub{margin-top:0!important}
+.more-h{display:none}
+@media(min-width:641px){.mx .gpart{display:contents}.mx>.mx-alt{order:1}.mx>.ladder-sec{order:2}.mx>.ladder-sec h2:first-child{margin-top:18px}}
+@media(max-width:640px){.grid,.mx .gpart{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid.mx{display:block}.more-h{display:block}.mx-alt{margin-top:12px}}
 .rung{flex:1 1 0;min-width:72px;text-decoration:none;color:var(--ink);display:flex;flex-direction:column}
 .rung+.rung{border-left:1px solid var(--hairline)}
 .rung .r-s{height:56px;flex:none}
@@ -609,6 +619,12 @@ def build_colour_page(i):
     _depth, _fam = describe(i)
     buy_url, buy_label, buy_note = buy_cta(p)
 
+    # "Open in the colour tool" opens the homepage tool on this colour (/#5B7E8F, read there)
+    tool_url = '/#' + p['hex'][1:]
+    _chips = [chip(j, home_lab=lab, show_tier=True, home_i=i) for j, _ in xmatch]
+    hdr_tool = HDR.replace('<a class="nav-cta" href="/">',
+                           '<a class="nav-cta" href="' + tool_url + '" title="Open ' + name + ' in the colour tool">', 1)
+    assert hdr_tool != HDR, 'nav-cta link not found in HDR'
     rungs = ladder_for(i)
     rung_html = ''.join(
         f'<a class="rung" href="/colours/{slugs[j]}"><div class="r-s" style="background:{paints[j]["hex"]}"></div>'
@@ -648,7 +664,7 @@ def build_colour_page(i):
 <meta name="twitter:image" content="{img_url}">
 {FAVICON}
 {FONTS}<style>{CSS}.hero-swatch{{background:{p['hex']}}}{SHORTLIST_CSS}{COMPARE_BTN_CSS}</style></head><body style="--pc:{p['hex']}"><div class="top-band"></div><div class="wrap">
-{HDR}
+{hdr_tool}
 <div class="hero"><div class="hero-swatch">{heart(p['name'], p['brand'], p['hex'])}</div><div class="hero-body">
 <span class="eyebrow">{brand}</span><h1>{name}</h1>
 <div class="facts"><span>Hex <b>{p['hex']}</b></span><span>LRV <b>\u2248\u2009{lrv(L0):.0f}</b></span><span>Lightness <b>{L0:.0f}/100</b></span></div>{source_line(p['brand'])}
@@ -658,17 +674,18 @@ def build_colour_page(i):
 <p class="colour-summary">{name} is a {_depth} {_fam} from {brand}. Its closest match from another brand is <a href="/colours/{slugs[_x0]}">{seo_top}</a> ({seo_word}), with the full ranked list below.</p>
 <h2>Closest matches from other brands</h2>
 <p class="sub">One from each brand \u2014 the badge shows its price bracket. Compare shows the pair full screen; tap the card to open the full colour.</p>
-<div class="grid">{''.join(chip(j, home_lab=lab, show_tier=True, home_i=i) for j, _ in xmatch)}</div>
-{alt_link}
-<h2>Lighter &amp; darker</h2>
+<div class="grid mx"><div class="gpart">{''.join(_chips[:4])}</div>
+<section class="ladder-sec"><h2>Lighter &amp; darker</h2>
 <p class="sub">This colour, stepped evenly from dark to light.</p>
 <div class="ladder">{rung_html}</div>
+<h2 class="more-h">More matches from other brands</h2></section>
+<div class="gpart">{''.join(_chips[4:])}</div>{('<div class="mx-alt">' + alt_link + '</div>') if alt_link else ''}</div>
 <h2>Pairs well with</h2>
 <p class="sub">Sympathetic neutrals for trim and ceilings, plus one contrast accent.</p>
 <div class="grid">{''.join(chip(j) for j in neutrals+accents)}</div>
 <div class="cta"><h2 style="margin-top:0">Not quite right?</h2>
 <p>Use the colour tool to find a lighter, darker, warmer or cooler version of this colour across {N:,} UK paints.</p>
-<a class="btn" href="/">Open the colour tool \u2192</a></div>
+<a class="btn" href="{tool_url}">Open {name} in the colour tool \u2192</a></div>
 <footer>{FOOT}</footer>
 </div><div class="top-band"></div><script>{SHORTLIST_JS}</script>{COMPARE_SCRIPT}</body></html>"""
     return page

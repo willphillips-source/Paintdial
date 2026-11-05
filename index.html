@@ -665,6 +665,16 @@
    identical to COMPARE_BTN_CSS in gen_pages.py. */
 .pd-cmp-btn{position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 11px 0 9px;border:1px solid rgba(33,31,27,.14);border-radius:99px;background:rgba(255,255,255,.92);backdrop-filter:blur(3px);box-shadow:0 1px 2px rgba(33,31,27,.08);cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:.01em;line-height:1;color:#211F1B;white-space:nowrap;z-index:2;transition:transform .12s,box-shadow .12s}
 .pd-cmp-btn:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(33,31,27,.14)}
+/* "Find matches" on a match card: re-centre the tool on that paint, brand filters kept,
+   so you can walk from colour to similar colour without leaving the tool. Same pill as
+   Compare, bottom-left of the swatch. */
+.pd-find{position:absolute;bottom:8px;left:8px;display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px 0 8px;border:1px solid rgba(33,31,27,.14);border-radius:99px;background:rgba(255,255,255,.92);backdrop-filter:blur(3px);box-shadow:0 1px 2px rgba(33,31,27,.08);cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:600;line-height:1;color:#211F1B;white-space:nowrap;z-index:2;transition:transform .12s,box-shadow .12s}
+.pd-find:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(33,31,27,.14)}
+.pd-find:focus-visible{outline:2px solid #5E7E8B;outline-offset:1px}
+.pd-find svg{flex:none}
+.c-swatch,.alt-swatch{position:relative}
+canvas#wheel:focus{outline:none}
+canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
 .pd-cmp-btn:focus-visible{outline:2px solid #5E7E8B;outline-offset:1px}
 .pd-cmp-btn svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 @media(max-width:560px){.pd-cmp-btn{height:27px;font-size:11px;padding:0 10px 0 8px}}
@@ -733,7 +743,7 @@
     <div class="picker-inner">
       <div class="pick-row">
       <div class="wheel-wrap">
-        <div class="wheel-ring" id="wheelRing"><canvas id="wheel" width="600" height="600" aria-label="Colour wheel — drag to choose hue and saturation"></canvas></div>
+        <div class="wheel-ring" id="wheelRing"><canvas id="wheel" width="600" height="600" tabindex="0" aria-label="Colour wheel — drag to choose hue and saturation, or use the arrow keys"></canvas></div>
         <div class="pointer" id="pointer"></div>
         <span class="pointer-hex" id="pointerHex">#5E7E8B</span>
         <span class="mini-label">Colour</span>
@@ -957,6 +967,12 @@ function buildSatCap(){
   SATCAP=sm;
 }
 function satCapAt(h){buildSatCap();return SATCAP[((Math.round(h)%360)+360)%360];}
+/* Distance from the centre to saturation is squared, not straight. Paints are mostly muted:
+   half of all of them sit at under 31% of the saturation the wheel reaches, which with a
+   straight mapping is the inner 30% of the radius, under a tenth of the wheel's area, and
+   too small to move the dot through finely. Squared, that same half fills the inner 56%
+   of the radius, and the strong colours few paints reach share the outer rim. */
+const radToSat=f=>f*f, satToRad=f=>Math.sqrt(f);
 
 /* ---------- state ---------- */
 let hue=200, sat=35, light=52;
@@ -973,7 +989,7 @@ function drawWheel(){
       const i=(y*SIZE+x)*4;
       if(dist<=R){
         const h=(Math.atan2(dy,dx)*180/Math.PI+360)%360;
-        const s=Math.min(dist/R,1)*satCapAt(h);
+        const s=radToSat(Math.min(dist/R,1))*satCapAt(h);
         const [r,g,b]=hslToRgb(h,s,light);
         img.data[i]=r; img.data[i+1]=g; img.data[i+2]=b; img.data[i+3]= dist>R-1.5 ? 255*(R-dist+0.5) : 255;
       } else img.data[i+3]=0;
@@ -999,7 +1015,7 @@ function screenRect(el){
 const pointer=document.getElementById('pointer');
 function placePointer(){
   const z=pageZoom(), rect=screenRect(canvas), cw=rect.width/z, ch=rect.height/z, scale=cw/SIZE;
-  const rad=hue*Math.PI/180, d=Math.min(sat/satCapAt(hue),1)*R*scale;
+  const rad=hue*Math.PI/180, d=satToRad(Math.min(sat/satCapAt(hue),1))*R*scale;
   const px=canvas.offsetLeft + cw/2 + Math.cos(rad)*d;
   const py=canvas.offsetTop  + ch/2 + Math.sin(rad)*d;
   pointer.style.left=px+'px';
@@ -1016,13 +1032,26 @@ function pickFromEvent(e){
   const x=(e.clientX-rect.left)*(SIZE/rect.width)-R;
   const y=(e.clientY-rect.top)*(SIZE/rect.height)-R;
   hue=(Math.atan2(y,x)*180/Math.PI+360)%360;
-  sat=Math.min(Math.sqrt(x*x+y*y)/R,1)*satCapAt(hue);
+  sat=radToSat(Math.min(Math.sqrt(x*x+y*y)/R,1))*satCapAt(hue);
   update();
 }
 let dragging=false;
 canvas.addEventListener('pointerdown',e=>{dragging=true;canvas.setPointerCapture(e.pointerId);pickFromEvent(e);});
 canvas.addEventListener('pointermove',e=>{if(dragging)pickFromEvent(e);});
 canvas.addEventListener('pointerup',()=>dragging=false);
+/* Arrow keys nudge the dot for fine changes: left/right turn the hue by 1 degree, up/down
+   move it out/in by 1% of the way to the rim. Shift for 5. */
+canvas.addEventListener('keydown',e=>{
+  const k=e.key, big=e.shiftKey?5:1;
+  if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(k)) return;
+  e.preventDefault();
+  if(k==='ArrowLeft'||k==='ArrowRight'){ hue=(hue+(k==='ArrowRight'?big:-big)+360)%360; }
+  else{
+    const cap=satCapAt(hue), f=satToRad(Math.min(sat/cap,1));
+    sat=radToSat(Math.max(0,Math.min(1,f+(k==='ArrowUp'?big:-big)/100)))*cap;
+  }
+  update();
+});
 
 /* ---------- lightness dial ---------- */
 const dial=document.getElementById('dial'), dctx=dial.getContext('2d');
@@ -1218,9 +1247,14 @@ window.addEventListener('resize',()=>{
 });
 const brandChips=document.getElementById('brandChips'),
       resetBtn=document.getElementById('filterReset');
+/* The brand filter is remembered on this device (a viewer convenience: someone who only
+   wants three brands shouldn't have to re-tick them every time they come back to the tool
+   from a colour page). The ticked chips and the Reset button show it's on. */
+const BRANDS_KEY='pd-brands';
 function refreshFilterUI(){
   brandChips.querySelectorAll('button').forEach(b=>b.classList.toggle('on',activeBrands.has(b.dataset.brand)));
   resetBtn.hidden = activeBrands.size===0;
+  try{ localStorage.setItem(BRANDS_KEY, JSON.stringify([...activeBrands])); }catch(e){}
 }
 function addFilterBtn(parent,label,attrs,onClick){
   const btn=document.createElement('button');
@@ -1231,6 +1265,7 @@ function addFilterBtn(parent,label,attrs,onClick){
 }
 BRAND_NAMES.forEach(b=>addFilterBtn(brandChips,b,{brand:b},()=>{activeBrands.has(b)?activeBrands.delete(b):activeBrands.add(b);}));
 resetBtn.addEventListener('click',()=>{activeBrands.clear();shown=12;refreshFilterUI();renderMatches();});
+try{ (JSON.parse(localStorage.getItem(BRANDS_KEY))||[]).forEach(b=>{ if(BRAND_NAMES.includes(b)) activeBrands.add(b); }); }catch(e){}
 refreshFilterUI();
 function currentPool(){
   return LIB.filter(p=>
@@ -1395,6 +1430,11 @@ function splitBG(srcHex,matchHex){
 /* Trigger for the full-screen compare view (/pd-compare.js). Your colour on the
    left, the match on the right, same as the card. Built here rather than by the
    script so cards can render before the deferred script has loaded. */
+const FIND_SVG='<svg viewBox="0 0 32 32" width="13" height="13" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="currentColor" stroke-width="4.5"/><circle cx="16" cy="16" r="3.4" fill="currentColor"/></svg>';
+function findBtnHTML(p){
+  const q=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  return `<button class="pd-find" type="button" data-hex="${p.hex}" aria-label="Find matches for ${q(p.name)} in the tool" title="Find matches for ${q(p.name)}, keeping your brand filters">${FIND_SVG}<span>Find matches</span></button>`;
+}
 const CMP_SVG='<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
 function cmpBtnHTML(srcHex,p,word){
   const q=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
@@ -1446,7 +1486,7 @@ function renderMatches(){
   const alts=ranked.slice(0,4);
   bw.innerHTML='<div class="alt-list">'+alts.map(p=>`
     <div class="alt-row">
-      <span class="alt-swatch" style="background:${splitBG(hx,p.hex)}" title="Left: your colour ${hx}. Right: ${p.name} ${p.hex}."></span>
+      <span class="alt-swatch" style="background:${splitBG(hx,p.hex)}" title="Left: your colour ${hx}. Right: ${p.name} ${p.hex}.">${findBtnHTML(p)}</span>
       <span class="alt-txt"><a class="alt-link" href="${colourPageUrl(p)}"><b>${p.name}</b></a><small>${p.brand}${OFFERS[p.brand]?'<span class="offer-tag" title="'+OFFERS[p.brand]+'">Offer</span>':''}</small>${priceEl(p.brand,'alt-price')}</span>
       <span class="alt-de">${qualityWord(p.d,p.ok,PICK_OK)}<span class="see">View \u2192</span></span>
       ${cmpBtnHTML(hx,p,qualityWord(p.d,p.ok,PICK_OK))}
@@ -1459,7 +1499,7 @@ function renderMatches(){
     const el=document.createElement('div');
     el.className='chip';
     el.innerHTML=`
-      <div class="c-swatch" style="background:${splitBG(hx,p.hex)}" title="Left: your colour ${hx}. Right: ${p.name} ${p.hex}.">${cmpBtnHTML(hx,p,qualityWord(p.d,p.ok,PICK_OK))}${PDShortlist.heartHTML(p.name,p.brand,p.hex)}</div>
+      <div class="c-swatch" style="background:${splitBG(hx,p.hex)}" title="Left: your colour ${hx}. Right: ${p.name} ${p.hex}.">${cmpBtnHTML(hx,p,qualityWord(p.d,p.ok,PICK_OK))}${PDShortlist.heartHTML(p.name,p.brand,p.hex)}${findBtnHTML(p)}</div>
       <div class="c-body">
         <a class="c-name" href="${colourPageUrl(p)}">${p.name}</a>
         <span class="c-brand">${p.brand}${OFFERS[p.brand]?'<span class="offer-tag" title="'+OFFERS[p.brand]+'">Offer</span>':''}</span>
@@ -1850,6 +1890,19 @@ if('IntersectionObserver' in window){
 }else{jbEl.classList.add('show');}
 drawWheel();
 setFromHex('#5E7E8B'); /* start on Stone Blue territory */
+/* Colour pages link to the tool as /#5B7E8F ("Open Granite Falls in the colour tool"),
+   so it opens on that colour with your brand filters as you left them. A hash, not a
+   query string, so it never makes a second crawlable URL for the homepage. */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.pd-find'); if(!b) return;
+  e.preventDefault(); e.stopPropagation();
+  nameSearch.value=''; setFromHex(b.dataset.hex);
+  const r=document.getElementById('results').getBoundingClientRect();
+  if(r.top<0) document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+});
+function hexFromHash(){ const m=/^([0-9a-f]{6})$/i.exec(location.hash.slice(1)); return m ? '#'+m[1].toUpperCase() : null; }
+(function(){ const hx=hexFromHash(); if(hx) setFromHex(hx); })();
+window.addEventListener('hashchange',()=>{ const hx=hexFromHash(); if(hx) setFromHex(hx); });
 </script>
 <script>
 /* browse-by-brand fan-deck cards */
