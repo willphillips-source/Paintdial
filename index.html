@@ -665,14 +665,6 @@
    identical to COMPARE_BTN_CSS in gen_pages.py. */
 .pd-cmp-btn{position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 11px 0 9px;border:1px solid rgba(33,31,27,.14);border-radius:99px;background:rgba(255,255,255,.92);backdrop-filter:blur(3px);box-shadow:0 1px 2px rgba(33,31,27,.08);cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:.01em;line-height:1;color:#211F1B;white-space:nowrap;z-index:2;transition:transform .12s,box-shadow .12s}
 .pd-cmp-btn:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(33,31,27,.14)}
-/* "Find matches" on a match card: re-centre the tool on that paint, brand filters kept,
-   so you can walk from colour to similar colour without leaving the tool. Same pill as
-   Compare, bottom-left of the swatch. */
-.pd-find{position:absolute;bottom:8px;left:8px;display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px 0 8px;border:1px solid rgba(33,31,27,.14);border-radius:99px;background:rgba(255,255,255,.92);backdrop-filter:blur(3px);box-shadow:0 1px 2px rgba(33,31,27,.08);cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:600;line-height:1;color:#211F1B;white-space:nowrap;z-index:2;transition:transform .12s,box-shadow .12s}
-.pd-find:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(33,31,27,.14)}
-.pd-find:focus-visible{outline:2px solid #5E7E8B;outline-offset:1px}
-.pd-find svg{flex:none}
-.c-swatch,.alt-swatch{position:relative}
 canvas#wheel:focus{outline:none}
 canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
 .pd-cmp-btn:focus-visible{outline:2px solid #5E7E8B;outline-offset:1px}
@@ -1430,11 +1422,6 @@ function splitBG(srcHex,matchHex){
 /* Trigger for the full-screen compare view (/pd-compare.js). Your colour on the
    left, the match on the right, same as the card. Built here rather than by the
    script so cards can render before the deferred script has loaded. */
-const FIND_SVG='<svg viewBox="0 0 32 32" width="13" height="13" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="currentColor" stroke-width="4.5"/><circle cx="16" cy="16" r="3.4" fill="currentColor"/></svg>';
-function findBtnHTML(p){
-  const q=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
-  return `<button class="pd-find" type="button" data-hex="${p.hex}" aria-label="Find matches for ${q(p.name)} in the tool" title="Find matches for ${q(p.name)}, keeping your brand filters">${FIND_SVG}<span>Find matches</span></button>`;
-}
 const CMP_SVG='<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
 function cmpBtnHTML(srcHex,p,word){
   const q=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
@@ -1486,7 +1473,7 @@ function renderMatches(){
   const alts=ranked.slice(0,4);
   bw.innerHTML='<div class="alt-list">'+alts.map(p=>`
     <div class="alt-row">
-      <span class="alt-swatch" style="background:${splitBG(hx,p.hex)}" title="Left: your colour ${hx}. Right: ${p.name} ${p.hex}.">${findBtnHTML(p)}</span>
+      <span class="alt-swatch" style="background:${splitBG(hx,p.hex)}" title="Left: your colour ${hx}. Right: ${p.name} ${p.hex}."></span>
       <span class="alt-txt"><a class="alt-link" href="${colourPageUrl(p)}"><b>${p.name}</b></a><small>${p.brand}${OFFERS[p.brand]?'<span class="offer-tag" title="'+OFFERS[p.brand]+'">Offer</span>':''}</small>${priceEl(p.brand,'alt-price')}</span>
       <span class="alt-de">${qualityWord(p.d,p.ok,PICK_OK)}<span class="see">View \u2192</span></span>
       ${cmpBtnHTML(hx,p,qualityWord(p.d,p.ok,PICK_OK))}
@@ -1499,7 +1486,7 @@ function renderMatches(){
     const el=document.createElement('div');
     el.className='chip';
     el.innerHTML=`
-      <div class="c-swatch" style="background:${splitBG(hx,p.hex)}" title="Left: your colour ${hx}. Right: ${p.name} ${p.hex}.">${cmpBtnHTML(hx,p,qualityWord(p.d,p.ok,PICK_OK))}${PDShortlist.heartHTML(p.name,p.brand,p.hex)}${findBtnHTML(p)}</div>
+      <div class="c-swatch" style="background:${splitBG(hx,p.hex)}" title="Left: your colour ${hx}. Right: ${p.name} ${p.hex}.">${cmpBtnHTML(hx,p,qualityWord(p.d,p.ok,PICK_OK))}${PDShortlist.heartHTML(p.name,p.brand,p.hex)}</div>
       <div class="c-body">
         <a class="c-name" href="${colourPageUrl(p)}">${p.name}</a>
         <span class="c-brand">${p.brand}${OFFERS[p.brand]?'<span class="offer-tag" title="'+OFFERS[p.brand]+'">Offer</span>':''}</span>
@@ -1893,13 +1880,6 @@ setFromHex('#5E7E8B'); /* start on Stone Blue territory */
 /* Colour pages link to the tool as /#5B7E8F ("Open Granite Falls in the colour tool"),
    so it opens on that colour with your brand filters as you left them. A hash, not a
    query string, so it never makes a second crawlable URL for the homepage. */
-document.addEventListener('click',e=>{
-  const b=e.target.closest('.pd-find'); if(!b) return;
-  e.preventDefault(); e.stopPropagation();
-  nameSearch.value=''; setFromHex(b.dataset.hex);
-  const r=document.getElementById('results').getBoundingClientRect();
-  if(r.top<0) document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
-});
 function hexFromHash(){ const m=/^([0-9a-f]{6})$/i.exec(location.hash.slice(1)); return m ? '#'+m[1].toUpperCase() : null; }
 (function(){ const hx=hexFromHash(); if(hx) setFromHex(hx); })();
 window.addEventListener('hashchange',()=>{ const hx=hexFromHash(); if(hx) setFromHex(hx); });
