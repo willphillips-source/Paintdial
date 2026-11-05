@@ -100,6 +100,13 @@ AWIN_AFFID = "2971455"
 # DORMANT while None -> direct links. Set to 101923 once Freshlick approves you, then regenerate.
 FRESHLICK_MID = None
 FRESHLICK_BRANDS = {"Little Greene", "Crown"}
+# Valspar is sold through B&Q. valspar-bq.json maps each colour code to its 236ml tester
+# pot on diy.com, taken from the B&Q links on valsparpaint.co.uk and checked against B&Q
+# (a link whose page keeps the colour code). Colours not in it fall back to a B&Q search.
+try:
+    VALSPAR_BQ = json.load(open('valspar-bq.json', encoding='utf-8'))['testers']
+except FileNotFoundError:
+    VALSPAR_BQ = {}
 BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints',
                'Earthborn', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany', 'Mylands', 'Sanderson']
 # SOURCED FROM A STOCKIST, NOT THE BRAND. Every other brand's values are its own published swatches.
@@ -324,6 +331,8 @@ def buy_link(p):
         dest = "https://www.freshlick.com/catalogsearch/result/?q=" + quote(f"{p['brand']} {p['name']}")
         return _awin_wrap(FRESHLICK_MID, dest)
     if p.get('url'): return p['url']
+    if p['brand'] == 'Valspar' and p.get('code') in VALSPAR_BQ:
+        return VALSPAR_BQ[p['code']]
     s = base_slug(p['name'])
     if p['brand'] == 'Farrow & Ball':
         return f"https://www.farrow-ball.com/paint/{s}"
@@ -585,10 +594,12 @@ def a_an(w):
 
 def buy_cta(p):
     """The colour page's buy button: link, label and the line under it, worded from where
-    buy_link() actually goes. Brand sites sell testers; the B&Q fallback (Johnstone's,
-    Valspar) is only a search, so it doesn't promise one."""
+    buy_link() actually goes. Brand sites sell testers, and Valspar colours go straight to
+    their tester pot on B&Q; the B&Q search fallback is only a search, so it promises none."""
     url = buy_link(p)
     name = H.escape(p['name'])
+    if 'diy.com/departments/' in url:
+        return url, f'Order {a_an(p["name"])} {name} tester →', 'Opens the tester pot on B&amp;Q’s site.'
     if 'diy.com' in url:
         return url, f'Find {name} at B&amp;Q →', 'Opens B&amp;Q’s search for it.'
     if 'freshlick' in url or 'awin1.com' in url:
