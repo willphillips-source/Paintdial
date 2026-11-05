@@ -1520,6 +1520,38 @@ text-decoration:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.09);transition:trans
 """
 PAGES_CSS += NAV_CSS + WIDE_SHELL_CSS + PAGES_WIDE_CSS
 
+# Ko-fi card on the About and Contact pages. The footer's small "buy Will a coffee" link
+# stays on every page; this is the big version.
+KOFI_URL = "https://ko-fi.com/paintdial"
+PAGES_CSS += """
+.kofi{display:flex;align-items:center;gap:24px;max-width:640px;margin:30px 0 34px;padding:26px 30px;background:var(--card);border:1px solid var(--hairline);border-radius:16px;box-shadow:0 1px 3px rgba(33,31,27,.05)}
+.kofi-cup{flex:none;width:72px;height:72px}
+.kofi-line{font-family:var(--serif);font-size:23px;font-weight:600;line-height:1.3;margin:0 0 14px;text-wrap:balance}
+.kofi-btn{display:inline-flex;align-items:center;gap:10px;background:var(--ink);color:var(--paper)!important;font-size:16px;font-weight:600;text-decoration:none!important;padding:13px 24px;border-radius:11px;transition:transform .12s,box-shadow .12s}
+.kofi-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(33,31,27,.18)}
+@media(max-width:560px){.kofi{flex-direction:column;text-align:center;gap:14px;padding:24px 20px}.kofi-cup{width:62px;height:62px}.kofi-line{font-size:20px}.kofi-btn{width:100%;justify-content:center}}
+"""
+# A mug with PaintDial-blue paint dripping from the rim (option E of six, chosen 5 Nov 2026).
+_MUG = 'M12 20h36v24a10 10 0 0 1-10 10H22a10 10 0 0 1-10-10z'
+KOFI_ICON = (
+    '<svg class="kofi-cup" viewBox="0 0 64 64" aria-hidden="true">'
+    f'<defs><clipPath id="kofi-mug"><path d="{_MUG}"/></clipPath></defs>'
+    '<path d="M48 27h3.5a7 7 0 0 1 0 14H48" fill="none" stroke="#211F1B" stroke-width="3.4"/>'
+    f'<path d="{_MUG}" fill="#F6F1E7"/>'
+    '<path clip-path="url(#kofi-mug)" fill="#5E7E8B" d="M10 18H50V26.5C47 26.5 45.5 27 45.5 29V38a2.4 2.4 0 0 1-4.8 0'
+    'V29c0-1.6-1-2.5-3-2.5H33.6c-1.6 0-2.4.8-2.4 2.2v2.6a2.1 2.1 0 0 1-4.2 0V28.7c0-1.4-.8-2.2-2.2-2.2H22.4'
+    'c-1.4 0-2.3.9-2.3 2.3v6a2.3 2.3 0 0 1-4.6 0V28.5c0-1.3-.9-2-2-2H10z"/>'
+    f'<path d="{_MUG}" fill="none" stroke="#211F1B" stroke-width="2.4" stroke-linejoin="round"/>'
+    '<path d="M23 13c-2.4-2.8 2.2-4.2.2-7.6M30 12c-2.4-2.8 2.2-4.2.2-7.6M37 13c-2.4-2.8 2.2-4.2.2-7.6" '
+    'fill="none" stroke="#9C9488" stroke-width="2.2" stroke-linecap="round"/></svg>')
+
+
+def kofi_block(line="If you found PaintDial useful…"):
+    return (f'<div class="kofi">{KOFI_ICON}'
+            f'<div><p class="kofi-line">{line}</p>'
+            f'<a class="kofi-btn" href="{KOFI_URL}" target="_blank" rel="noopener">'
+            f'Buy Will a coffee on Ko-fi</a></div></div>')
+
 
 def _page_shell(title, desc, path, body, head=""):
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8">
@@ -1985,6 +2017,7 @@ def build_about_page():
 
 <h2>Who pays for it</h2>
 <p>At the moment it’s paid for by me, plus the odd coffee people have bought me on <a href="https://ko-fi.com/paintdial" target="_blank" rel="noopener">Ko-fi</a>. I’m planning to add affiliate links to some of the “where to buy” buttons, so I’d get a small commission if you buy through one, at no extra cost to you. There are no ads, and no brand can pay to move up the rankings, which are worked out from the colour values alone.</p>
+{kofi_block()}
 
 <h2>Where the colours come from</h2>
 <p>{_about_values_line()} A screen only gets you so close, so get a tester before you paint a wall.</p>
@@ -2032,6 +2065,8 @@ def build_contact_page():
   <button type="submit">Send message</button>
   <p class="cf-note">Replies usually take a few days. Your details are used only to answer you; PaintDial keeps no mailing list.</p>
 </form>
+
+{kofi_block()}
 
 <p class="muted" style="margin-top:34px">Not a message, just a question about the site? The <a href="/how-it-works/">how it works</a> page covers the data, the matching and the labels, and <a href="/about/">about</a> covers who runs it and how it is funded.</p>"""
     return _page_shell("Contact PaintDial",
