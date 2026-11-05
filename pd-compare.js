@@ -144,7 +144,10 @@
   }
 
   function setX(clientX) {
-    var w = ov.clientWidth || window.innerWidth || 1;
+    // clientX is in screen pixels and clientWidth in the page's own pixels; they
+    // differ when very wide screens zoom the page (html{zoom:1.1}).
+    var z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+    var w = ov.clientWidth ? ov.clientWidth * z : (window.innerWidth || 1);
     setPct(clientX / w * 100);
   }
   function setPct(p) {

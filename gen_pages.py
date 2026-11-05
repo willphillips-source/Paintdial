@@ -353,6 +353,11 @@ FONTS = ('<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,ops
          # browser only fetches it when an & is on the page, and only the & uses it.
          '<style>@font-face{font-family:"Fraunces Amp";src:url(/fraunces-amp.woff2) format("woff2");'
          'font-weight:100 900;unicode-range:U+26;font-display:swap}</style>')
+# Very wide screens (2800px and up, e.g. 4K at 100% scaling) get the whole page 10%
+# bigger. Every page includes FONTS, so this one rule covers the lot; the same rule
+# closes index.html's stylesheet, and pd-compare.js allows for the zoom when it tracks
+# the pointer.
+FONTS += '<style>@media(min-width:2800px){html{zoom:1.1}}</style>'
 HDR = '<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a><a href="/">Colour tool</a></div>'
 FOOT = ("<span class=\"foot-links\">"
         "<a href=\"/about/\">About</a> \u00b7 "

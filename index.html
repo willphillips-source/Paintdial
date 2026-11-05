@@ -649,6 +649,13 @@
 }
 @media(min-width:1900px){ :root{ --wide:2000px; } }
 @media(min-width:2400px){ :root{ --wide:2320px; } }
+/* Very wide screens (2800px and up, e.g. 4K at 100% scaling): the whole page 10%
+   bigger. zoom scales type, swatches, wheel and spacing together, so every proportion
+   above holds. Starts at 2800 not 2400 because at 2560 the bigger column runs into the
+   window edges, and 2560 screens have larger pixels so the type already reads fine.
+   The script converts pointer positions for it (pageZoom/screenRect). Same rule is in
+   FONTS in gen_pages.py so the generated pages match. */
+@media(min-width:2800px){ html{ zoom:1.1; } }
 </style>
 </head>
 <body>
@@ -915,24 +922,37 @@ function drawWheel(){
   ctx.putImageData(img,0,0);
 }
 
+/* ---------- page zoom ----------
+   Very wide screens get html{zoom:1.1} (end of the stylesheet). Pointer events give
+   screen pixels, while style.left/top are in the page's own pixels, so positions are
+   converted between the two. Chrome, Edge and Firefox report element rects in screen
+   pixels; older Safari divides them by the zoom, so screenRect() scales those back up.
+   With no zoom both functions are plain pass-throughs. */
+function pageZoom(){ return parseFloat(getComputedStyle(document.documentElement).zoom)||1; }
+function screenRect(el){
+  const r=el.getBoundingClientRect(), z=pageZoom(), w=el.offsetWidth;
+  if(z===1 || !w || Math.abs(r.width-w*z)<=Math.abs(r.width-w)) return r;
+  return {left:r.left*z, top:r.top*z, width:r.width*z, height:r.height*z};
+}
+
 /* ---------- pointer / input ---------- */
 const pointer=document.getElementById('pointer');
 function placePointer(){
-  const rect=canvas.getBoundingClientRect(), scale=rect.width/SIZE;
+  const z=pageZoom(), rect=screenRect(canvas), cw=rect.width/z, ch=rect.height/z, scale=cw/SIZE;
   const rad=hue*Math.PI/180, d=Math.min(sat/satCapAt(hue),1)*R*scale;
-  const px=canvas.offsetLeft + rect.width/2 + Math.cos(rad)*d;
-  const py=canvas.offsetTop  + rect.height/2 + Math.sin(rad)*d;
+  const px=canvas.offsetLeft + cw/2 + Math.cos(rad)*d;
+  const py=canvas.offsetTop  + ch/2 + Math.sin(rad)*d;
   pointer.style.left=px+'px';
   pointer.style.top =py+'px';
   const lbl=document.getElementById('pointerHex');
   if(lbl){
     let ly=py-24; if(ly<16) ly=py+24;
-    const lx=Math.max(34, Math.min(rect.width-34, px));
+    const lx=Math.max(34, Math.min(cw-34, px));
     lbl.style.left=lx+'px'; lbl.style.top=ly+'px';
   }
 }
 function pickFromEvent(e){
-  const rect=canvas.getBoundingClientRect();
+  const rect=screenRect(canvas);
   const x=(e.clientX-rect.left)*(SIZE/rect.width)-R;
   const y=(e.clientY-rect.top)*(SIZE/rect.height)-R;
   hue=(Math.atan2(y,x)*180/Math.PI+360)%360;
@@ -986,7 +1006,7 @@ function setLight(l){
   update();
 }
 function dialFromEvent(e){
-  const rect=dial.getBoundingClientRect();
+  const rect=screenRect(dial);
   const x=(e.clientX-rect.left)*(DSIZE/rect.width)-DC;
   const y=(e.clientY-rect.top)*(DSIZE/rect.height)-DC;
   let a=Math.atan2(y,x)*180/Math.PI; if(a<0)a+=360;
@@ -1508,7 +1528,7 @@ document.getElementById('photoClear').addEventListener('click',()=>{
   photoWrap.classList.remove('show'); photoFile.value='';
 });
 function samplePhoto(e){
-  const rect=photoCanvas.getBoundingClientRect();
+  const rect=screenRect(photoCanvas), z=pageZoom();
   const x=Math.round((e.clientX-rect.left)*(photoCanvas.width/rect.width));
   const y=Math.round((e.clientY-rect.top)*(photoCanvas.height/rect.height));
   // average a 5x5 patch so one noisy pixel doesn't skew the pick
@@ -1519,8 +1539,8 @@ function samplePhoto(e){
   for(let i=0;i<px.length;i+=4){r+=px[i];g+=px[i+1];b+=px[i+2];}
   const hex=rgbToHex(r/n,g/n,b/n);
   photoMarker.style.display='block';
-  photoMarker.style.left=(e.clientX-rect.left)+'px';
-  photoMarker.style.top=(e.clientY-rect.top)+'px';
+  photoMarker.style.left=((e.clientX-rect.left)/z)+'px';
+  photoMarker.style.top=((e.clientY-rect.top)/z)+'px';
   setFromHex(hex);
 }
 let photoDrag=false;
