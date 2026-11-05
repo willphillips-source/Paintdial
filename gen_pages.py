@@ -382,9 +382,9 @@ FOOT = ("<span class=\"foot-links\">"
         "<a href=\"/\">Colour tool</a>"
         "</span>"
         "<span class=\"foot-copy\">\u00a9 2026 PaintDial. All rights reserved.</span>"
-        "Screen colours are indicative \u2014 always order a tester pot before committing. Colour values are each "
+        "No screen shows paint exactly, so get a tester before you buy. Colour values are each "
         "brand\u2019s published digital swatches" + source_exception(html=False) + "; LRV is estimated. Colour names are the property of their respective "
-        "brands. Some links may earn PaintDial a commission at no cost to you. PaintDial is free to use — if it "
+        "brands. Some links may earn PaintDial a commission at no cost to you. PaintDial is free to use. If it "
         "saved you a tester pot, you can <a href=\"https://ko-fi.com/paintdial\" target=\"_blank\" rel=\"noopener\">buy Will a coffee</a>.")
 
 # ---------- colour page CSS (current, with all layout fixes) ----------
@@ -700,7 +700,7 @@ def build_colour_page(i):
 </div></div>
 <p class="colour-summary">{name} is a {_depth} {_fam} from {brand}. Its closest match from another brand is <a href="/colours/{slugs[_x0]}">{seo_top}</a> ({seo_word}), with the full ranked list below.</p>
 <h2>Closest matches from other brands</h2>
-<p class="sub">One from each brand \u2014 the badge shows its price bracket. Compare shows the pair full screen; tap the card to open the full colour.</p>
+<p class="sub">One from each brand. The badge shows its price bracket.</p>
 <div class="grid mx"><div class="gpart">{''.join(_chips[:4])}</div>
 <section class="ladder-sec"><h2>Lighter &amp; darker</h2>
 <p class="sub">This colour, stepped evenly from dark to light.</p>
@@ -1006,13 +1006,13 @@ def build_brand_page(b):
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{be} colours \u2014 the full range | PaintDial</title>
-<meta name="description" content="All {len(idxs)} {be} paint colours. Filter by colour, neutral, or tone \u2014 with cross-brand matches, lighter and darker versions, and where to buy.">
+<meta name="description" content="All {len(idxs)} {be} paint colours. Filter by colour, neutral or tone, and see each one\u2019s matches from other brands, lighter and darker versions, and where to buy.">
 {FAVICON}
 {FONTS}<style>{LIB_CSS}</style></head><body><div class="wrap">
 {LIB_HDR}
 <div class="top"><span class="eyebrow">The colour library</span>
 <h1>{be}</h1>
-<p class="lede">All {len(idxs)} {be} colours. Filter by colour, type or tone \u2014 a muted shade can be both a colour and a neutral, so nothing hides. Tap any swatch for its cross-brand matches, lighter &amp; darker versions, and where to buy.</p>{dupes_link}{source_line(b)}</div>
+<p class="lede">All {len(idxs)} {be} colours. Muted shades show up under both their colour and Neutral, so a filter won\u2019t hide them. Tap a swatch for its matches from other brands, lighter and darker versions, and where to buy.</p>{dupes_link}{source_line(b)}</div>
 <div class="fan">{fan}</div>
 {sections}
 <footer>{FOOT}</footer>
@@ -1073,13 +1073,13 @@ def build_colours_index():
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The colour library \u2014 every UK paint colour by brand | PaintDial</title>
-<meta name="description" content="Browse {N:,} UK paint colours across {brand_list()} \u2014 each with cross-brand matches and tonal ladders.">
+<meta name="description" content="Browse {N:,} paint colours from {brand_list()}. Each one has matches from other brands and lighter and darker versions.">
 {FAVICON}
 {FONTS}<style>{LIB_CSS}</style></head><body><div class="wrap">
 {LIB_HDR}
 <div class="top"><span class="eyebrow">The colour library</span>
 <h1>Every colour, brand by brand</h1>
-<p class="lede">{N:,} paints across {BRANDS_WORD} UK brands. Each brand's complete published range, grouped by colour family \u2014 or start from any colour in the <a href="/" style="color:inherit">colour tool</a>.</p></div>
+<p class="lede">{N:,} paints across {BRANDS_WORD} UK brands. Each brand's full published range, grouped by colour family. You can also start from any colour in the <a href="/" style="color:inherit">colour tool</a>.</p></div>
 <div class="lib-grid">{cards}</div>
 <footer>{FOOT}</footer>
 </div><div class="top-band"></div></body></html>"""
@@ -1336,8 +1336,8 @@ def build_dupes_page(brand):
 <nav><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a></div>
 <span class="eyebrow">Ranked dupes</span>
 <h1>Every {bname} colour\u2019s best-value match, ranked</h1>
-<p class="sub">All {len(rows)} {bname} colours, each paired with its single closest match from a value or mid-range brand \u2014 ranked from the strongest match down. Compare shows the pair full screen; tap a row for the full colour page, more matches, and where to buy.</p>
-<p class="method">Matches are computed from each brand\u2019s published digital swatches{source_short()} using perceptual colour distance. Screen colours are indicative \u2014 always order tester pots of both before committing.</p>
+<p class="sub">All {len(rows)} {bname} colours, each paired with its closest match from a value or mid-range brand, strongest match first. Tap a row for the full colour page, more matches and where to buy.</p>
+<p class="method">Matches are computed from each brand\u2019s published digital swatches{source_short()} using perceptual colour distance. No screen shows paint exactly, so get testers of both before you buy.</p>
 <div class="brands-nav">{nav}</div>
 <div class="dupe-list">{body}</div>
 <footer>{FOOT}</footer>
@@ -1474,32 +1474,32 @@ def build_method_page():
                               "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faqs]}
     body = f"""<span class="eyebrow">Methodology</span>
 <h1>How PaintDial matches colours</h1>
-<p>PaintDial compares {N:,} paints from {BRANDS_WORD} UK brands and finds the closest matches to any colour \u2014 across every brand at once, not just one manufacturer\u2019s range. Here\u2019s exactly how it works, and what its limits are.</p>
+<p>PaintDial compares {N:,} paints from {BRANDS_WORD} UK brands and finds the closest matches to any colour across all of them at once. This page covers how it works and where it falls short.</p>
 
 <h2>Where the colour data comes from</h2>
-<p>Every colour in the library uses the brand\u2019s own published digital swatch \u2014 the colour value each manufacturer provides for its paints on the web{source_exception()}. We don\u2019t re-photograph or estimate colours ourselves. LRV (light reflectance value) shown on colour pages is estimated from the swatch rather than measured from paint.</p>
+<p>Every colour in the library uses the brand\u2019s own published digital swatch, the colour value each manufacturer puts on its website{source_exception()}. We don\u2019t re-photograph or estimate colours ourselves. LRV (light reflectance value) shown on colour pages is estimated from the swatch rather than measured from paint.</p>
 
 <h2>How matches are calculated</h2>
-<p>Matches are ranked by perceptual colour difference \u2014 a measure of how different two colours look to the human eye \u2014 computed in the OKLab colour space, which handles hue more faithfully than older formulas (blues stay blue as they lighten, and purples don\u2019t get mistaken for blues). Our ranking also weights hue more heavily than lightness: a paint that\u2019s a touch lighter or darker still reads as the same colour, while one that\u2019s drifted in hue reads as a different colour \u2014 so matches keep the colour\u2019s character, and the lighter/darker ladder covers depth.</p>
+<p>Matches are ranked by perceptual colour difference, a measure of how different two colours look to the eye. It\u2019s computed in the OKLab colour space, which handles hue more faithfully than older formulas: blues stay blue as they lighten, and purples don\u2019t get mistaken for blues. The ranking also weights hue more heavily than lightness. A paint a touch lighter or darker still reads as the same colour, but one that has drifted in hue doesn\u2019t, so matches keep the colour\u2019s character and the lighter and darker row on each colour page covers depth.</p>
 
 <h2>What the match labels mean</h2>
 <ul>
-<li><span class="label">Near-identical</span> \u2014 a difference most people can\u2019t see on a wall. On screen the swatches look the same.</li>
-<li><span class="label">Very close</span> \u2014 a difference you\u2019d struggle to spot unless the two were side by side.</li>
-<li><span class="label">Close</span> \u2014 visibly similar; the same decorating intent, with a slight shift in tone or depth.</li>
-<li><span class="label">Same family</span> \u2014 further apart, but genuinely the same hue family (checked in OKLab, not just nearby in the list).</li>
-<li><span class="label">Related / similar tone</span> \u2014 close in overall feel, but honestly not the same family. We label these rather than overclaim.</li>
+<li><span class="label">Near-identical</span>: a difference most people can\u2019t see on a wall. On screen the swatches look the same.</li>
+<li><span class="label">Very close</span>: a difference you\u2019d struggle to spot unless the two were side by side.</li>
+<li><span class="label">Close</span>: visibly similar; the same decorating intent, with a slight shift in tone or depth.</li>
+<li><span class="label">Same family</span>: further apart, but still the same hue family, checked in OKLab rather than by position in the list.</li>
+<li><span class="label">Related / similar tone</span>: close in overall feel but not the same family, and labelled that way.</li>
 </ul>
 
 <h2>RAL Classic, BS 4800 and Dulux Trade codes</h2>
-<p>Trade and specification colours are covered too: type a RAL Classic code (say, \u201cRAL 7016\u201d) or a British Standard BS 4800 code (say, \u201c08 B 15\u201d, Magnolia) \u2014 or a colour name \u2014 into the tool\u2019s search and PaintDial shows every brand\u2019s nearest paints to it. Our RAL values are derived from the standard\u2019s published CIELAB coordinates; our BS 4800 values are derived from measured colour data (averaged spectrophotometer readings, standardised to D65 / CIE 1964). Both are physical colour standards, so on-screen values are approximate conversions \u2014 for binding samples, use an official RAL or British Standard fan deck.</p>
+<p>Trade and specification colours are covered too: type a RAL Classic code (say, \u201cRAL 7016\u201d), a British Standard BS 4800 code (say, \u201c08 B 15\u201d, Magnolia) or a colour name into the tool\u2019s search and PaintDial shows every brand\u2019s nearest paints to it. Our RAL values are derived from the standard\u2019s published CIELAB coordinates; our BS 4800 values are derived from measured colour data (averaged spectrophotometer readings, standardised to D65 / CIE 1964). Both are physical colour standards, so on-screen values are approximate conversions. For anything binding, use an official RAL or British Standard fan deck.</p>
 <p>Dulux Trade Colour Palette codes work the same way. Type one off the tin (say, “10RR 73/016”) and PaintDial sets the wheel to that colour, using the value Dulux Trade publishes for it, and tells you when it’s exactly the same colour as a retail Dulux paint, as hundreds of them are.</p>
 
 <h2>Why photo matching is approximate</h2>
-<p>The \u201c<a href="/match-paint-from-a-photo/">match from a photo</a>\u201d tool reads the pixel colour from your image. That pixel is shaped by the room\u2019s lighting, the camera\u2019s processing, and your screen \u2014 so treat photo matches as a strong starting point, not a guarantee. The same wall photographed at noon and at dusk will match to different paints. Holding a sheet of white paper against the wall when you take the photo helps: tap <b>Correct the light</b>, tap the paper, and the tool scales the photo so the paper comes out white, which takes out most of a bulb\u2019s colour cast and brightens a dark room. It can\u2019t fix mixed lighting or heavy processing by the phone.</p>
+<p>The \u201c<a href="/match-paint-from-a-photo/">match from a photo</a>\u201d tool reads the pixel colour from your image. That pixel is shaped by the room\u2019s lighting, the camera\u2019s processing and your screen, so a photo match is a starting point. The same wall photographed at noon and at dusk will match to different paints. Holding a sheet of white paper against the wall when you take the photo helps: tap <b>Correct the light</b>, tap the paper, and the tool scales the photo so the paper comes out white, which takes out most of a bulb\u2019s colour cast and brightens a dark room. It can\u2019t fix mixed lighting or heavy processing by the phone.</p>
 
 <h2>Why you should still order testers</h2>
-<p>Screen colours are indicative. Real paint changes with sheen, light, and the surface underneath it \u2014 and every screen shows colour slightly differently. Before committing to any colour (or any match), order tester pots of both and look at them in the room they\u2019ll live in, in daylight and lamplight.</p>
+<p>No screen shows paint exactly, and every screen shows colour a little differently. Real paint also changes with sheen, light and the surface underneath. Before you commit to a colour or a match, get testers of both and look at them in the room they\u2019re for, in daylight and lamplight.</p>
 
 <h2>Common questions</h2>
 <div class="faq">
@@ -1507,7 +1507,7 @@ def build_method_page():
 </div>
 {_ldjson(faq_ld)}
 
-<p class="muted">Found something that looks wrong? <a href="/contact/">Tell us</a> \u2014 accuracy is the whole point of PaintDial, and corrections are genuinely welcome.</p>"""
+<p class="muted">Found something that looks wrong? <a href="/contact/">Tell me</a> and I\u2019ll fix it.</p>"""
     return _page_shell("How PaintDial matches colours",
         "Where PaintDial's colour data comes from, how cross-brand matches are calculated, what the match labels mean, and why you should still order testers.",
         "/how-it-works/", body)
@@ -1563,7 +1563,7 @@ def build_match_index_page():
                 f'<span>{H.escape(paints[j]["brand"])} \u00b7 {paints[j]["hex"]}</span></span></a>')
     dupe_rows = ''.join(
         f'<figure class="pair"><div class="pair-blocks">{half(i)}{half(k)}</div>'
-        f'<figcaption>\u0394E {_d:.1f} \u2014 the published digital swatches are '
+        f'<figcaption>\u0394E {_d:.1f}. The published digital swatches are '
         f'virtually indistinguishable.</figcaption></figure>'
         for _d, i, k in fb_pairs[:4])
 
@@ -1622,20 +1622,18 @@ def build_match_index_page():
     deep_of_ub = sum(deep_c[b] for b in ub)
     if ub and set(deep_top) == set(ub) and deep_of_ub * 2 > len(deep):
         if len(ub) == 1:
-            deep_p = (f'That single fact explains the finding above. {ub_names} isn\u2019t unmatchable because it\u2019s premium \u2014 '
-                      f'it\u2019s unmatchable because it\u2019s the only brand making colours that dark. '
-                      f'<b>Depth, not prestige, is what can\u2019t be copied.</b>')
+            deep_p = (f'That explains the finding above. What makes {ub_names} hard to match is how dark it goes: '
+                      f'<b>no other brand makes colours that deep.</b>')
         else:
-            deep_p = (f'That explains the finding above. {ub_names} make {deep_of_ub} of the {len(deep)}. They aren\u2019t unmatchable '
-                      f'because they\u2019re premium \u2014 they\u2019re unmatchable because they\u2019re the brands making colours that dark. '
-                      f'<b>Depth, not prestige, is what can\u2019t be copied.</b>')
+            deep_p = (f'That explains the finding above. {ub_names} make {deep_of_ub} of the {len(deep)}, '
+                      f'and <b>that depth is what makes them hard to match: other brands don\u2019t go that dark.</b>')
     else:
         deep_p = ''
     RESEARCH['match'] = dict(pct_vc=pct_vc, n_uniq=len(uniq), n_prem=len(prem), n_prem_brands=len(prem_brands),
                              uniq_head=uniq_head, n_uniq_brands=len(ub), deep_story=bool(deep_p))
     body = f"""<span class="eyebrow">Research \u00b7 The UK Paint Match Index</span>
 <h1>Only {len(uniq)} of the {len(prem):,} premium paint colours from {numword(len(prem_brands))} UK brands can\u2019t be matched. {uniq_head}</h1>
-<p>We compared every one of the {N:,} colours published by {len(brands)} UK paint brands against every other \u2014 millions of pairwise comparisons \u2014 to answer one question: how many premium paint colours are genuinely unique, and how many already have a near-identical twin?</p>
+<p>We compared every one of the {N:,} colours published by {len(brands)} UK paint brands against every other, millions of comparisons in all, to see how many premium paint colours already have a near-identical twin and how many are unique.</p>
 <p class="muted">Updated automatically from PaintDial\u2019s live colour library. Last built {TODAY}.</p>
 
 <h2>1. Almost every premium colour has a close alternative</h2>
@@ -1645,33 +1643,33 @@ def build_match_index_page():
 <h2>2. The closest pairs differ by a single step in their hex code</h2>
 {dupe_rows}
 
-<h2>3. Only {len(uniq)} premium colours can\u2019t be matched \u2014 {uniq_h2}</h2>
+<h2>3. Only {len(uniq)} premium colours can\u2019t be matched, {uniq_h2}</h2>
 <p>Of {len(prem):,} premium colours, just <b>{len(uniq)}</b> have no very-close match from any other brand. {uniq_p}</p>
 <div class="uq-grid">{uniq_rows}</div>
 
 <h2>4. The reason: these brands barely go dark</h2>
-<p>Only <b>{len(deep)} of {N:,}</b> colours across all {len(brands)} brands are genuinely deep. By brand: {deep_rows}.</p>
+<p>Only <b>{len(deep)} of {N:,}</b> colours across all {len(brands)} brands are very deep. By brand: {deep_rows}.</p>
 <p>{deep_p}</p>
 
 <h2>5. Whose palette is most Farrow &amp; Ball-like?</h2>
-<p>Raw counts favour whoever publishes most colours. Corrected for range size \u2014 closest-match wins per 100 colours of each brand\u2019s own range \u2014 the picture changes:</p>
+<p>Raw counts favour whoever publishes most colours. Corrected for range size (closest-match wins per 100 colours in each brand\u2019s range), the picture changes:</p>
 <div class="bars">{fb_rows}</div>
 <p>Volume and aim are different things. <a href="/dupes/farrow-and-ball">See every Farrow &amp; Ball colour\u2019s closest match \u2192</a></p>
 
 <h2>Method</h2>
-<p>Every colour is each brand\u2019s <a href="/how-it-works/">own published digital swatch</a>{source_short()} \u2014 we don\u2019t photograph or estimate colours. Differences are computed in <b>OKLab</b>, weighting hue drift twice and discounting lightness, because a paint a shade lighter still reads as the same colour while one that\u2019s drifted in hue reads as a different one. Thresholds are the ones used across the site: near-identical = \u0394E&nbsp;&lt;&nbsp;2, very close = \u0394E&nbsp;&lt;&nbsp;5. \u201cGenuinely deep\u201d means OKLab lightness below {DEEP}.</p>
+<p>Every colour is each brand\u2019s <a href="/how-it-works/">own published digital swatch</a>{source_short()}. We don\u2019t photograph or estimate colours. Differences are computed in <b>OKLab</b>, weighting hue drift twice and discounting lightness, because a paint a shade lighter still reads as the same colour while one that\u2019s drifted in hue reads as a different one. Thresholds are the ones used across the site: near-identical = \u0394E&nbsp;&lt;&nbsp;2, very close = \u0394E&nbsp;&lt;&nbsp;5. \u201cVery deep\u201d means OKLab lightness below {DEEP}.</p>
 
 <h2>What this doesn\u2019t claim</h2>
 <ul>
 <li><b>No price claims.</b> PaintDial holds no live pricing, so we make no statements about savings. \u201cValue brand\u201d describes market tier, not price.</li>
-<li><b>Screen, not wall.</b> These are digital swatch comparisons. Real paint differs by finish, pigment and light \u2014 a near-identical hex is a shortlist, not a guarantee. Always order testers.</li>
+<li><b>Screen, not wall.</b> These are digital swatch comparisons. Real paint varies with finish, pigment and light, so a near-identical hex is somewhere to start. Always order testers.</li>
 <li><b>Range sizes differ enormously</b> ({max(len(v) for v in idx_by_brand.values()):,} colours vs {min(len(v) for v in idx_by_brand.values())}). Every brand-level claim here is corrected for that.</li>
 <li><b>Published ranges only.</b> Mix-to-order and bespoke matching are excluded.</li>
 <li><b>{numword(len(brands)).capitalize()} brands, not the whole market.</b> The library holds every brand that publishes a colour value for each paint; ranges that publish only photographs are left out rather than guessed at.</li>
 </ul>
-<p class="muted">Companion study: <a href="/paint-choice-index/">The UK Paint Choice Index</a> \u2014 how much genuine choice these brands\u2019 colours actually offer. Journalists and researchers: the underlying comparisons are all on the site, colour by colour. Questions or corrections \u2014 <a href="/contact/">get in touch</a>.</p>"""
+<p class="muted">Companion study: <a href="/paint-choice-index/">The UK Paint Choice Index</a>, on how many of these colours are actually different. Journalists and researchers: the underlying comparisons are all on the site, colour by colour. Questions or corrections: <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("The UK Paint Match Index",
-        f"We compared {N:,} UK paint colours across {len(brands)} brands. {pct_vc}% of premium colours have a very close match from another brand \u2014 and only {len(uniq)} can\u2019t be matched at all.",
+        f"We compared {N:,} UK paint colours across {len(brands)} brands. {pct_vc}% of premium colours have a very close match from another brand, and only {len(uniq)} can\u2019t be matched at all.",
         "/paint-match-index/", body)
 
 
@@ -1737,7 +1735,7 @@ def build_choice_index_page():
     try:
         cr1, cr2 = find('Craig & Rose', 'Regency White'), find('Craig & Rose', 'Isabelline')
         showcase += (f'<figure class="pair"><div class="pair-blocks">{half(cr1)}{half(cr2)}</div>'
-                     f'<figcaption>Two Craig &amp; Rose colours, one published value \u2014 {paints[cr1]["hex"]}. '
+                     f'<figcaption>Two Craig &amp; Rose colours, one published value: {paints[cr1]["hex"]}. '
                      f'There is no join to find.</figcaption></figure>')
     except StopIteration:
         pass
@@ -1747,7 +1745,7 @@ def build_choice_index_page():
         group = [i for i in range(N) if paints[i]['brand'] == 'Dulux' and paints[i]['hex'].upper() == bigh][:4]
         if len(group) >= 3:
             showcase += (f'<figure class="pair"><div class="pair-blocks">{"".join(half(j) for j in group)}</div>'
-                         f'<figcaption>{len(group)} Dulux names, one published value \u2014 {bigh}.</figcaption></figure>')
+                         f'<figcaption>{len(group)} Dulux names, one published value: {bigh}.</figcaption></figure>')
 
     inb_rows = ''.join(
         f'<div class="brow"><span class="blab">{H.escape(b)}</span>'
@@ -1808,7 +1806,7 @@ def build_choice_index_page():
     # The peak-chroma contrast held at 9-15 brands (purple stopped at under half red's peak) but not
     # once Valspar's full range went in (Nov 2026: 0.20 vs 0.21), so it is only claimed when true.
     if purp_max < red_max / 2:
-        purp_peak_line = f'red reaches a peak chroma of {red_max:.2f}, yet purple stops at {purp_max:.2f} \u2014 less than half.'
+        purp_peak_line = f'red reaches a peak chroma of {red_max:.2f}, but purple stops at {purp_max:.2f}, less than half.'
     else:
         purp_peak_line = (f'the most saturated purple (chroma {purp_max:.2f}) gets close to the most saturated red ({red_max:.2f}), '
                           f'but almost nothing else does.')
@@ -1822,37 +1820,37 @@ def build_choice_index_page():
 <p class="muted">Computed automatically from PaintDial\u2019s live colour library, using the same thresholds as every page on this site. Last built {TODAY}.</p>
 
 <h2>1. {dup_head}</h2>
-<p class="bignum">{distinct:,} of {N:,}<small>colours are genuinely distinct at our near-identical threshold</small></p>
+<p class="bignum">{distinct:,} of {N:,}<small>colours are actually different at our near-identical threshold</small></p>
 <p>You could remove <b>{dup_pct}%</b> of the colours these {len(brands)} brands sell and every one removed would still have a near-identical match among the survivors. Without any clustering at all: <b>{round(100*twin_any/N)}%</b> of colours have a near-identical twin somewhere in the library, and <b>{round(100*twin_cross/N)}%</b> have one from a <em>different brand</em>. <a href="/">Check any colour\u2019s twins in the tool \u2192</a></p>
 
 <h2>2. {exact_total} colours share an exact value with a sibling from their own brand</h2>
-<p>Not near-identical \u2014 identical. The same published swatch value, sold under two names by the same brand:</p>
+<p>These pairs share exactly the same published value, under two names, from the same brand:</p>
 {showcase}
 <p class="muted">Dulux accounts for most of these: {len(hex_groups.get('Dulux', []))} of its published values appear under more than one name.</p>
 
 <h2>3. Inside the biggest ranges, most colours have an in-house twin</h2>
 <p>Share of each brand\u2019s own range with a near-identical twin <em>from the same brand</em>:</p>
 <div class="bars">{inb_rows}</div>
-<p>Bigger ranges duplicate more \u2014 partly simple arithmetic: publish {max(brand_n.values()):,} colours into a finite space and overlap follows. But it means a bigger colour card is not proportionally more choice.</p>
+<p>Bigger ranges duplicate more. Partly that\u2019s arithmetic: publish {max(brand_n.values()):,} colours into a finite space and some will overlap. It does mean a bigger colour card isn\u2019t proportionally more choice.</p>
 
 <h2>4. The colour these brands don\u2019t sell</h2>
-<p>Take every colour a standard screen can display and ask: does any paint in the library come <b>very close</b> to it (our site-wide \u0394E&nbsp;&lt;&nbsp;5)? The answer is yes for just <b>{cover_pct}%</b> of them. The missing colour isn\u2019t evenly spread \u2014 it is overwhelmingly the vivid end of <b>purple ({unc_purple}% of the gap), blue ({unc_blue}%) and the reds and pinks ({unc_pink}%)</b>.</p>
+<p>Take every colour a standard screen can display and ask: does any paint in the library come <b>very close</b> to it (our site-wide \u0394E&nbsp;&lt;&nbsp;5)? The answer is yes for just <b>{cover_pct}%</b> of them. The missing colours aren\u2019t evenly spread: they sit overwhelmingly at the vivid end of <b>purple ({unc_purple}% of the gap), blue ({unc_blue}%) and the reds and pinks ({unc_pink}%)</b>.</p>
 <p>Part of that is physics: screens emit light and pigment can\u2019t, so no paint will ever match a glowing violet. But the pattern holds <em>inside</em> paint itself: across these {len(brands)} brands, {purp_peak_line} <b>{red_vivid} red paints exceed a chroma of 0.10. {purp_count_line}</b></p>
 
 <h2>Method</h2>
-<p>Every colour is each brand\u2019s <a href="/how-it-works/">own published digital swatch</a>{source_short()}. Distinctness uses greedy clustering at the site\u2019s published near-identical threshold (\u0394E&nbsp;&lt;&nbsp;2 in our hue-weighted OKLab metric), averaged over five seeded random orderings; the spread across orderings is about 1%, so the count is not an artefact of ordering. Colour families are the site\u2019s own live classification \u2014 the same rule that files every colour in the <a href="/colours/">library</a>. Screen-colour coverage samples the sRGB gamut uniformly in OKLab volume (40,000 seeded points) and measures distance to the nearest paint with the site\u2019s own metric and thresholds.</p>
+<p>Every colour is each brand\u2019s <a href="/how-it-works/">own published digital swatch</a>{source_short()}. Distinctness uses greedy clustering at the site\u2019s published near-identical threshold (\u0394E&nbsp;&lt;&nbsp;2 in our hue-weighted OKLab metric), averaged over five seeded random orderings; the spread across orderings is about 1%, so the count is not an artefact of ordering. Colour families come from the site\u2019s own classification, the same rule that files every colour in the <a href="/colours/">library</a>. Screen-colour coverage samples the sRGB gamut uniformly in OKLab volume (40,000 seeded points) and measures distance to the nearest paint with the site\u2019s own metric and thresholds.</p>
 
 <h2>What this doesn\u2019t claim</h2>
 <ul>
-<li><b>Published swatch values, not paint in tins.</b> Brands may distinguish colours in ways a swatch value doesn\u2019t capture \u2014 finish, texture, opacity. Two identical values are identical <em>on screen</em>.</li>
-<li><b>Duplication is not an accusation.</b> Much of it is arithmetic \u2014 large ranges into a finite colour space \u2014 and some may be deliberate continuity across renamed ranges.</li>
+<li><b>Published swatch values, not paint in tins.</b> Brands may distinguish colours in ways a swatch value doesn\u2019t capture, such as finish, texture or opacity. Two identical values are identical <em>on screen</em>.</li>
+<li><b>Duplication is not an accusation.</b> Much of it is arithmetic (large ranges in a finite colour space), and some may be deliberate continuity across renamed ranges.</li>
 <li><b>Screens glow; pigment doesn\u2019t.</b> Some of the \u201cmissing\u201d colour in finding 4 is physically out of reach for any paint. The red-versus-purple contrast, measured within paint alone, does not depend on that comparison.</li>
 <li><b>No price claims.</b> PaintDial holds no live pricing.</li>
 <li><b>{numword(len(brands)).capitalize()} brands, not the whole market.</b> The library holds every brand that publishes a colour value for each paint. Own-label and other ranges that publish only photographs are left out rather than guessed at, so the UK total is higher than {N:,}.</li>
 </ul>
-<p class="muted">Companion study: <a href="/paint-match-index/">The UK Paint Match Index</a> \u2014 how closely premium colours can be matched across brands. Questions or corrections \u2014 <a href="/contact/">get in touch</a>.</p>"""
+<p class="muted">Companion study: <a href="/paint-match-index/">The UK Paint Match Index</a>, on how closely premium colours can be matched across brands. Questions or corrections: <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("The UK Paint Choice Index",
-        f"{numword(len(brands)).capitalize()} UK paint brands sell {N:,} colours between them. Only {distinct:,} are genuinely distinct \u2014 and just {purp_vivid} {'purple is' if purp_vivid == 1 else 'purples are'} genuinely vivid.",
+        f"{numword(len(brands)).capitalize()} UK paint brands sell {N:,} colours between them. Only {distinct:,} are actually different, and just {purp_vivid} {'purple is' if purp_vivid == 1 else 'purples are'} vivid.",
         "/paint-choice-index/", body)
 
 
@@ -1866,12 +1864,12 @@ def build_research_hub():
     _rc_purp = 'One exists.' if _rc['purp_vivid'] == 1 else f'Only {_rc["purp_vivid"]} exist.'
     body = f"""<span class="eyebrow">PaintDial</span>
 <h1>Research</h1>
-<p>Original studies computed from PaintDial\u2019s live library \u2014 {N:,} colours across {len(brands)} UK brands, compared with the same metric and thresholds used on every page of this site. Each study rebuilds automatically as brands are added.</p>
+<p>Original studies computed from PaintDial\u2019s live library of {N:,} colours across {len(brands)} UK brands, compared with the same metric and thresholds used on every page of this site. Each study rebuilds automatically as brands are added.</p>
 <div class="rsch-cards">
 <a class="rsch-card" href="/paint-match-index/"><small>The UK Paint Match Index</small><b>Only {_rm['n_uniq']} of the {_rm['n_prem']:,} premium paint colours from {numword(_rm['n_prem_brands'])} UK brands can\u2019t be matched. {_rm['uniq_head']}</b><span>{_rm['pct_vc']}% of premium colours have a very close match from a value brand.{_rm_deep}</span></a>
 <a class="rsch-card" href="/paint-choice-index/"><small>The UK Paint Choice Index</small><b>{numword(len(brands)).capitalize()} UK paint brands sell {N:,} colours between them. Only {_rc['distinct']:,} are actually different.</b><span>{_rc['dup_pct']}% of them are near-identical duplicates, {_rc['exact_total']} colours share an exact value with a sibling from their own range, and there is one colour almost nobody makes: a vivid purple. {_rc_purp}</span></a>
 </div>
-<p class="muted">Journalists and researchers: every underlying comparison is public, colour by colour, across the site. Questions or corrections \u2014 <a href="/contact/">get in touch</a>.</p>"""
+<p class="muted">Journalists and researchers: every underlying comparison is public, colour by colour, across the site. Questions or corrections: <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("Research", 
         f"Original colour research computed from {N:,} UK paint colours across {len(brands)} brands.",
         "/research/", body)
@@ -1880,18 +1878,18 @@ def build_research_hub():
 def build_about_page():
     body = f"""<span class="eyebrow">About</span>
 <h1>About PaintDial</h1>
-<p>PaintDial started with a familiar frustration: every paint brand\u2019s website has a lovely colour tool \u2014 that only shows you <em>their</em> paints. If you\u2019ve fallen for a designer colour but want to see what every other brand\u2019s nearest equivalent looks like, you end up with a dozen tabs open and no honest way to compare.</p>
-<p>So PaintDial does one thing: it puts {N:,} paints from {BRANDS_WORD} UK brands \u2014 {brand_list()} \u2014 into one independent tool. Pick any colour, match one from a photo, or search a paint you already know, and see the closest equivalents from every brand side by side, honestly labelled.</p>
-<p>It\u2019s an independent, one-person project. PaintDial isn\u2019t owned by, sponsored by, or affiliated with any paint brand, and no brand can pay to change how well its colours match. The matching is <a href="/how-it-works/">pure colour science</a>, applied the same way to every paint in the library.</p>
+<p>Every paint brand\u2019s website has a colour tool, and each one only shows you <em>that brand\u2019s</em> paints. If you\u2019ve picked a Farrow &amp; Ball colour and want to know what Dulux or Valspar has that\u2019s close, you end up with a dozen tabs open and no easy way to compare them.</p>
+<p>PaintDial puts {N:,} paints from {BRANDS_WORD} UK brands ({brand_list()}) in one place. Pick a colour, match one from a photo or search a paint you already know, and you get the closest match from every brand side by side, with a plain label for how close each one is.</p>
+<p>It\u2019s an independent, one-person project. PaintDial isn\u2019t owned by, sponsored by, or affiliated with any paint brand, and no brand can pay to change how well its colours match. Every paint in the library is matched with <a href="/how-it-works/">the same colour maths</a>.</p>
 
 <h2>Who makes it</h2>
 <p>PaintDial is built and run by Will, a visual effects director based in Dorset. Getting colour to agree across cameras, screens and lights is his day job, and the site grew out of trying to do the same thing for a wall at home. He answers the <a href="/contact/">contact form</a> himself.</p>
 
 <h2>How PaintDial is funded</h2>
-<p>Some \u201cwhere to buy\u201d links are affiliate links, run through partner networks including impact.com and Awin. If you buy through one, PaintDial may earn a small commission at no extra cost to you. That, plus the occasional coffee from a reader on <a href="https://ko-fi.com/paintdial" target="_blank" rel="noopener">Ko-fi</a>, is the only way the site makes money \u2014 there are no ads, no sponsored placements, and no paid rankings. Matches are never influenced by whether a link earns commission.</p>
+<p>Some \u201cwhere to buy\u201d links are affiliate links, run through partner networks including impact.com and Awin. If you buy through one, PaintDial may earn a small commission at no extra cost to you. That, plus the occasional coffee from a reader on <a href="https://ko-fi.com/paintdial" target="_blank" rel="noopener">Ko-fi</a>, is the only money the site makes. There are no ads, no sponsored placements and no paid rankings. Matches are never influenced by whether a link earns commission.</p>
 
 <h2>A note on colour names</h2>
-<p>Colour names and paint ranges are the property of their respective brands. PaintDial shows each brand\u2019s published digital swatch values{source_short()} for comparison \u2014 always order a tester pot before committing to any colour.</p>
+<p>Colour names and paint ranges are the property of their respective brands. PaintDial shows each brand\u2019s published digital swatch values{source_short()} for comparison. Always get a tester before you commit to a colour.</p>
 
 <p class="muted">Questions, corrections, or partnership enquiries: <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("About PaintDial",
@@ -1939,7 +1937,7 @@ def build_contact_page():
 
 <p class="muted" style="margin-top:34px">Not a message, just a question about the site? The <a href="/how-it-works/">how it works</a> page covers the data, the matching and the labels, and <a href="/about/">about</a> covers who runs it and how it is funded.</p>"""
     return _page_shell("Contact PaintDial",
-        "Send a correction, ask about the matching or the Match Index, or get in touch as a brand, retailer or journalist. PaintDial is one person and every message is read.",
+        "Send a correction, ask about the matching or the Match Index, or get in touch as a brand, retailer or journalist. PaintDial is one person, and I read every message.",
         "/contact/", body)
 
 
@@ -1955,20 +1953,20 @@ def build_contact_thanks_page():
 def build_photo_match_page():
     faqs = [
         ("Can you really match paint from a photo?",
-         f"Yes. Upload any photo, tap the colour you want, and PaintDial compares it against all {N:,} UK paint swatches in the library using the same colour science as the rest of the site — then ranks the closest match from every brand."),
+         f"Yes. Upload any photo, tap the colour you want, and PaintDial compares it against all {N:,} UK paint swatches in the library using the same matching as the rest of the site, then ranks the closest match from every brand."),
         ("How accurate is matching paint from a photo?",
-         "As accurate as your photo. A well-lit shot in daylight gives a genuinely close shortlist; a photo taken under a warm bulb or in a dark room will drift a long way. Holding a sheet of white paper against the wall and using Correct the light takes most of that out, but it can't fix mixed lighting or a phone's own heavy processing. Treat any match as a strong starting point, not a guarantee, and always order a tester pot."),
+         "As accurate as your photo. A well-lit shot in daylight gives a close shortlist; a photo taken under a warm bulb or in a dark room will drift a long way. Holding a sheet of white paper against the wall and using Correct the light takes most of that out, but it can't fix mixed lighting or a phone's own heavy processing. Treat any match as a starting point and always order a tester pot."),
         ("Can I match a colour from a fabric, tile or wallpaper?",
-         "Yes — anything in a photo works: a fabric, a cushion, a tile, a flower, even a room you screenshotted. If it’s a colour in an image, PaintDial can find the nearest paints to it."),
+         "Yes. Anything in a photo works: a fabric, a cushion, a tile, a flower, even a room you screenshotted."),
         ("Is it free?",
-         "Completely free. There’s no app to install and no account to create — it runs in your browser."),
+         "Completely free. There’s no app to install and no account to create; it runs in your browser."),
     ]
     faq_html = "".join(f'<div class="pm-q"><b>{q}</b><p>{a}</p></div>' for q, a in faqs)
     faq_ld = {"@context": "https://schema.org", "@type": "FAQPage",
               "mainEntity": [{"@type": "Question", "name": q,
                               "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faqs]}
     app_ld = {"@context": "https://schema.org", "@type": "WebApplication",
-              "name": "PaintDial — Match paint from a photo",
+              "name": "PaintDial: match paint from a photo",
               "url": f"{DOMAIN}/match-paint-from-a-photo/",
               "applicationCategory": "UtilitiesApplication", "operatingSystem": "Web",
               "offers": {"@type": "Offer", "price": "0", "priceCurrency": "GBP"},
@@ -1996,8 +1994,8 @@ def build_photo_match_page():
 <h1>Match a paint colour from a photo</h1>
 <div class="pm-hero">
 <div>
-<p>Upload any photo — a wall, a fabric, a sunset you loved — tap the colour you want, and see the closest paint from every UK brand, side by side. Free, instant, in your browser.</p>
-<div class="pm-diff"><b>Unlike a single brand’s app</b>, PaintDial matches your photo against {N:,} paints from {BRANDS_WORD} UK brands at once — honestly ranked, not just one manufacturer’s range.</div>
+<p>Upload a photo of a wall, a fabric or anything else, tap the colour you want, and see the closest paint from every brand side by side. It’s free and runs in your browser.</p>
+<div class="pm-diff"><b>Unlike a single brand’s app</b>, PaintDial matches your photo against {N:,} paints from {BRANDS_WORD} UK brands at once.</div>
 </div>
 <div>
 <div class="pm-up"><div style="font-family:var(--serif);font-size:19px;font-weight:600">Match from a photo</div><a class="pm-cta" href="/#photoBtn">Upload a photo</a><small>or take one on your phone · free · no sign-up</small></div>
@@ -2007,22 +2005,22 @@ def build_photo_match_page():
 
 <h2>How it works</h2>
 <div class="rsch-cards">
-<div class="rsch-card"><b>1. Upload a photo</b><span>Any image — a painted wall, a cushion, a photo you saved from Pinterest.</span></div>
+<div class="rsch-card"><b>1. Upload a photo</b><span>Any image: a painted wall, a cushion, a photo you saved from Pinterest.</span></div>
 <div class="rsch-card"><b>2. Tap the colour</b><span>Point at the exact spot; PaintDial reads the colour under your finger.</span></div>
 <div class="rsch-card"><b>3. See every brand</b><span>The closest paint from {BRANDS_WORD} UK brands, ranked, with how close each one is.</span></div>
 </div>
 
 <h2>Getting the best match</h2>
 <ul>
-<li>Shoot in <b>natural daylight</b> — camera flash and warm bulbs shift the colour.</li>
+<li>Shoot in <b>natural daylight</b>. Flash and warm bulbs shift the colour.</li>
 <li>Indoors or under lamps, <b>hold a sheet of white paper against the wall</b> when you take the photo. Then tap <b>Correct the light</b> and tap the paper, and PaintDial takes out the colour cast and brightens a dark photo before you pick the wall.</li>
 <li><b>Fill the frame</b> with the colour you want, and avoid shadows and glare.</li>
-<li>A photo of a <b>screen</b> drifts from real paint — use the real surface where you can.</li>
-<li>A match is a <b>shortlist, not a promise</b> — always order a tester pot before committing.</li>
+<li>A photo of a <b>screen</b> drifts from real paint, so use the real surface where you can.</li>
+<li>Treat a match as a <b>shortlist</b> and order a tester pot before you commit.</li>
 </ul>
 
 <h2>Why it beats a single brand’s visualiser</h2>
-<p>Dulux’s and Valspar’s photo tools only show you <em>their</em> paints. PaintDial compares your colour across {BRANDS_WORD} UK brands at once — Farrow &amp; Ball, Little Greene, Dulux, Johnstone’s and more — so you’re not locked into one range, and can see every close option honestly ranked. It uses the same <a href="/how-it-works/">colour science</a> as the rest of the site.</p>
+<p>Dulux’s and Valspar’s photo tools only show you <em>their</em> paints. PaintDial compares your colour across {BRANDS_WORD} UK brands at once, including Farrow &amp; Ball, Little Greene, Dulux and Johnstone’s, so you see every close option side by side. It uses the same <a href="/how-it-works/">matching</a> as the rest of the site.</p>
 
 <h2>Common questions</h2>
 {faq_html}
@@ -2030,7 +2028,7 @@ def build_photo_match_page():
 <p class="muted" style="margin-top:20px"><a class="pm-cta" href="/#photoBtn" style="color:#fff">Match a colour from a photo →</a></p>
 {_ldjson(app_ld, faq_ld)}"""
     return _page_shell(f"Match Paint From a Photo — {NBRANDS} UK Brands",
-        f"Upload a photo and get the closest paint from {BRANDS_WORD} UK brands — Farrow & Ball, Dulux, Little Greene and more. Free, instant, in your browser. No app, no sign-up.",
+        f"Upload a photo and get the closest paint from {BRANDS_WORD} UK brands, including Farrow & Ball, Dulux and Little Greene. Free, in your browser, with no app or sign-up.",
         "/match-paint-from-a-photo/", body)
 
 
@@ -2039,18 +2037,18 @@ def build_photo_match_page():
 # generated from the data, so match names can never go stale. Any slug not listed gets a
 # varied generated opening instead.
 EDITORIAL_INTRO = {
- 'farrow-and-ball-hague-blue': "{home} is one of Farrow &amp; Ball\u2019s most recognisable deep blues \u2014 a dark, characterful choice for front doors, kitchen cabinetry and moody rooms, and one of the colours people most often want to match from a more widely stocked brand.",
- 'farrow-and-ball-elephants-breath': "{home} is among Farrow &amp; Ball\u2019s best-loved warm neutrals, a soft greige that shifts noticeably with the light through the day \u2014 which is exactly why so many people look for a close equivalent they can pick up more easily.",
- 'farrow-and-ball-railings': "{home} is Farrow &amp; Ball\u2019s go-to \u2018almost-black\u2019 \u2014 a soft off-black with a blue undertone that\u2019s a favourite for railings, window frames and joinery, and a colour decorators regularly try to match across other ranges.",
- 'farrow-and-ball-setting-plaster': "{home} is one of Farrow &amp; Ball\u2019s most popular pinks \u2014 a soft, chalky plaster tone that reads as a warm neutral in the right light, and a hugely searched-for colour to find a close alternative to.",
- 'farrow-and-ball-skimming-stone': "{home} is a Farrow &amp; Ball favourite for whole-house schemes \u2014 a warm, soft off-white that sits comfortably almost anywhere, which is why people so often want to match it from a more widely available brand.",
- 'farrow-and-ball-sulking-room-pink': "{home} is one of Farrow &amp; Ball\u2019s most talked-about colours \u2014 a muted, dusky pink that suits snugs and bedrooms, and a colour plenty of people want to recreate without hunting down the original.",
- 'farrow-and-ball-green-smoke': "{home} is a much-loved Farrow &amp; Ball green \u2014 a soft, smoky grey-green that\u2019s a favourite on cabinetry and panelling, and one people frequently look to match from another brand.",
- 'farrow-and-ball-cornforth-white': "{home} is one of Farrow &amp; Ball\u2019s most popular cool greys \u2014 a versatile, contemporary neutral for living rooms and hallways, and a colour often searched for a close cross-brand equivalent.",
- 'farrow-and-ball-ammonite': "{home} is a Farrow &amp; Ball staple \u2014 a soft, easy mid-grey that\u2019s become a default neutral in countless UK homes, so it\u2019s no surprise people want to match it from a more widely stocked range.",
- 'farrow-and-ball-stiffkey-blue': "{home} is one of Farrow &amp; Ball\u2019s richest, deepest blues \u2014 dramatic on walls and cabinetry alike, and a characterful colour many people try to match from another brand.",
- 'farrow-and-ball-de-nimes': "{home} is one of Farrow &amp; Ball\u2019s more recent favourites \u2014 a soft, workwear-inspired blue that\u2019s become widely popular, and a colour people often want to find a close equivalent to.",
- 'farrow-and-ball-stone-blue': "{home} is a historic Farrow &amp; Ball blue \u2014 a deep, characterful grey-blue with real heritage, and one decorators regularly try to match across other ranges.",
+ 'farrow-and-ball-hague-blue': "{home} is one of Farrow &amp; Ball’s best-known deep blues. You’ll see it a lot on front doors, kitchen cabinets and in darker rooms.",
+ 'farrow-and-ball-elephants-breath': "{home} is a warm greige and one of Farrow &amp; Ball’s most popular neutrals. It shifts a lot with the light through the day, so test any match in the room it’s going in.",
+ 'farrow-and-ball-railings': "{home} is Farrow &amp; Ball’s soft off-black, with a blue undertone. It’s a favourite for railings, window frames and joinery.",
+ 'farrow-and-ball-setting-plaster': "{home} is a chalky plaster pink, and in the right light it reads more like a warm neutral. It’s one of the most searched-for Farrow &amp; Ball colours.",
+ 'farrow-and-ball-skimming-stone': "A warm, soft off-white that sits comfortably almost anywhere, {home} gets used a lot for whole-house schemes.",
+ 'farrow-and-ball-sulking-room-pink': "{home} is a muted, dusky pink that suits snugs and bedrooms.",
+ 'farrow-and-ball-green-smoke': "{home} is a smoky grey-green that gets used a lot on cabinetry and panelling.",
+ 'farrow-and-ball-cornforth-white': "{home} is one of Farrow &amp; Ball’s most popular pale greys, used a lot in living rooms and hallways.",
+ 'farrow-and-ball-ammonite': "{home} is a soft, pale grey that has become a default neutral in a lot of UK homes.",
+ 'farrow-and-ball-stiffkey-blue': "{home} is one of Farrow &amp; Ball’s darkest blues, and it works as well on cabinets as it does on walls.",
+ 'farrow-and-ball-de-nimes': "{home} is a muted grey-blue named after workwear denim. It’s one of Farrow &amp; Ball’s newer colours and has caught on quickly.",
+ 'farrow-and-ball-stone-blue': "{home} is one of Farrow &amp; Ball’s historic colours, a mid-toned blue that leans towards green.",
 }
 
 def build_alternatives_page(i):
@@ -2076,10 +2074,10 @@ def build_alternatives_page(i):
     # ---- PaintDial verdict: computed from the colour values, unique per page ----
     cb = diff_bits(i, closest)
     close_txt = (f'is the closest match from any other brand ({matchword(d[closest])})'
-                 + (f' \u2014 though it\u2019s {joinbits(cb)}.' if cb
-                    else f' \u2014 and it holds {name}\u2019s lightness, warmth and saturation alike.'))
+                 + (f', though it\u2019s {joinbits(cb)}.' if cb
+                    else f', and it keeps {name}\u2019s lightness, warmth and saturation.'))
     if cheapest == closest:
-        value_txt = ' It\u2019s also the best-value tier of the close matches \u2014 unusual, as the nearest match and the best-value one usually differ.'
+        value_txt = ' It\u2019s also the best-value tier among the close matches, which is unusual: normally the nearest and the best-value match are different paints.'
     else:
         vb = diff_bits(i, cheapest)
         value_txt = (f' The closest value-tier option is <a class="pn" href="/colours/{slugs[cheapest]}">'
@@ -2093,8 +2091,8 @@ def build_alternatives_page(i):
     n_near = sum(1 for b, k in best.items() if d[k] < 3)
     n_brands = len(best)
     if n_near == 0:
-        dist_txt = (f' No other brand gets within a near-identical match of {name} \u2014 '
-                    f'it\u2019s one of the more distinctive colours in the library, so expect a visible difference whichever you pick.')
+        dist_txt = (f' No other brand has a near-identical match for {name}. '
+                    f'It\u2019s one of the more distinctive colours in the library, so expect a visible difference whichever you pick.')
     elif n_near == 1:
         dist_txt = f' Only one of the {n_brands} other brands manages a near-identical match, which makes {name} fairly distinctive.'
     elif n_near == n_brands:
@@ -2136,26 +2134,13 @@ def build_alternatives_page(i):
     dulux_q = (f'<div class="q"><h3>Is there a Dulux equivalent to <span class="pn"><i></i>{name}</span>?</h3>'
                f'<p>The nearest Dulux colour is <a class="pn" href="/colours/{slugs[dulux]}"><i style="background:{paints[dulux]['hex']}"></i>{nm(dulux)}</a> ({matchword(d[dulux])}). '
                f'It won\u2019t be pixel-perfect, so order a tester before committing.</p></div>') if dulux is not None else ''
-    # ---- Intro: editorial opening for hero colours, varied opening otherwise;
-    #      the closest-match sentence is ALWAYS generated so it stays correct. ----
-    _cl = paints[closest]
+    # ---- Intro ----
     _homelink = f'<a class="pn" href="/colours/{slugs[i]}"><i></i>{name}</a>'
-    _matchlink = (f'<a class="pn" href="/colours/{slugs[closest]}">'
-                  f'<i style="background:{_cl["hex"]}"></i>{H.escape(_cl["name"])}</a> by {H.escape(_cl["brand"])}')
-    _match_sentence = (f'PaintDial\u2019s closest match from another UK brand is {_matchlink} '
-                       f'({matchword(d[closest])}), with every other close match ranked below.')
+    # Only hand-written intros get a paragraph. Rotating stock openers were removed in Nov 2026,
+    # and the verdict box directly below already names the closest match, so no generated
+    # sentence repeats it here.
     _open = EDITORIAL_INTRO.get(slugs[i])
-    if _open:
-        _open = _open.replace('{home}', _homelink)
-    else:
-        _vv = [
-            f'{_homelink} is a {depth} {fam} from {brand}, and a popular colour to match across brands or on a tighter budget.',
-            f'If you love {brand}\u2019s {_homelink} but want it from a more widely stocked range, you have options \u2014 it\u2019s a {depth} {fam}.',
-            f'{_homelink} is one of {brand}\u2019s {depth} {fam}s that people often look to match from another brand.',
-            f'Thinking of {_homelink} but weighing up alternatives? This {depth} {fam} from {brand} has several close cousins across the UK ranges.',
-        ]
-        _open = _vv[sum(slugs[i].encode()) % len(_vv)]
-    intro = _open + ' ' + _match_sentence
+    intro_html = f'<p class="intro">{_open.replace("{home}", _homelink)}</p>' if _open else ''
 
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2179,9 +2164,9 @@ def build_alternatives_page(i):
 <div class="hero-info"><div class="hero-label">The colour you\u2019re matching</div>
 <div class="hero-name">{brand} <span class="pn"><i></i>{name}</span></div>
 <div class="hero-stats"><span><i>Hex</i>{p['hex']}</span><span><i>LRV</i>\u2248 {lrv(L[i]):.0f}</span><span><i>Shade</i>{depth.capitalize()} {fam}</span></div></div></div>
-<p class="intro">{intro}</p>
+{intro_html}
 {verdict}
-<p class="intro">Below is every genuinely close match to <span class="pn"><i></i>{name}</span> from the other {OTHERS_WORD} brands \u2014 ranked purely by closeness, so where one brand has several near-misses, they all appear. Compare on any card shows it against {name} full screen. For the single best match <em>per brand</em>, see the <a href="/colours/{slugs[i]}">{name} colour page</a>.</p>
+<p class="intro">One brand can appear several times if it has more than one close match. For the single best match <em>per brand</em>, see the <a href="/colours/{slugs[i]}">{name} colour page</a>.</p>
 <h2>All {len(alts)} close matches, ranked</h2>
 <div class="alts">{cards}</div>
 <div class="faq"><h2>Common questions</h2>
@@ -2189,7 +2174,7 @@ def build_alternatives_page(i):
 <div class="q"><h3>What\u2019s the best-value alternative to <span class="pn"><i></i>{name}</span>?</h3>
 <p>Of the close matches, <a class="pn" href="/colours/{slugs[cheapest]}"><i style="background:{paints[cheapest]['hex']}"></i>{nm(cheapest)}</a> by {brn(cheapest)} is the best-value option ({TIER_WORD[TIER[paints[cheapest]['brand']]].lower()}, {matchword(d[cheapest])}).</p></div>
 <div class="q"><h3>How close are these to <span class="pn"><i></i>{name}</span>?</h3>
-<p>The list shows every genuinely close match from other brands, ranked nearest-first by perceptual colour difference \u2014 including several from one brand where they\u2019re all close. Screens differ from paint on a wall, so treat these as a shortlist and always order tester pots.</p></div></div>
+<p>They\u2019re ranked nearest first by perceptual colour difference, and the label on each card says how close it is. Screens differ from paint on a wall, so treat these as a shortlist and order tester pots.</p></div></div>
 <div class="cta"><b style="font-family:var(--serif);font-size:18px">Matching a different colour?</b>
 <p style="font-size:14px;color:var(--muted);margin:6px 0 0">Search any paint name in the tool to see its closest matches across every UK brand.</p>
 <a href="/colours/{slugs[i]}">See the full {name} colour page \u2192</a></div>
@@ -2296,7 +2281,7 @@ if __name__ == '__main__':
     {HDR}
     <div class="hero"><div class="hero-body">
     <span class="eyebrow">404</span><h1>That colour has escaped the wheel</h1>
-    <p class="sub">The page you were after doesn\u2019t exist \u2014 it may have moved when we reorganised.</p>
+    <p class="sub">That page doesn\u2019t exist. It may have moved when the site was reorganised.</p>
     <p class="sub" style="margin-top:14px"><a href="/" style="color:inherit;font-weight:600">Open the colour tool \u2192</a> &nbsp;\u00b7&nbsp; <a href="/colours/" style="color:inherit;font-weight:600">Browse the colour library \u2192</a></p>
     </div></div>
     {FOOT}
