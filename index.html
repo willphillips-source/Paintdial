@@ -360,16 +360,27 @@
   canvas#photo{width:100%; display:block; border-radius:10px; border:1px solid var(--hairline); cursor:crosshair;
     -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;}
   #photoWrap.fine .photo-marker{width:34px; height:34px;}
-  /* Messages for Correct the light sit ON the photo, because on a phone the photo fills
-     the screen and the hint underneath it is out of sight. */
-  .photo-banner{position:absolute; top:10px; left:10px; right:10px; z-index:3; display:flex; align-items:center;
-    justify-content:space-between; gap:10px; padding:9px 10px 9px 13px; border-radius:9px;
-    background:rgba(33,31,27,.86); color:#fff; font-size:13px; line-height:1.35; box-shadow:0 2px 10px rgba(0,0,0,.25);}
-  .photo-banner[hidden]{display:none;}
-  .photo-banner .pb-acts{display:flex; gap:6px; flex:none;}
-  .photo-banner button{font-family:var(--sans); font-size:12.5px; font-weight:600; color:#211F1B; background:#fff;
-    border:none; border-radius:7px; padding:6px 10px; cursor:pointer;}
-  .photo-banner button[hidden]{display:none;}
+  /* The three steps, above the photo so they're on screen with it on a phone. The current
+     step is dark, done steps get a tick, steps still to come are grey. Step 2's button is
+     the Correct the light control itself. Ink and muted, not --pick: --pick is the picked
+     colour, and a pale pick would make the ticks and button unreadable. */
+  .photo-steps{list-style:none; margin:0 0 8px; padding:10px 12px; background:var(--card); border:1px solid var(--hairline);
+    border-radius:10px; display:grid; gap:7px; font-size:14px; line-height:1.3; color:var(--muted);}
+  .photo-steps li{display:flex; align-items:center; gap:10px; min-height:28px;}
+  .photo-steps .ps-n{flex:none; width:22px; height:22px; border-radius:50%; border:1.5px solid currentColor;
+    display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;}
+  .photo-steps li.cur{color:var(--ink); font-weight:600;}
+  .photo-steps li.cur .ps-n{background:var(--ink); border-color:var(--ink); color:#fff;}
+  .photo-steps li.done .ps-n{background:var(--muted); border-color:var(--muted); color:#fff; font-size:0;}
+  .photo-steps li.done .ps-n::after{content:"\2713"; font-size:13px;}
+  .photo-steps button{font-family:var(--sans); font-size:13.5px; font-weight:600; padding:5px 11px; margin-left:3px;
+    border:1.5px solid var(--ink); border-radius:7px; background:var(--card); color:var(--ink); cursor:pointer;}
+  .photo-steps li.cur button{background:var(--ink); color:#fff;}
+  .photo-steps button[hidden]{display:none;}
+  #photoWBCancel{border-color:var(--hairline); color:var(--ink); background:var(--card) !important;}
+  .ps-note{margin:0 0 10px; font-size:12.5px; line-height:1.45; color:var(--muted);}
+  .ps-note.warn{color:var(--ink); font-weight:600;}
+  .ps-note button{font:inherit; font-weight:700; color:var(--ink); background:none; border:none; border-bottom:1px solid var(--ink); padding:0; cursor:pointer;}
   /* The picked colour, shown on the photo on single-column layouts, where "Your colour"
      and the matches are off screen while you're tapping the photo. */
   .photo-chip{display:none;}
@@ -750,14 +761,18 @@
       </div>
       <input type="file" id="photoFile" accept="image/*" hidden>
       <div class="photo-wrap" id="photoWrap">
+        <ol class="photo-steps" id="photoSteps">
+          <li data-step="1"><span class="ps-n">1</span><span>Tap the colour you want on the photo</span></li>
+          <li data-step="2"><span class="ps-n">2</span><span>Tap <button id="photoWB" type="button">Correct the light</button></span></li>
+          <li data-step="3"><span class="ps-n">3</span><span>Tap the white paper on the photo <button id="photoWBCancel" type="button" hidden>Cancel</button></span></li>
+        </ol>
+        <p class="ps-note" id="psNote"></p>
         <div class="photo-stage">
         <canvas id="photo"></canvas>
         <div class="photo-marker" id="photoMarker"></div>
-        <div class="photo-banner" id="photoBanner" hidden><span id="photoBannerText"></span><span class="pb-acts" id="pbActs"></span></div>
         <div class="photo-chip" id="photoChip"><i id="photoChipSw"></i><b id="photoChipHex"></b><a href="#results" id="photoChipGo">See matches &darr;</a></div>
         </div>
-        <p class="photo-light" id="photoLight">Indoor light and dark rooms throw a photo&rsquo;s colour right off. Hold a sheet of white paper against the wall when you take the photo and the light can be corrected.</p>
-        <div class="photo-hint"><span id="photoHintText">Click or drag anywhere on the image</span><span class="photo-btns"><button id="photoWB" type="button">Correct the light</button><button id="photoClear" type="button">Remove image</button></span></div>
+        <div class="photo-hint"><span id="photoHintText"></span><span class="photo-btns"><button id="photoClear" type="button">Remove image</button></span></div>
       </div>
 
       <div class="search-row" id="searchRow" hidden>
@@ -1592,7 +1607,7 @@ photoFile.addEventListener('change',()=>{
     photoCanvas.height=Math.round(img.height*scale);
     pctx.drawImage(img,0,0,photoCanvas.width,photoCanvas.height);
     photoOrig=pctx.getImageData(0,0,photoCanvas.width,photoCanvas.height);
-    wbMode=false; wbOn=false; lastPick=null; brightRef=null; pendingWhite=null; askMode=true; flashOn=false; setPhotoUI();
+    wbMode=false; wbOn=false; lastPick=null; brightRef=null; pendingWhite=null; noteMsg=null; setPhotoUI();
     photoWrap.classList.add('show');
     photoMarker.style.display='none'; photoChip.classList.remove('show');
     URL.revokeObjectURL(img.src);
@@ -1600,7 +1615,7 @@ photoFile.addEventListener('change',()=>{
   img.src=URL.createObjectURL(f);
 });
 document.getElementById('photoClear').addEventListener('click',()=>{
-  photoWrap.classList.remove('show'); photoFile.value=''; photoOrig=null; wbMode=false; wbOn=false; lastPick=null; pendingWhite=null; askMode=false; flashOn=false; setPhotoUI();
+  photoWrap.classList.remove('show'); photoFile.value=''; photoOrig=null; wbMode=false; wbOn=false; lastPick=null; pendingWhite=null; noteMsg=null; setPhotoUI();
 });
 /* ---------- correct the light: white balance and exposure from a tapped white ----------
    A phone photo carries the room's light: a warm bulb pushes everything orange, a dark
@@ -1615,53 +1630,41 @@ let photoOrig=null, wbMode=false, wbOn=false;
 const WB_WHITE=0.86;
 const photoWB=document.getElementById('photoWB'), photoHintText=document.getElementById('photoHintText');
 const PHOTO_TOUCH=matchMedia('(pointer:coarse)').matches;
-const PICK_HINT=PHOTO_TOUCH ? 'Tap to pick a colour. Press and hold, then drag, to fine-tune.' : 'Click or drag anywhere on the image';
-/* The order is asked, not left to the person to work out. When a photo loads, the photo
-   itself asks "Is there white paper in this photo?" Yes: tap the paper, the light is
-   corrected. No: just tap the colour. Tapping the photo before answering is an ordinary
-   pick (the safe default: a pale wall tapped by mistake isn't taken as the white), and the
-   question stays up, so the light can still be corrected after picking. Either order ends
-   in the same place, because a correction re-picks the spot already chosen. */
-let lastPick=null, brightRef=null, pendingWhite=null, bannerT=null, askMode=false, flashOn=false;
-const photoBanner=document.getElementById('photoBanner'), photoBannerText=document.getElementById('photoBannerText'),
-      pbActs=document.getElementById('pbActs'), photoChip=document.getElementById('photoChip');
-function banner(text, btns){
-  clearTimeout(bannerT); bannerT=null;
-  if(!text){ photoBanner.hidden=true; return; }
-  photoBannerText.textContent=text;
-  pbActs.replaceChildren(...(btns||[]).map(([label,fn])=>{
-    const b=document.createElement('button'); b.type='button'; b.textContent=label; b.addEventListener('click',fn); return b;
-  }));
-  photoBanner.hidden=false;
-}
+const PICK_HINT=PHOTO_TOUCH ? 'Press and hold, then drag, to fine-tune' : 'Drag to fine-tune';
+/* Three numbered steps above the photo, in the order people do it: tap the colour, tap
+   Correct the light, tap the white paper. Steps 2 and 3 are optional (no paper, skip them).
+   Doing them the other way round works too: a correction re-picks the spot already
+   chosen, so the colour always ends up corrected. The note under the steps carries the
+   paper advice, the "too dark to be the paper" check and the result. */
+let lastPick=null, brightRef=null, pendingWhite=null, noteMsg=null;
+const photoSteps=document.getElementById('photoSteps'), psNote=document.getElementById('psNote'),
+      photoWBCancel=document.getElementById('photoWBCancel'), photoChip=document.getElementById('photoChip');
+const PAPER_NOTE='No white paper in the photo? Skip 2 and 3. Next time, hold a sheet against the wall when you take it, because indoor light throws colours right off.';
 function setPhotoUI(){
   photoWrap.classList.toggle('wb-pick',wbMode);
-  photoWB.textContent = wbOn ? 'Undo correction' : wbMode ? 'Cancel' : 'Correct the light';
-  photoHintText.textContent = wbMode ? 'Tap the white paper'
-    : (wbOn && !lastPick) ? 'Light corrected. Now tap the colour you want.' : PICK_HINT;
-  if(flashOn) return;
-  if(wbMode) banner(pendingWhite ? 'That looks too dark to be the paper. Tap the paper.' : 'Tap the white paper in your photo',
-    pendingWhite ? [['Use it anyway',()=>applyWhite(pendingWhite.x,pendingWhite.y,true)],['Cancel',cancelWB]] : [['Cancel',cancelWB]]);
-  else if(askMode) banner('Is there white paper in this photo? It’s used to correct the light.', [['Yes',startWB],['No',noPaper]]);
-  else banner('');
+  const done={1:!!lastPick, 2:wbMode||wbOn, 3:wbOn};
+  const cur = wbMode ? 3 : !lastPick ? 1 : !wbOn ? 2 : 0;
+  photoSteps.querySelectorAll('li').forEach(li=>{
+    const n=+li.dataset.step;
+    li.classList.toggle('done', done[n] && n!==cur);
+    li.classList.toggle('cur', n===cur);
+  });
+  photoWB.textContent = wbOn ? 'Undo correction' : 'Correct the light';
+  photoWBCancel.hidden = !wbMode;
+  photoHintText.textContent = PICK_HINT;
+  psNote.classList.toggle('warn', !!(noteMsg && noteMsg.warn));
+  psNote.replaceChildren(document.createTextNode(noteMsg ? noteMsg.text : PAPER_NOTE));
+  if(noteMsg && noteMsg.use){
+    const b=document.createElement('button'); b.type='button'; b.textContent='use it anyway';
+    b.addEventListener('click',()=>{ if(pendingWhite) applyWhite(pendingWhite.x,pendingWhite.y,true); });
+    psNote.append(' ', b);
+  }
 }
-function flash(text, btns, ms){
-  flashOn=true; banner(text,btns);
-  if(ms) bannerT=setTimeout(()=>{ flashOn=false; setPhotoUI(); },ms);
-}
-function startWB(){
-  if(!photoOrig) return;
-  askMode=false; wbMode=true; pendingWhite=null; flashOn=false;
-  // the banner is at the top of the photo; on a phone that can be above the screen
-  const r=photoWrap.getBoundingClientRect(); if(r.top<0) window.scrollBy({top:r.top-12, behavior:'smooth'});
-  setPhotoUI();
-}
-function cancelWB(){ wbMode=false; pendingWhite=null; setPhotoUI(); }
-function noPaper(){ askMode=false; setPhotoUI(); }
-function undoWB(){
-  pctx.putImageData(photoOrig,0,0); wbOn=false; wbMode=false; flashOn=false; repick(); setPhotoUI();
-}
+function startWB(){ if(!photoOrig) return; wbMode=true; pendingWhite=null; noteMsg=null; setPhotoUI(); }
+function cancelWB(){ wbMode=false; pendingWhite=null; noteMsg=null; setPhotoUI(); }
+function undoWB(){ pctx.putImageData(photoOrig,0,0); wbOn=false; wbMode=false; noteMsg=null; repick(); setPhotoUI(); }
 photoWB.addEventListener('click',()=>{ if(!photoOrig) return; if(wbOn) undoWB(); else if(wbMode) cancelWB(); else startWB(); });
+photoWBCancel.addEventListener('click',cancelWB);
 document.getElementById('photoChipGo').addEventListener('click',e=>{
   e.preventDefault(); document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
 });
@@ -1689,24 +1692,23 @@ function applyWhite(x,y,force){
     }
   r/=n; g/=n; b/=n;
   if(Math.max(r,g,b)<0.02 || Math.min(r,g,b)<0.004){
-    pendingWhite=null; setPhotoUI();
-    banner('That patch is too dark to use. Tap something white in the light.',[['Cancel',cancelWB]]);
-    photoHintText.textContent='That patch is too dark to use. Tap something white in the light.';
+    pendingWhite=null; noteMsg={text:'That patch is too dark to use. Tap something white in the light.', warn:true}; setPhotoUI();
     return;
   }
-  if(!force && toSrgb(Math.max(r,g,b)) < 0.8*photoBright()){ pendingWhite={x,y}; setPhotoUI(); return; }
+  if(!force && toSrgb(Math.max(r,g,b)) < 0.8*photoBright()){
+    pendingWhite={x,y}; noteMsg={text:'That looks too dark to be the white paper. Tap the paper, or', warn:true, use:true}; setPhotoUI(); return;
+  }
   const clampG=v=>Math.max(0.25,Math.min(8,v));
   const gains=[clampG(WB_WHITE/r),clampG(WB_WHITE/g),clampG(WB_WHITE/b)];
   const lut=gains.map(k=>{const a=new Uint8ClampedArray(256); for(let v=0;v<256;v++) a[v]=toSrgb(toLin(v)*k); return a;});
   const out=new ImageData(new Uint8ClampedArray(src), W, H), d=out.data;
   for(let i=0;i<d.length;i+=4){ d[i]=lut[0][d[i]]; d[i+1]=lut[1][d[i+1]]; d[i+2]=lut[2][d[i+2]]; }
   pctx.putImageData(out,0,0);
-  wbOn=true; wbMode=false; askMode=false; pendingWhite=null;
+  wbOn=true; wbMode=false; pendingWhite=null;
   // re-pick the spot you had already chosen, so your colour and the matches update now
   const had=repick();
+  noteMsg={text: had ? 'Light corrected. Your colour has been updated.' : 'Light corrected. Now tap the colour you want on the photo.'};
   setPhotoUI();
-  if(had) flash('Light corrected. Your colour has been updated.',[['Undo',undoWB]],3500);
-  else flash('Light corrected. Now tap the colour you want.',[['Undo',undoWB]],0);   // until the next tap
 }
 /* Pick at a point given as a fraction of the photo (0 to 1), so it can be repeated after
    the photo is corrected or the correction undone. */
@@ -1723,11 +1725,12 @@ function pickAt(fx,fy){
   photoMarker.style.display='block';
   photoMarker.style.left=(fx*photoCanvas.offsetWidth)+'px';
   photoMarker.style.top=(fy*photoCanvas.offsetHeight)+'px';
-  lastPick={fx,fy};
+  const lastPickWas=lastPick; lastPick={fx,fy};
+  if(!lastPickWas && noteMsg && /Now tap the colour/.test(noteMsg.text)) noteMsg={text:'Light corrected.'};
   document.getElementById('photoChipSw').style.background=hex;
   document.getElementById('photoChipHex').textContent=hex.toUpperCase();
   photoChip.classList.add('show');
-  if(flashOn && !bannerT){ flashOn=false; setPhotoUI(); }   // "now tap the colour" has been done
+  if(!lastPickWas){ setPhotoUI(); }   // step 1 is now done
   setFromHex(hex);
 }
 function repick(){
