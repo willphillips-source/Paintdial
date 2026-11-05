@@ -230,6 +230,11 @@
     font-variant-numeric:tabular-nums; opacity:.85; white-space:nowrap;}
   /* child of .alt-txt (a flex column), which already supplies the horizontal padding */
   .alt-price{display:block; margin-top:2px;}
+  /* Price band, £ to £££, so the rough cost reads at a glance; the per-litre figure
+     follows in the same muted line. Unearned £ signs are drawn faint rather than left
+     out, so every card's band sits at the same width and compares down a column. */
+  .pband{font-weight:700; letter-spacing:.04em; margin-right:5px; color:var(--ink);}
+  .pband i{font-style:normal; opacity:.22;}
 
   .filter-panel{margin:18px 0 22px; display:flex; flex-direction:column; gap:10px;}
   .filter-group{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
@@ -569,6 +574,7 @@
 @media(max-width:900px){.prop{padding:24px 22px 20px}.prop h1{font-size:24px}}
 @media(max-width:560px){.prop h1{font-size:21px}.prop-brands{display:none}.lib-link{font-size:11px;gap:6px;padding:5px 9px 5px 7px;border-radius:8px}}
 
+/* ---- shortlist CSS (gen_pages.py reads this block between the markers; keep it self-contained) ---- */
 .pd-heart{position:absolute;top:8px;right:8px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C8578;transition:transform .12s,color .12s;z-index:2;padding:0}
 .pd-heart:hover{transform:scale(1.12);color:#5E7E8B}
 .pd-heart svg{fill:none;stroke:currentColor;stroke-width:1.7}
@@ -587,8 +593,8 @@
 .pd-tray-x{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border:none;padding:0;border-radius:50%;background:#211F1B;color:#fff;font-size:12px;line-height:18px;text-align:center;cursor:pointer;font-family:inherit}
 .pd-tray-mail{margin-top:10px;border-top:1px solid #EEEAE1;padding-top:9px}
 .pd-mail-toggle{border:none;background:none;color:#5E7E8B;font-size:12.5px;font-weight:600;cursor:pointer;padding:0}
-.pd-mail-toggle:hover{text-decoration:underline}
-.pd-mail-form{display:flex;gap:6px;margin-top:8px}
+.pd-mail-toggle:hover{text-decoration:underline}.pd-tray-acts{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center}.pd-cmp-two{border:none;background:none;color:#5E7E8B;font-size:12.5px;font-weight:600;cursor:pointer;padding:0;font-family:inherit}.pd-cmp-two:hover{text-decoration:underline}#pd-tray.picking .pd-tray-note{color:#211F1B;font-weight:600}#pd-tray.picking .pd-tray-sw{cursor:pointer}.pd-tray-chip.sel .pd-tray-sw{outline:2.5px solid #211F1B;outline-offset:2px}.pd-tray-chip.sel .pd-tray-name{color:#211F1B;font-weight:600}
+.pd-mail-form{display:flex;gap:6px;margin-top:8px}.pd-mail-form[hidden]{display:none}
 .pd-mail-input{flex:1;min-width:0;border:1px solid #D9D4C8;border-radius:8px;padding:7px 9px;font-size:13px;font-family:inherit}
 .pd-mail-input:focus{outline:none;border-color:#5E7E8B}
 .pd-mail-send{border:none;background:#5E7E8B;color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer}
@@ -603,6 +609,7 @@
 #pd-sl-flash.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .chip,.c-swatch,.alt-row,.hero-swatch{position:relative}
 @media(max-width:560px){#pd-tray{right:8px;bottom:8px;left:8px;max-width:none}.pd-heart{width:27px;height:27px}}
+/* ---- end shortlist CSS ---- */
 /* Full-screen compare trigger (top-left of the swatch; the heart has top-right).
    Behaviour is in /pd-compare.js, shared with every generated page. Keep this CSS
    identical to COMPARE_BTN_CSS in gen_pages.py. */
@@ -1045,6 +1052,10 @@ function currentHex(){return rgbToHex(...hslToRgb(hue,sat,light));}
      reader does the arithmetic. "Cheaper" stays banned.
    - If a brand isn't in this map it simply shows no price. Fail quiet. */
 const PRICE_CHECKED='Sept 2026';
+/* £ / ££ / £££ bands by typical price per litre (the midpoint of the brand's range).
+   £ is under the first figure, ££ up to the second, £££ from the second up. gen_pages.py
+   reads these same numbers from here, so the colour pages show the same bands. */
+const PRICE_BANDS=[14,20];
 const PRICE_TIN_L=2.5;   // the comparison basis: the one size sixteen of the seventeen brands all sell
 /* [lo, hi] is the tin price, inc VAT. An optional third value is the tin size in litres
    when a brand does not sell the 2.5L basis size; the per-litre figure is then derived
@@ -1075,9 +1086,15 @@ const PRICING={
   if(el) el.textContent='Prices are per litre, based on a '+PRICE_TIN_L
     +'L tin mixed to your colour and checked '+PRICE_CHECKED
     +(odd.length?' ('+odd.map(b=>b+': '+PRICING[b][2]+'L, the only size it sells').join('; ')+')':'')
-    +' — retailers vary, and bigger tins work out cheaper.';
+    +' — retailers vary, and bigger tins work out cheaper. £ is under £'+PRICE_BANDS[0]+' a litre, ££ £'+PRICE_BANDS[0]+' to £'+PRICE_BANDS[1]+', £££ £'+PRICE_BANDS[1]+' or more.';
 })();
 const money = v => '£'+v.toFixed(2);
+function priceBand(brand){
+  const p=PRICING[brand]; if(!p) return 0;
+  const tinL=p[2]||PRICE_TIN_L, mid=(p[0]+p[1])/2/tinL;
+  return mid<PRICE_BANDS[0]?1:mid<PRICE_BANDS[1]?2:3;
+}
+function bandHTML(n){ return n?`<span class="pband" aria-label="Price band ${n} of 3">${'£'.repeat(n)}<i aria-hidden="true">${'£'.repeat(3-n)}</i></span>`:''; }
 /* Always its own line, never appended to the brand: "£24.00–29.20/L" after a brand
    name overflows both the 170px grid chip and the 2-up mobile card, where .alt-txt
    ellipsises and silently ate the second half of the price. */
@@ -1093,7 +1110,7 @@ function priceEl(brand,cls){
   const gbp = v => Number.isInteger(v) ? `£${v}` : money(v);
   const tin = p[0]===p[1] ? gbp(p[0]) : `${gbp(p[0])}–${gbp(p[1]).slice(1)}`;
   const basis = p[2] ? `for a ${tinL}L tin, the only size this brand sells` : `for a ${PRICE_TIN_L}L tin`;
-  return `<span class="${cls}" title="Typically ${tin} ${basis}">${t}</span>`;
+  return `<span class="${cls}" title="Typically ${tin} ${basis}">${bandHTML(priceBand(brand))}${t}</span>`;
 }
 /* Active brand offers. To show one, add a line like:
    'Dulux': '20% off until Monday',
@@ -1613,6 +1630,10 @@ setFromHex('#5E7E8B'); /* start on Stone Blue territory */
 (function(){
   const KEY='pd_shortlist_v1', MAX=12, SITE='https://www.paintdial.co.uk';
   let minimized=false;
+  /* Compare two: with exactly two saved colours the button opens them straight away;
+     with more, it asks you to tap two. Uses the full-screen compare view (/pd-compare.js),
+     which says how the second colour differs from the first. */
+  let picking=false, picks=[];
   const read=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[];}catch(e){return [];}};
   const write=a=>{try{localStorage.setItem(KEY,JSON.stringify(a.slice(0,MAX)));}catch(e){}};
   const has=id=>read().some(x=>x.id===id);
@@ -1671,20 +1692,45 @@ setFromHex('#5E7E8B'); /* start on Stone Blue territory */
       `<div class="pd-tray-head"><b>Your shortlist</b> <span class="pd-tray-n">${items.length}</span>`+
       `<button class="pd-tray-min" aria-label="Minimise shortlist" title="Minimise">\u2013</button>`+
       `<button class="pd-tray-clear" aria-label="Clear shortlist">Clear</button></div>`+
-      `<div class="pd-tray-note">Saved on this device \u2014 come back anytime. A shortlist to compare, not a basket.</div>`+
+      `<div class="pd-tray-note">${picking?(picks.length?'Now tap a second colour':'Tap two colours to compare them'):'Saved on this device \u2014 come back anytime. A shortlist to compare, not a basket.'}</div>`+
       `<div class="pd-tray-row">`+items.map(it=>
-        `<div class="pd-tray-chip">`+
+        `<div class="pd-tray-chip${picks.includes(it.id)?' sel':''}" data-id="${it.id}">`+
         `<a class="pd-tray-link" href="${colourURLFor(it)}" title="${it.name} \u2014 ${it.brand}">`+
         `<span class="pd-tray-sw" style="background:${it.hex}"></span>`+
         `<span class="pd-tray-name">${it.name}</span></a>`+
         `<button class="pd-tray-x" type="button" data-id="${it.id}" aria-label="Remove ${it.name} from shortlist">\u00d7</button></div>`).join('')+`</div>`+
-      `<div class="pd-tray-mail">`+
-        `<button class="pd-mail-toggle" type="button">\u2709 Email these to me</button>`+
+      `<div class="pd-tray-mail"><div class="pd-tray-acts">`+
+        (items.length>=2?`<button class="pd-cmp-two" type="button">${picking?'Cancel':(items.length===2?'Compare these two':'Compare two')}</button>`:'')+
+        `<button class="pd-mail-toggle" type="button">\u2709 Email these to me</button></div>`+
         `<div class="pd-mail-form" hidden><input type="email" class="pd-mail-input" placeholder="you@email.com" aria-label="Your email address"><button class="pd-mail-send" type="button">Send</button></div>`+
       `</div>`;
-    tray.querySelector('.pd-tray-clear').onclick=()=>{write([]);paint();document.querySelectorAll('.pd-heart.on').forEach(b=>b.classList.remove('on'));};
+    tray.classList.toggle('picking',picking);
+    tray.querySelector('.pd-tray-clear').onclick=()=>{picking=false;picks=[];write([]);paint();document.querySelectorAll('.pd-heart.on').forEach(b=>b.classList.remove('on'));};
+    const cmpTwo=tray.querySelector('.pd-cmp-two');
+    const openTwo=(a,b,btn)=>{
+      if(!window.PDCompare||!PDCompare.openPair) return;
+      PDCompare.openPair({ahex:a.hex,aname:a.name,abrand:a.brand,bhex:b.hex,bname:b.name,bbrand:b.brand},btn);
+    };
+    if(cmpTwo) cmpTwo.onclick=e=>{
+      e.stopPropagation();
+      if(picking){picking=false;picks=[];paint();return;}
+      if(items.length===2){openTwo(items[0],items[1],cmpTwo);return;}
+      picking=true;picks=[];paint();
+    };
+    if(picking) tray.querySelectorAll('.pd-tray-link').forEach(l=>l.addEventListener('click',e=>{
+      e.preventDefault();
+      const id=l.closest('.pd-tray-chip').dataset.id;
+      picks=picks.includes(id)?picks.filter(x=>x!==id):picks.concat(id);
+      if(picks.length===2){
+        const all=read(), a=all.find(x=>x.id===picks[0]), b=all.find(x=>x.id===picks[1]);
+        picking=false;picks=[];paint();
+        if(a&&b) openTwo(a,b,document.querySelector('#pd-tray .pd-cmp-two'));
+        return;
+      }
+      paint();
+    }));
     tray.querySelectorAll('.pd-tray-x').forEach(x=>x.addEventListener('click',e=>{
-      e.preventDefault();e.stopPropagation(); const a=read().filter(y=>y.id!==x.dataset.id); write(a); paint();
+      e.preventDefault();e.stopPropagation(); picks=picks.filter(y=>y!==x.dataset.id); const a=read().filter(y=>y.id!==x.dataset.id); if(a.length<2){picking=false;picks=[];} write(a); paint();
       document.querySelectorAll('.pd-heart').forEach(b=>{ if(idOf(b.dataset.name,b.dataset.brand)===x.dataset.id) b.classList.remove('on');});
     }));
     const mt=tray.querySelector('.pd-mail-toggle'), mf=tray.querySelector('.pd-mail-form'),
