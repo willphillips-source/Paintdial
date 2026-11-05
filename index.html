@@ -233,8 +233,9 @@
   /* Price band, £ to £££, so the rough cost reads at a glance; the per-litre figure
      follows in the same muted line. Unearned £ signs are drawn faint rather than left
      out, so every card's band sits at the same width and compares down a column. */
-  .pband{font-weight:700; letter-spacing:.04em; margin-right:5px; color:var(--ink);}
-  .pband i{font-style:normal; opacity:.22;}
+  .pband{display:inline-block; background:#EEEAE2; border-radius:99px; padding:2px 8px; margin-right:6px;
+    font-weight:600; letter-spacing:.04em; color:var(--ink);}
+  .pband i{font-style:normal; opacity:.25;}
 
   .filter-panel{margin:18px 0 22px; display:flex; flex-direction:column; gap:10px;}
   .filter-group{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}

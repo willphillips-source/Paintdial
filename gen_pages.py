@@ -424,7 +424,7 @@ h2::after{content:'';display:block;width:34px;height:4px;border-radius:2px;backg
 .c-body{padding:9px 11px 11px}
 .c-name{display:block;font-family:var(--serif);font-size:14.5px;font-weight:600;line-height:1.2;text-wrap:pretty}
 .c-brand{display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px}
-.c-de{display:block;font-size:11px;color:var(--muted);margin-top:5px;font-variant-numeric:tabular-nums}.pband{font-weight:700;letter-spacing:.04em;color:var(--ink)}.pband i{font-style:normal;opacity:.22}
+.c-de{display:block;font-size:11px;color:var(--muted);margin-top:5px;font-variant-numeric:tabular-nums}.pband{display:inline-block;background:#EEEAE2;border-radius:99px;padding:2px 8px;margin-right:6px;font-weight:600;letter-spacing:.04em;color:var(--ink)}.pband i{font-style:normal;opacity:.25}
 .ladder{display:flex;border:1px solid var(--hairline);border-radius:12px;overflow-x:auto;background:var(--card)}
 /* Matches and the lighter/darker scale share one block (.mx). Wider than a phone it is
    one grid: the two halves of the matches are display:contents, so all sixteen flow
@@ -577,7 +577,7 @@ def chip(j, home_lab=None, show_tier=False, home_i=None):
                     _tol = 28 if _minc >= 0.12 else 22 if _minc >= 0.08 else 16
                     if _hd <= _tol:
                         word = 'same family'
-        tierlab = f'{band_html(q["brand"])} · ' if show_tier else ''
+        tierlab = band_html(q["brand"]) if show_tier else ''   # the pill's own margin separates it from the word
         de = f'<span class="c-de">{tierlab}{word}</span>'
     # Compare button only where there is a colour to compare against (the page's own
     # colour); the "pairs well with" chips are companions, not matches, so they get none.
