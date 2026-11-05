@@ -460,7 +460,7 @@ h1{font-size:40px}h2{font-size:23px;margin-top:40px}.sub{font-size:14px}.facts{f
 .hero-swatch{min-height:360px}.btn{font-size:15px}.afftext{font-size:12px}
 header{padding:22px 0 18px}.logo{font-size:30px}.logo .mark{width:27px;height:27px}
 .rung .r-s{height:68px}.rung .r-n{font-size:12.5px;height:31px}.rung .r-br{font-size:9.5px}
-.cta p{font-size:15px}footer{font-size:12.5px}
+.cta p{font-size:15px}footer{font-size:12.5px}.colour-summary{font-size:16px}
 }
 @media(min-width:1900px){
 .wrap{max-width:2000px}
@@ -471,7 +471,7 @@ h1{font-size:46px}h2{font-size:26px;margin-top:46px}.sub{font-size:15px;margin-b
 .hero-swatch{min-height:420px}.hero-body{padding:32px 36px}.btn{font-size:16px;padding:12px 22px}.afftext{font-size:12.5px}
 .logo{font-size:34px}
 .rung .r-s{height:80px}.rung .r-b{padding:9px 10px 11px}.rung .r-n{font-size:14px;height:34px}.rung .r-br{font-size:10.5px}
-.cta p{font-size:16px}footer{font-size:13.5px}
+.cta p{font-size:16px}footer{font-size:13.5px}.colour-summary{font-size:17px}
 .c-swatch .pd-cmp-btn{height:34px;font-size:13px;padding:0 13px 0 10px}.c-swatch .pd-heart,.hero-swatch .pd-heart{width:34px;height:34px}
 }
 @media(min-width:2400px){
@@ -482,7 +482,7 @@ h1{font-size:46px}h2{font-size:26px;margin-top:46px}.sub{font-size:15px;margin-b
 h1{font-size:54px}h2{font-size:30px;margin-top:52px}.sub{font-size:16.5px;margin-bottom:18px}.facts{font-size:17px}.eyebrow{font-size:13.5px}
 .hero-swatch{min-height:500px}.hero-body{padding:40px 44px}.btn{font-size:17px;padding:13px 24px}.afftext{font-size:13.5px}
 .rung .r-s{height:96px}.rung .r-b{padding:10px 12px 12px}.rung .r-n{font-size:15.5px;height:38px}.rung .r-br{font-size:11.5px}
-.cta p{font-size:17px}footer{font-size:14.5px}
+.cta p{font-size:17px}footer{font-size:14.5px}.colour-summary{font-size:18.5px}
 .c-swatch .pd-cmp-btn{height:38px;font-size:14px;padding:0 15px 0 12px;top:10px;left:10px}.c-swatch .pd-heart,.hero-swatch .pd-heart{width:38px;height:38px;top:10px;right:10px}
 .hero-swatch{min-height:460px}
 }
