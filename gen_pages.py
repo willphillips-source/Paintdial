@@ -1875,25 +1875,40 @@ def build_research_hub():
         "/research/", body)
 
 
+def _about_values_line():
+    # "The colour values are the ones each brand publishes, apart from ..." in the About page's
+    # own first-person wording. Built from SOURCE_NOTE so it stays right as brands change.
+    base = 'The colour values are the ones each brand publishes'
+    if not SOURCE_NOTE:
+        return base + '.'
+    bits = []
+    for stockist, brands in _by_stockist().items():
+        url = SOURCE_NOTE[brands[0]][1] if len(brands) == 1 else STOCKIST_HOME.get(stockist, SOURCE_NOTE[brands[0]][1])
+        link = f'<a href="{url}" rel="nofollow noopener" target="_blank">{stockist}</a>'
+        names = [H.escape(b) for b in brands]
+        if len(names) == 1:
+            bits.append(f'{names[0]}, which doesn’t publish any, so I use the values its main stockist {link} publishes')
+        else:
+            joined = ', '.join(names[:-1]) + ' and ' + names[-1]
+            bits.append(f'{joined}, which don’t publish any, so I use the values their main stockist {link} publishes')
+    return base + ', apart from ' + '; and '.join(bits) + '.'
+
+
 def build_about_page():
     body = f"""<span class="eyebrow">About</span>
 <h1>About PaintDial</h1>
-<p>Every paint brand\u2019s website has a colour tool, and each one only shows you <em>that brand\u2019s</em> paints. If you\u2019ve picked a Farrow &amp; Ball colour and want to know what Dulux or Valspar has that\u2019s close, you end up with a dozen tabs open and no easy way to compare them.</p>
-<p>PaintDial puts {N:,} paints from {BRANDS_WORD} UK brands ({brand_list()}) in one place. Pick a colour, match one from a photo or search a paint you already know, and you get the closest match from every brand side by side, with a plain label for how close each one is.</p>
-<p>It\u2019s an independent, one-person project. PaintDial isn\u2019t owned by, sponsored by, or affiliated with any paint brand, and no brand can pay to change how well its colours match. Every paint in the library is matched with <a href="/how-it-works/">the same colour maths</a>.</p>
+<p>I made PaintDial as a result of doing a full house renovation and being frustrated by the mission of trying to find the right paint. I didn’t want to be restricted to just one brand, and I wanted to be able to easily find different shades of colours I liked.</p>
+<p>I work in visual effects, so getting colour to match between cameras and screens is my day job. PaintDial is just me, in my spare time, and no paint brand owns or sponsors it.</p>
 
-<h2>Who makes it</h2>
-<p>PaintDial is built and run by Will, a visual effects director based in Dorset. Getting colour to agree across cameras, screens and lights is his day job, and the site grew out of trying to do the same thing for a wall at home. He answers the <a href="/contact/">contact form</a> himself.</p>
+<h2>Who pays for it</h2>
+<p>Some of the “where to buy” links are affiliate links through impact.com and Awin. If you buy through one I might get a small commission, which doesn’t cost you anything. A few people have also bought me a coffee on <a href="https://ko-fi.com/paintdial" target="_blank" rel="noopener">Ko-fi</a>. There are no ads, and no brand can pay to move up the rankings, which are worked out from the colour values alone.</p>
 
-<h2>How PaintDial is funded</h2>
-<p>Some \u201cwhere to buy\u201d links are affiliate links, run through partner networks including impact.com and Awin. If you buy through one, PaintDial may earn a small commission at no extra cost to you. That, plus the occasional coffee from a reader on <a href="https://ko-fi.com/paintdial" target="_blank" rel="noopener">Ko-fi</a>, is the only money the site makes. There are no ads, no sponsored placements and no paid rankings. Matches are never influenced by whether a link earns commission.</p>
+<h2>Colour names and values</h2>
+<p>The names belong to the brands. {_about_values_line()} A screen only gets you so close, so get a tester before you paint a wall.</p>
 
-<h2>A note on colour names</h2>
-<p>Colour names and paint ranges are the property of their respective brands. PaintDial shows each brand\u2019s published digital swatch values{source_short()} for comparison. Always get a tester before you commit to a colour.</p>
-
-<p class="muted">Questions, corrections, or partnership enquiries: <a href="/contact/">get in touch</a>.</p>"""
+<p>I answer the <a href="/contact/">contact form</a> myself, so if something looks wrong, tell me.</p>"""
     return _page_shell("About PaintDial",
-        f"PaintDial is an independent tool comparing {N:,} paints across {BRANDS_WORD} UK brands. Who's behind it, how it's funded, and why no brand can influence the matches.",
+        f"PaintDial is a one-person site comparing {N:,} paints across {NBRANDS} UK brands. Why I made it and how it’s paid for.",
         "/about/", body)
 
 
