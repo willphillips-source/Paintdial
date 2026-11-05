@@ -1903,8 +1903,8 @@ def build_about_page():
 <h2>Who pays for it</h2>
 <p>Some of the “where to buy” links are affiliate links through impact.com and Awin. If you buy through one I might get a small commission, which doesn’t cost you anything. A few people have also bought me a coffee on <a href="https://ko-fi.com/paintdial" target="_blank" rel="noopener">Ko-fi</a>. There are no ads, and no brand can pay to move up the rankings, which are worked out from the colour values alone.</p>
 
-<h2>Colour names and values</h2>
-<p>The names belong to the brands. {_about_values_line()} A screen only gets you so close, so get a tester before you paint a wall.</p>
+<h2>Where the colours come from</h2>
+<p>{_about_values_line()} A screen only gets you so close, so get a tester before you paint a wall.</p>
 
 <p>I answer the <a href="/contact/">contact form</a> myself, so if something looks wrong, tell me.</p>"""
     return _page_shell("About PaintDial",
