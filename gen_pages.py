@@ -422,6 +422,17 @@ h2::after{content:'';display:block;width:34px;height:4px;border-radius:2px;backg
 .cta{margin-top:40px;border:1px solid var(--hairline);border-radius:14px;background:var(--card);padding:24px 26px;text-align:center}
 .cta p{font-size:14px;color:var(--muted);margin:6px 0 14px}
 .afftext{font-size:11px;color:var(--muted);margin-top:12px}
+.colour-summary{font-size:15px;color:var(--ink);max-width:72ch;margin:22px 0 2px;line-height:1.6}
+.colour-summary a{color:var(--pc);text-decoration:none;font-weight:600}
+.colour-summary a:hover{text-decoration:underline}
+.dcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(212px,1fr));gap:12px;margin:16px 0 2px}
+.dcard{display:flex;align-items:stretch;border:1px solid var(--hairline);border-radius:12px;overflow:hidden;background:var(--card);box-shadow:0 1px 2px rgba(33,31,27,.06);text-decoration:none;color:var(--ink);transition:transform .12s,box-shadow .12s}
+.dcard:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(33,31,27,.10)}
+.dc-sw{width:66px;flex:none;align-self:stretch;min-height:80px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}
+.dc-body{padding:11px 13px;min-width:0}
+.dc-role{display:block;font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.dc-nm{display:block;font-family:var(--serif);font-size:16px;font-weight:600;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dc-meta{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}
 footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--hairline);font-size:11.5px;color:var(--muted);line-height:1.6}.foot-links{display:block;margin-bottom:6px}.foot-links a{color:var(--pc);font-weight:600;text-decoration:none}.foot-links a:hover{text-decoration:underline}.foot-copy{display:block;margin-bottom:10px;color:var(--muted)}
 footer a{color:var(--muted)}
 
@@ -517,6 +528,39 @@ def chip(j, home_lab=None, show_tier=False, home_i=None):
             f'<div class="c-body"><a class="c-name" href="/colours/{slugs[j]}">{H.escape(q["name"])}</a>'
             f'<span class="c-brand">{H.escape(q["brand"])}</span>{de}</div></div>')
 
+def a_an(w):
+    """'a' or 'an' for a colour name, so 'Order an Etruria tester', not 'a Etruria'."""
+    lw = w.lower()
+    if lw[:1].isdigit():
+        return 'an' if lw.startswith(('8', '11', '18')) else 'a'
+    if lw.startswith(('uni', 'use', 'usu', 'uti', 'eu', 'one')):
+        return 'a'
+    return 'an' if lw[:1] in 'aeiou' else 'a'
+
+def buy_cta(p):
+    """The colour page's buy button: link, label and the line under it, worded from where
+    buy_link() actually goes. Brand sites sell testers; the B&Q fallback (Johnstone's,
+    Valspar) is only a search, so it doesn't promise one."""
+    url = buy_link(p)
+    name = H.escape(p['name'])
+    if 'diy.com' in url:
+        return url, f'Find {name} at B&amp;Q →', 'Opens B&amp;Q’s search for it.'
+    if 'freshlick' in url or 'awin1.com' in url:
+        return url, f'Order {a_an(p["name"])} {name} tester →', 'Opens Freshlick, where you can order a tester or a full tin.'
+    return (url, f'Order {a_an(p["name"])} {name} tester →',
+            f'Opens {H.escape(p["brand"])}’s page, where you can order a tester or a full tin.')
+
+def decision_card(role, j, dd):
+    """A featured card above the full ranked grid: closest overall, closest value (£ band),
+    closest premium (£££ band). Bands match the badges on the match cards below."""
+    q = paints[j]
+    return (f'<a class="dcard" href="/colours/{slugs[j]}">'
+            f'<span class="dc-sw" style="background:{q["hex"]}"></span>'
+            f'<span class="dc-body"><span class="dc-role">{role}</span>'
+            f'<span class="dc-nm">{H.escape(q["name"])}</span>'
+            f'<span class="dc-meta">{H.escape(q["brand"])} · {band_html(q["brand"])} · {matchword(dd)}</span>'
+            f'</span></a>')
+
 def build_colour_page(i):
     p = paints[i]; lab = LAB[i]
     name = H.escape(p['name']); brand = H.escape(p['brand'])
@@ -537,6 +581,19 @@ def build_colour_page(i):
     seo_word = matchword(_x0d)
     seo_also = (f"{H.escape(paints[xmatch[1][0]]['name'])} by {H.escape(paints[xmatch[1][0]]['brand'])} "
                 f"and {H.escape(paints[xmatch[2][0]]['name'])} by {H.escape(paints[xmatch[2][0]]['brand'])}")
+    _depth, _fam = describe(i)
+    # Decision cards: closest overall, then the closest in the £ band and in the £££ band,
+    # skipping any that repeat a card already shown. By price band, not brand tier, so they
+    # agree with the badges on the cards below (Dulux and Crown are £ but mid-range tier).
+    _val = [(j, dd) for j, dd in xmatch if price_band(paints[j]['brand']) == 1]
+    _prem = [(j, dd) for j, dd in xmatch if price_band(paints[j]['brand']) == 3]
+    _cards = [('Closest overall', _x0, _x0d)]
+    if _val and _val[0][0] != _x0:
+        _cards.append(('Closest value match', _val[0][0], _val[0][1]))
+    if _prem and _prem[0][0] not in [c[1] for c in _cards]:
+        _cards.append(('Closest premium match', _prem[0][0], _prem[0][1]))
+    dcards_html = ''.join(decision_card(r, j, dd) for r, j, dd in _cards)
+    buy_url, buy_label, buy_note = buy_cta(p)
 
     rungs = ladder_for(i)
     rung_html = ''.join(
@@ -581,9 +638,11 @@ def build_colour_page(i):
 <div class="hero"><div class="hero-swatch">{heart(p['name'], p['brand'], p['hex'])}</div><div class="hero-body">
 <span class="eyebrow">{brand}</span><h1>{name}</h1>
 <div class="facts"><span>Hex <b>{p['hex']}</b></span><span>LRV <b>\u2248\u2009{lrv(L0):.0f}</b></span><span>Lightness <b>{L0:.0f}/100</b></span></div>{source_line(p['brand'])}
-<a class="btn" href="{buy_link(p)}" target="_blank" rel="noopener sponsored">Buy {name} \u2192</a>
-<p class="afftext">Affiliate link \u2014 PaintDial may earn a small commission at no cost to you.</p>
+<a class="btn" href="{buy_url}" target="_blank" rel="noopener sponsored">{buy_label}</a>
+<p class="afftext">{buy_note} Affiliate link: PaintDial may earn a small commission at no cost to you.</p>
 </div></div>
+<p class="colour-summary">{name} is a {_depth} {_fam} from {brand}. Its closest match from another brand is <a href="/colours/{slugs[_x0]}">{seo_top}</a> ({seo_word}), with the full ranked list below.</p>
+<div class="dcards">{dcards_html}</div>
 <h2>Closest matches from other brands</h2>
 <p class="sub">One from each brand \u2014 the badge shows its price bracket. Compare shows the pair full screen; tap the card to open the full colour.</p>
 <div class="grid">{''.join(chip(j, home_lab=lab, show_tier=True, home_i=i) for j, _ in xmatch)}</div>
