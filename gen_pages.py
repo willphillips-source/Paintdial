@@ -401,7 +401,7 @@ FOOT = ("<span class=\"foot-links\">"
         "<span class=\"foot-copy\">\u00a9 2026 PaintDial. All rights reserved.</span>"
         "No screen shows paint exactly, so get a tester before you buy. Colour values are each "
         "brand\u2019s published digital swatches" + source_exception(html=False) + "; LRV is estimated. Colour names are the property of their respective "
-        "brands. Some links may earn PaintDial a commission at no cost to you. PaintDial is free to use. If it "
+        "brands. PaintDial is free to use. If it "
         "saved you a tester pot, you can <a href=\"https://ko-fi.com/paintdial\" target=\"_blank\" rel=\"noopener\">buy Will a coffee</a>.")
 
 # ---------- colour page CSS (current, with all layout fixes) ----------
@@ -717,7 +717,7 @@ def build_colour_page(i):
 <span class="eyebrow">{brand}</span><h1>{name}</h1>
 <div class="facts"><span>Hex <b>{p['hex']}</b></span><span>LRV <b>\u2248\u2009{lrv(L0):.0f}</b></span><span>Lightness <b>{L0:.0f}/100</b></span></div>{source_line(p['brand'])}
 {f'<a class="btn" href="{buy_url}" target="_blank" rel="noopener sponsored">{buy_label}</a>' if buy_url else ''}
-<p class="afftext">{buy_note}{' Affiliate link: PaintDial may earn a small commission at no cost to you.' if buy_url else ''}</p>
+{f'<p class="afftext">{buy_note}</p>' if buy_note else ''}
 </div></div>
 <p class="colour-summary">{name} is a {_depth} {_fam} from {brand}. Its closest match from another brand is <a href="/colours/{slugs[_x0]}">{seo_top}</a> ({seo_word}).</p>
 <h2>Closest matches from other brands</h2>
@@ -872,6 +872,65 @@ def colour_facets(hx):
     if fam == "Blacks": tags.append("Black")
     return tone, tags
 
+NAV_CSS = """
+/* The same header as the homepage and colour pages: About, How it works, Research,
+   Colour library, then the colour tool button. */
+header nav{gap:16px}
+.logo .mark{flex:none}
+header nav a.nav-cta{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--ink);font-weight:600;font-size:13px;padding:6px 14px 6px 8px;border:1px solid var(--hairline);border-radius:9px;box-shadow:0 1px 2px rgba(33,31,27,.05);transition:box-shadow .12s,transform .12s,border-color .12s;text-decoration:none}
+.cta-wheel{width:16px;height:16px;border-radius:50%;flex:none;background:conic-gradient(from 90deg,#e0574f,#e6a02e,#c9c94f,#8a9d80,#5e7e8b,#7a6a9e,#b7788d,#e0574f);box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 4px rgba(0,0,0,.06)}
+header nav a.nav-cta:hover{box-shadow:0 4px 12px rgba(33,31,27,.10);transform:translateY(-1px);border-color:var(--muted);color:var(--ink)}
+@media(max-width:640px){header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6px;white-space:nowrap}}
+@media(max-width:560px){header nav a.nav-cta{font-size:0;gap:0;padding:6px;border-radius:50%;box-shadow:none}header nav a.nav-cta .cta-wheel{width:20px;height:20px}}
+"""
+
+WIDE_SHELL_CSS = """
+/* Same outer column and header as the homepage and colour pages (see the 1500/1900/2400
+   steps in CSS), so the logo, nav and page edges don't move as you click around the site.
+   Appended to every page type's stylesheet; if the colour-page widths change, change these. */
+.wrap{max-width:1160px}
+@media(min-width:1500px){
+.wrap{max-width:1720px;padding-left:28px;padding-right:28px}
+header{padding-top:22px;padding-bottom:18px}
+header a.logo{font-size:30px}.logo-dial{width:27px;height:27px}.logo .mark{width:27px;height:27px}
+header nav a,.head-nav{font-size:14px}
+h1{font-size:40px}h2{font-size:23px}
+footer{font-size:12.5px}
+}
+@media(min-width:1900px){
+.wrap{max-width:2000px}
+header a.logo{font-size:34px}.logo-dial{width:30px;height:30px}.logo .mark{width:30px;height:30px}
+header nav a,.head-nav{font-size:15px}
+h1{font-size:46px}h2{font-size:26px}
+footer{font-size:13.5px}
+}
+@media(min-width:2400px){
+.wrap{max-width:2320px}
+h1{font-size:54px}h2{font-size:30px}
+footer{font-size:14.5px}
+}
+"""
+
+PAGES_WIDE_CSS = """
+/* Prose stays a readable width, starting at the same left edge as the logo. */
+@media(min-width:1500px){
+p,li{font-size:16px}p{max-width:70ch}ul{max-width:68ch}
+.rsch-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+.pair,.stack,.stack-key,.bars,table,.faq,.uq-grid{max-width:1100px}
+}
+@media(min-width:1900px){p,li{font-size:17px}}
+@media(min-width:2400px){p,li{font-size:18px}}
+"""
+
+ALT_WIDE_CSS = """
+.intro a:not(.pn){color:inherit}
+@media(min-width:1500px){
+.alts{grid-template-columns:repeat(3,minmax(0,1fr))}
+.intro{font-size:16px;max-width:75ch}.verdict p{max-width:110ch}
+}
+@media(min-width:1900px){.alts{grid-template-columns:repeat(4,minmax(0,1fr))}.intro{font-size:17px}}
+"""
+
 LIB_CSS = """
 .srcnote{font-size:13px;line-height:1.5;color:var(--muted);margin:10px 0 0;max-width:70ch}.srcnote a{color:inherit}
 :root{--paper:#F7F5F0;--card:#fff;--ink:#211F1B;--muted:#665F54;--hairline:#E3DFD5;--pc:#5E7E8B;
@@ -962,6 +1021,8 @@ header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6
 .mnav{display:none}@media(max-width:560px){.mnav{display:flex;gap:18px;align-items:center;padding:7px 0 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
 @media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}header nav a.nav-cta{font-size:0;gap:0;padding:6px;border-radius:50%}header nav a.nav-cta .cta-wheel{width:20px;height:20px}}
 """
+LIB_CSS += WIDE_SHELL_CSS
+
 
 LIB_HDR = '<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a><a href="/">Colour tool</a></div>'
 
@@ -1178,6 +1239,8 @@ header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6
 .mnav{display:none}@media(max-width:560px){.mnav{display:flex;gap:18px;align-items:center;padding:7px 0 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
 @media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}header nav a.nav-cta{font-size:0;gap:0;padding:6px;border-radius:50%}header nav a.nav-cta .cta-wheel{width:20px;height:20px}}
 """
+ALT_CSS += WIDE_SHELL_CSS + ALT_WIDE_CSS
+
 ALT_BRANDS = {b for b in BRAND_ORDER if TIER[b] == 3}  # the premium tier: brands that get alternatives pages
 
 DESC_WORD = {'Reds': 'red', 'Oranges': 'orange', 'Yellows': 'yellow', 'Greens': 'green',
@@ -1299,6 +1362,8 @@ header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6
 .mnav{display:none}@media(max-width:560px){.mnav{display:flex;gap:18px;align-items:center;padding:7px 0 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
 @media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px;margin-bottom:0}.mnav{margin-bottom:22px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}header nav a.nav-cta{font-size:0;gap:0;padding:6px;border-radius:50%}header nav a.nav-cta .cta-wheel{width:20px;height:20px}}
 """
+DUPES_CSS += NAV_CSS + WIDE_SHELL_CSS
+
 
 DUPE_TARGETS = [b for b in BRAND_ORDER if TIER[b] == 3]
 
@@ -1353,8 +1418,7 @@ def build_dupes_page(brand):
   _itemlist([(f"{paints[i0]['name']} \u2192 {paints[j0]['name']} by {paints[j0]['brand']}", f"/colours/{slugs[i0]}") for (i0,j0,_dd) in rows[:30]])
 )}
 {FONTS}<style>{DUPES_CSS}{COMPARE_BTN_CSS}</style></head><body><div class="wrap">
-<header><a class="logo" href="/"><span class="logo-dial"></span>PaintDial</a>
-<nav><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a></div>
+{HDR}
 <span class="eyebrow">Ranked dupes</span>
 <h1>Every {bname} colour\u2019s best-value match, ranked</h1>
 <p class="sub">All {len(rows)} {bname} colours, each paired with its closest match from a value or mid-range brand, strongest match first. Tap a row for the full colour page, more matches and where to buy.</p>
@@ -1454,6 +1518,8 @@ text-decoration:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.09);transition:trans
 .mnav{display:none}@media(max-width:560px){.mnav{display:flex;gap:18px;align-items:center;padding:7px 0 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
 @media(max-width:560px){header{align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding:13px 0 11px;margin-bottom:0}.mnav{margin-bottom:22px}header nav{width:auto!important;margin-left:auto;justify-content:flex-end!important;flex:0 0 auto}.logo{font-size:21px}.lib-link,.nav-cta{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}header nav a.nav-cta{font-size:0;gap:0;padding:6px;border-radius:50%}header nav a.nav-cta .cta-wheel{width:20px;height:20px}}
 """
+PAGES_CSS += NAV_CSS + WIDE_SHELL_CSS + PAGES_WIDE_CSS
+
 
 def _page_shell(title, desc, path, body, head=""):
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8">
@@ -1462,8 +1528,7 @@ def _page_shell(title, desc, path, body, head=""):
 <meta name="description" content="{desc}">
 <link rel="canonical" href="{DOMAIN}{path}">{head}
 {FONTS}<style>{PAGES_CSS}</style></head><body><div class="wrap">
-<header><a class="logo" href="/"><span class="logo-dial"></span>PaintDial</a>
-<nav><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a></div>
+{HDR}
 {body}
 <footer>{FOOT}</footer>
 </div></body></html>"""
@@ -1477,7 +1542,7 @@ def build_method_page():
         ("If two paints are near-identical, can I just swap one for the other?",
          "For colour, yes. Finish and coverage are another matter: a matt from one brand won’t look like an eggshell from another. Match the colour here, then choose the finish on the brand\u2019s site."),
         ("Can a brand pay to rank higher?",
-         "No. Rankings come from colour difference alone. Some buy links earn me a small commission, but that has no effect on where a paint appears."),
+         "No. Rankings come from colour difference alone, and no brand has any say in them."),
         ("Are the prices accurate?",
          "They are typical per-litre ranges for a 2.5 litre tin mixed to the colour, checked against retailers in September 2026 (Lakeland Paints only sells a 5 litre tin, so its figure is for that, checked November 2026). They’re a rough guide to how brands compare. Check the retailer for the actual price. Retailers vary and bigger tins cost less per litre. The \u00a3 signs group them: \u00a3 is under \u00a3" + f"{PRICE_BANDS[0]:g}" + " a litre, \u00a3\u00a3 is \u00a3" + f"{PRICE_BANDS[0]:g}" + " to \u00a3" + f"{PRICE_BANDS[1]:g}" + " and \u00a3\u00a3\u00a3 is \u00a3" + f"{PRICE_BANDS[1]:g}" + " or more."),
         ("Why isn\u2019t the brand I use in the library?",
@@ -1919,7 +1984,7 @@ def build_about_page():
 <p>I work in visual effects, so getting colour to match between cameras and screens is my day job. PaintDial is just me, in my spare time, and no paint brand owns or sponsors it.</p>
 
 <h2>Who pays for it</h2>
-<p>Some of the “where to buy” links are affiliate links through impact.com and Awin. If you buy through one I might get a small commission, which doesn’t cost you anything. A few people have also bought me a coffee on <a href="https://ko-fi.com/paintdial" target="_blank" rel="noopener">Ko-fi</a>. There are no ads, and no brand can pay to move up the rankings, which are worked out from the colour values alone.</p>
+<p>At the moment it’s paid for by me, plus the odd coffee people have bought me on <a href="https://ko-fi.com/paintdial" target="_blank" rel="noopener">Ko-fi</a>. I’m planning to add affiliate links to some of the “where to buy” buttons, so I’d get a small commission if you buy through one, at no extra cost to you. There are no ads, and no brand can pay to move up the rankings, which are worked out from the colour values alone.</p>
 
 <h2>Where the colours come from</h2>
 <p>{_about_values_line()} A screen only gets you so close, so get a tester before you paint a wall.</p>
