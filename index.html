@@ -248,7 +248,11 @@
     color:var(--ink); cursor:pointer; transition:all .12s;
   }
   .filter-panel button:hover{border-color:var(--muted);}
-  .filter-panel button.on{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+  /* A hidden brand: greyed, dashed and struck through, so it can't be mistaken for on. */
+  .filter-panel button.off{background:#E4DFD6; color:#8E877C; border-color:#CFC8BC; border-style:dashed;
+    text-decoration:line-through; text-decoration-color:rgba(33,31,27,.5); text-decoration-thickness:1.5px;}
+  .filter-panel button.off:hover{color:var(--ink); border-color:var(--muted);}
+  .f-hint{font-size:12px; color:var(--muted);}
   .filter-panel button:focus-visible{outline:2px solid var(--pick); outline-offset:2px;}
   .f-reset{border:none !important; background:none !important; color:var(--muted) !important;
     text-decoration:underline; padding:7px 4px !important; font-size:12px !important;}
@@ -729,7 +733,7 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
 <div class="prop">
   <h1>Match any colour across more than 12,000&nbsp;paints from 19 brands sold in the&nbsp;UK</h1>
   <p class="prop-sub">Start from a photo, a paint you already know or the wheel, and see every brand&rsquo;s closest match side by side.</p>
-  <p class="prop-brands"><a href="/colours/farrow-and-ball">Farrow &amp; Ball</a> &middot; <a href="/colours/little-greene">Little Greene</a> &middot; <a href="/colours/craig-and-rose">Craig &amp; Rose</a> &middot; <a href="/colours/dulux">Dulux</a> &middot; <a href="/colours/johnstones">Johnstone&rsquo;s</a> &middot; <a href="/colours/valspar">Valspar</a> &middot; <a href="/colours/lick">Lick</a> &middot; <a href="/colours/crown">Crown</a> &middot; <a href="/colours/coat">COAT</a> &middot; <a href="/colours/lakeland-paints">Lakeland Paints</a> &middot; <a href="/colours/earthborn">Earthborn</a> &middot; <a href="/colours/paint-and-paper-library">Paint &amp; Paper Library</a> &middot; <a href="/colours/edward-bulmer">Edward Bulmer</a> &middot; <a href="/colours/dulux-heritage">Dulux Heritage</a> &middot; <a href="/colours/zoffany">Zoffany</a> &middot; <a href="/colours/mylands">Mylands</a> &middot; <a href="/colours/sanderson">Sanderson</a></p>
+  <p class="prop-brands"><a href="/colours/farrow-and-ball">Farrow &amp; Ball</a> &middot; <a href="/colours/little-greene">Little Greene</a> &middot; <a href="/colours/craig-and-rose">Craig &amp; Rose</a> &middot; <a href="/colours/dulux">Dulux</a> &middot; <a href="/colours/johnstones">Johnstone&rsquo;s</a> &middot; <a href="/colours/valspar">Valspar</a> &middot; <a href="/colours/lick">Lick</a> &middot; <a href="/colours/crown">Crown</a> &middot; <a href="/colours/coat">COAT</a> &middot; <a href="/colours/lakeland-paints">Lakeland Paints</a> &middot; <a href="/colours/earthborn">Earthborn</a> &middot; <a href="/colours/paint-and-paper-library">Paint &amp; Paper Library</a> &middot; <a href="/colours/edward-bulmer">Edward Bulmer</a> &middot; <a href="/colours/dulux-heritage">Dulux Heritage</a> &middot; <a href="/colours/zoffany">Zoffany</a> &middot; <a href="/colours/mylands">Mylands</a> &middot; <a href="/colours/sanderson">Sanderson</a> &middot; <a href="/colours/benjamin-moore">Benjamin Moore</a> &middot; <a href="/colours/tikkurila">Tikkurila</a></p>
 </div>
 <div class="layout">
   <aside class="picker">
@@ -796,7 +800,7 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
 
     <div class="filter-panel" role="group" aria-label="Filters">
       <div class="filter-group"><span class="f-label">Brand</span><div class="f-chips" id="brandChips"></div>
-        <button class="f-reset" id="filterReset" hidden>Reset</button></div>
+        <span class="f-hint">Tap a brand to hide it.</span><button class="f-reset" id="filterAll" hidden>Show all</button><button class="f-reset" id="filterNone">Hide all</button></div>
     </div>
 
     <p class="reach-note" id="reachNote" hidden></p>
@@ -1227,7 +1231,7 @@ function priceEl(brand,cls){
    'Dulux': '20% off until Monday',
    The badge and note appear automatically on every matching paint. */
 const OFFERS = {};
-let activeBrands=new Set(); // empty set = no restriction
+let hiddenBrands=new Set(); // brands the viewer has hidden; empty = every brand
 let shown=12;
 /* The grid is auto-fill, so its column count depends on the window: 2 on a phone,
    7 on a laptop, 8 on a big monitor. A fixed page of 12 therefore left the last row
@@ -1248,15 +1252,22 @@ window.addEventListener('resize',()=>{
   window._pdResize=setTimeout(()=>{ if(lastCols&&gridCols()!==lastCols&&document.getElementById('grid').children.length) renderMatches(); },150);
 });
 const brandChips=document.getElementById('brandChips'),
-      resetBtn=document.getElementById('filterReset');
-/* The brand filter is remembered on this device (a viewer convenience: someone who only
-   wants three brands shouldn't have to re-tick them every time they come back to the tool
-   from a colour page). The ticked chips and the Reset button show it's on. */
-const BRANDS_KEY='pd-brands';
+      allBtn=document.getElementById('filterAll'), noneBtn=document.getElementById('filterNone');
+/* Every brand starts on; a tap hides one, another tap brings it back. Hide all, then a
+   tap or two, gives "just these brands". The hidden list is remembered on this device (a
+   viewer convenience, so someone who never wants Benjamin Moore doesn't re-hide it every
+   visit). It stores what's hidden, not what's shown, so a brand added later turns up. */
+const BRANDS_KEY='pd-hide';
 function refreshFilterUI(){
-  brandChips.querySelectorAll('button').forEach(b=>b.classList.toggle('on',activeBrands.has(b.dataset.brand)));
-  resetBtn.hidden = activeBrands.size===0;
-  try{ localStorage.setItem(BRANDS_KEY, JSON.stringify([...activeBrands])); }catch(e){}
+  brandChips.querySelectorAll('button').forEach(b=>{
+    const off=hiddenBrands.has(b.dataset.brand);
+    b.classList.toggle('off',off);
+    b.setAttribute('aria-pressed',String(!off));
+    b.title=(off?'Hidden. Tap to show ':'Tap to hide ')+b.dataset.brand;
+  });
+  allBtn.hidden = hiddenBrands.size===0;
+  noneBtn.hidden = hiddenBrands.size===BRAND_NAMES.length;
+  try{ localStorage.setItem(BRANDS_KEY, JSON.stringify([...hiddenBrands])); localStorage.removeItem('pd-brands'); }catch(e){}
 }
 function addFilterBtn(parent,label,attrs,onClick){
   const btn=document.createElement('button');
@@ -1265,13 +1276,23 @@ function addFilterBtn(parent,label,attrs,onClick){
   btn.addEventListener('click',()=>{onClick();shown=12;refreshFilterUI();renderMatches();});
   parent.appendChild(btn);
 }
-BRAND_NAMES.forEach(b=>addFilterBtn(brandChips,b,{brand:b},()=>{activeBrands.has(b)?activeBrands.delete(b):activeBrands.add(b);}));
-resetBtn.addEventListener('click',()=>{activeBrands.clear();shown=12;refreshFilterUI();renderMatches();});
-try{ (JSON.parse(localStorage.getItem(BRANDS_KEY))||[]).forEach(b=>{ if(BRAND_NAMES.includes(b)) activeBrands.add(b); }); }catch(e){}
+BRAND_NAMES.forEach(b=>addFilterBtn(brandChips,b,{brand:b},()=>{hiddenBrands.has(b)?hiddenBrands.delete(b):hiddenBrands.add(b);}));
+allBtn.addEventListener('click',()=>{hiddenBrands.clear();shown=12;refreshFilterUI();renderMatches();});
+noneBtn.addEventListener('click',()=>{BRAND_NAMES.forEach(b=>hiddenBrands.add(b));shown=12;refreshFilterUI();renderMatches();});
+/* pd-brands is the old "only these brands" list, from when a tap picked a brand instead of
+   hiding it. It's turned into the hidden list once, so anyone who had filtered sees the
+   same matches as before (brands added since then start hidden for them). */
+try{
+  const hid=JSON.parse(localStorage.getItem(BRANDS_KEY)||'null');
+  if(Array.isArray(hid)) hid.forEach(b=>{ if(BRAND_NAMES.includes(b)) hiddenBrands.add(b); });
+  else{
+    const only=JSON.parse(localStorage.getItem('pd-brands')||'[]');
+    if(Array.isArray(only)&&only.some(b=>BRAND_NAMES.includes(b))) BRAND_NAMES.forEach(b=>{ if(!only.includes(b)) hiddenBrands.add(b); });
+  }
+}catch(e){}
 refreshFilterUI();
 function currentPool(){
-  return LIB.filter(p=>
-    (activeBrands.size===0||activeBrands.has(p.brand)));
+  return LIB.filter(p=>!hiddenBrands.has(p.brand));
 }
 
 /* ---------- matching + render ---------- */
@@ -1469,7 +1490,7 @@ function renderMatches(){
   const hx=currentHex();
   const lab=rgbToLab(...hexToRgb(hx));
   const pool=currentPool();
-  if(pool.length===0){renderExact([]);document.getElementById('bestWrap').innerHTML='';document.getElementById('grid').innerHTML='';document.getElementById('ladderSec').style.display='none';document.getElementById('subline').textContent='No brands selected \u2014 tap All to reset.';return;}
+  if(pool.length===0){renderExact([]);document.getElementById('bestWrap').innerHTML='';document.getElementById('grid').innerHTML='';document.getElementById('ladderSec').style.display='none';document.getElementById('subline').textContent='Every brand is hidden. Tap a brand to show it, or Show all.';return;}
   const PICK_OK=rgbToOklab(...hexToRgb(hx));
   const ranked=pool.map(p=>({...p,d:okDistM(PICK_OK,p.ok)})).sort((a,b)=>a.d-b.d);
   renderExact(ranked);
