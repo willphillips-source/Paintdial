@@ -110,7 +110,8 @@ BUY_LINKS = {b: v['links'] for b, v in _BL.items() if not b.startswith('_')}
 # that lands on the wrong page.
 UNLISTED = {b: set(v.get('unlisted', [])) for b, v in _BL.items() if not b.startswith('_')}
 BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints',
-               'Earthborn', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany', 'Mylands', 'Sanderson']
+               'Earthborn', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany', 'Mylands', 'Sanderson',
+               'Benjamin Moore', 'Tikkurila']
 # SOURCED FROM A STOCKIST, NOT THE BRAND. Every other brand's values are its own published swatches.
 # Zoffany (156, added 4 Nov 2026) publishes none: zoffany.design shows JPEG swatches only and its
 # product API has no colour field. Its values are the ones Brewers, its main UK stockist, publishes
@@ -136,6 +137,22 @@ SOURCE_NOTE = {
 # all Marble Matt Emulsion 2.5L £68. The Film, TV & Theatre (FTT) scenic range is left out: it is
 # specialist stage and screen paint (CSO Green is chroma-key green), four of its 20 are metallics
 # with no value, and one value (#0026FF) is not a credible paint swatch.
+# Benjamin Moore (3,543, added 5 Nov 2026): the brand's own values from benjaminmoorepaint.co.uk,
+# the UK distributor's site (Benjamin Moore UK Ltd). Its colour-collection pages set each tile's
+# value in the tile's own script; colour pages show the same value (Hale Navy HC-154 = #434B56 on
+# both). All six ranges sold in the UK: Affinity (AF), Colour Stories (CS), Off-White (OC),
+# Historical (HC), Classic (001-1680) and Color Preview (2000-10 to 2175-70). 95 Classic rows repeat
+# an Off-White or Historical colour exactly (same name and value) and are left out as duplicates.
+# Links go to the colour's page on that site, which looks colours up by code (checked: a wrong
+# name with a right code still resolves; a wrong code errors). Sold direct with UK delivery, from
+# its Chelsea showroom and through Brewers. Priced on the US gallon (3.79L), the size it sells
+# besides a quart: Regal Select Matte GBP 88.50 to Aura Matte GBP 106, so premium, like F&B.
+# Tikkurila (377, added 5 Nov 2026): the brand's own values. tikkurila.co.uk sets each colour's
+# swatch as an inline background-color on its colour listing. Named interior colours only; one
+# transparent woodstain (Yellow Transpar) is left out, and a " Tvt" suffix on one name dropped.
+# Sold direct, priced on its 3L tin (2.7L of paint): Optiva Matt 5 GBP 50.54 to Optiva Ceramic
+# Super Matt 3 GBP 61.63, which per litre is Farrow & Ball money, hence premium tier, so it is
+# never offered as a cheaper dupe.
 # Valspar was expanded on 5 Nov 2026 from 284 to its full published UK range, 1,970 colours
 # (valsparpaint.co.uk/all-colours/, 73 pages, each colour's chip background; 40 of 40 random colour
 # pages agree with the listing; all 284 existing values unchanged).
@@ -158,14 +175,14 @@ SOURCE_NOTE = {
 # colour links to the matchpot page, where the picker lives.
 TIER = {'Farrow & Ball': 3, 'Little Greene': 3, 'Craig & Rose': 3, 'Lick': 3, 'COAT': 3,
         'Earthborn': 3, 'Paint & Paper Library': 3, 'Edward Bulmer': 3, 'Dulux Heritage': 3, 'Zoffany': 3,
-        'Mylands': 3, 'Sanderson': 3,
+        'Mylands': 3, 'Sanderson': 3, 'Benjamin Moore': 3, 'Tikkurila': 3,
         'Dulux': 2, 'Crown': 2, 'Lakeland Paints': 2, "Johnstone's": 1, 'Valspar': 1}
 TIER_WORD = {3: 'Premium', 2: 'Mid-range', 1: 'Value'}
 
 paints = json.load(open('paints.json'))
 N = len(paints)
 NBRANDS = len({p['brand'] for p in paints})
-BRANDS_WORD = numword(NBRANDS)          # e.g. "nine"  -> "{BRANDS_WORD} UK brands"
+BRANDS_WORD = numword(NBRANDS)          # e.g. "nine"  -> "{BRANDS_WORD} brands sold in the UK"
 OTHERS_WORD = numword(NBRANDS - 1)      # e.g. "eight" -> "the other {OTHERS_WORD} brands"
 assert {p['brand'] for p in paints} == set(BRAND_ORDER), \
     f"paints.json brands {sorted({p['brand'] for p in paints})} != BRAND_ORDER {sorted(BRAND_ORDER)}"
@@ -471,12 +488,16 @@ header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6
    middle third with small type. From 1500px it uses the homepage's column exactly (its
    --wide steps 1720 / 2000 / 2320 and 28px edge) and the homepage's header sizes, so the
    logo and the page edges don't move when you click through from the homepage. The
-   matches sit eight across (all sixteen other brands on two rows) and the type steps up
-   with the column. html{zoom:1.1} from 2800px (in FONTS) scales on top of the last step.
-   If the homepage widths change, change these too. */
+   eighteen matches (one per other brand) sit six across from 1400px, three full rows, and
+   nine across from 1900px, two full rows; nine is too tight below that (150px cards at
+   1536). Below 1400 the grid auto-fills. The four "Pairs well with" cards stay eight
+   across. If the brand count changes, re-pick these so the rows still come out full.
+   The type steps up with the column. html{zoom:1.1} from 2800px (in FONTS) scales on
+   top of the last step. If the homepage widths change, change these too. */
+@media(min-width:1400px){.grid.mx{grid-template-columns:repeat(6,minmax(0,1fr))}}
 @media(min-width:1500px){
 .wrap{max-width:1720px;padding-left:28px;padding-right:28px}
-.grid{grid-template-columns:repeat(8,minmax(0,1fr));gap:16px}
+.grid{grid-template-columns:repeat(8,minmax(0,1fr));gap:16px}.grid.mx{grid-template-columns:repeat(6,minmax(0,1fr))}
 .c-swatch{height:96px}.c-body{padding:11px 13px 13px}
 .c-name{font-size:15.5px}.c-brand{font-size:10.5px}.c-de{font-size:12px}
 h1{font-size:40px}h2{font-size:23px;margin-top:40px}.sub{font-size:14px}.facts{font-size:14px}.eyebrow{font-size:11.5px}
@@ -487,7 +508,7 @@ header{padding:22px 0 18px}.logo{font-size:30px}.logo .mark{width:27px;height:27
 }
 @media(min-width:1900px){
 .wrap{max-width:2000px}
-.grid{gap:18px}
+.grid{gap:18px}.grid.mx{grid-template-columns:repeat(9,minmax(0,1fr))}
 .c-swatch{height:112px}.c-body{padding:12px 15px 15px}
 .c-name{font-size:17px}.c-brand{font-size:11.5px}.c-de{font-size:13px}
 h1{font-size:46px}h2{font-size:26px;margin-top:46px}.sub{font-size:15px;margin-bottom:16px}.facts{font-size:15.5px}.eyebrow{font-size:12.5px}
@@ -676,7 +697,7 @@ def build_colour_page(i):
     page = f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{brand} {name} \u2014 colour match &amp; alternatives | PaintDial</title>
-<meta name="description" content="{brand} {name} ({p['hex']}, LRV \u2248 {lrv(L0):.0f}). See its closest matches across {BRANDS_WORD} UK brands, lighter &amp; darker shades, and where to buy a tester.">
+<meta name="description" content="{brand} {name} ({p['hex']}, LRV \u2248 {lrv(L0):.0f}). See its closest matches across {BRANDS_WORD} brands sold in the UK, lighter &amp; darker shades, and where to buy a tester.">
 <link rel="canonical" href="{DOMAIN}/colours/{slug}">
 {_ldjson(
    _color_seo(p['name'], p['brand'], p['hex'], slug,
@@ -1072,14 +1093,14 @@ def build_colours_index():
                   f'<span class="l-n">{len(idxs)} colours</span></span></a>')
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The colour library \u2014 every UK paint colour by brand | PaintDial</title>
+<title>The colour library: every colour from {NBRANDS} brands sold in the UK | PaintDial</title>
 <meta name="description" content="Browse {N:,} paint colours from {brand_list()}. Each one has matches from other brands and lighter and darker versions.">
 {FAVICON}
 {FONTS}<style>{LIB_CSS}</style></head><body><div class="wrap">
 {LIB_HDR}
 <div class="top"><span class="eyebrow">The colour library</span>
 <h1>Every colour, brand by brand</h1>
-<p class="lede">{N:,} paints across {BRANDS_WORD} UK brands. Each brand's full published range, grouped by colour family. You can also start from any colour in the <a href="/" style="color:inherit">colour tool</a>.</p></div>
+<p class="lede">{N:,} paints across {BRANDS_WORD} brands sold in the UK. Each brand's full published range, grouped by colour family. You can also start from any colour in the <a href="/" style="color:inherit">colour tool</a>.</p></div>
 <div class="lib-grid">{cards}</div>
 <footer>{FOOT}</footer>
 </div><div class="top-band"></div></body></html>"""
@@ -1460,7 +1481,7 @@ def build_method_page():
         ("Are the prices accurate?",
          "They are typical per-litre ranges for a 2.5 litre tin mixed to the colour, checked against retailers in September 2026 (Lakeland Paints only sells a 5 litre tin, so its figure is for that, checked November 2026). They are there so you know the rough scale of the difference between brands, not as a quote. Retailers vary and bigger tins cost less per litre. The \u00a3 signs group them: \u00a3 is under \u00a3" + f"{PRICE_BANDS[0]:g}" + " a litre, \u00a3\u00a3 is \u00a3" + f"{PRICE_BANDS[0]:g}" + " to \u00a3" + f"{PRICE_BANDS[1]:g}" + " and \u00a3\u00a3\u00a3 is \u00a3" + f"{PRICE_BANDS[1]:g}" + " or more."),
         ("Why isn\u2019t the brand I use in the library?",
-         f"PaintDial covers {BRANDS_WORD} UK brands, chosen because they publish digital colour values and have ranges people ask about. Brands are added when there is a reliable published source for their colours, not to make the number bigger."),
+         f"PaintDial covers {BRANDS_WORD} brands sold in the UK, chosen because they publish digital colour values and have ranges people ask about. Brands are added when there is a reliable published source for their colours, not to make the number bigger."),
         # Figures from the Dulux Trade Colour Palette fandeck (duluxtradepaintexpert.co.uk), checked
         # 4 Nov 2026 against the Dulux colours in the library with the site's own distance measure.
         ("Is Dulux Trade the same as Dulux?",
@@ -1474,7 +1495,7 @@ def build_method_page():
                               "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faqs]}
     body = f"""<span class="eyebrow">Methodology</span>
 <h1>How PaintDial matches colours</h1>
-<p>PaintDial compares {N:,} paints from {BRANDS_WORD} UK brands and finds the closest matches to any colour across all of them at once. This page covers how it works and where it falls short.</p>
+<p>PaintDial compares {N:,} paints from {BRANDS_WORD} brands sold in the UK and finds the closest matches to any colour across all of them at once. This page covers how it works and where it falls short.</p>
 
 <h2>Where the colour data comes from</h2>
 <p>Every colour in the library uses the brand\u2019s own published digital swatch, the colour value each manufacturer puts on its website{source_exception()}. We don\u2019t re-photograph or estimate colours ourselves. LRV (light reflectance value) shown on colour pages is estimated from the swatch rather than measured from paint.</p>
@@ -1632,8 +1653,8 @@ def build_match_index_page():
     RESEARCH['match'] = dict(pct_vc=pct_vc, n_uniq=len(uniq), n_prem=len(prem), n_prem_brands=len(prem_brands),
                              uniq_head=uniq_head, n_uniq_brands=len(ub), deep_story=bool(deep_p))
     body = f"""<span class="eyebrow">Research \u00b7 The UK Paint Match Index</span>
-<h1>Only {len(uniq)} of the {len(prem):,} premium paint colours from {numword(len(prem_brands))} UK brands can\u2019t be matched. {uniq_head}</h1>
-<p>We compared every one of the {N:,} colours published by {len(brands)} UK paint brands against every other, millions of comparisons in all, to see how many premium paint colours already have a near-identical twin and how many are unique.</p>
+<h1>Only {len(uniq)} of the {len(prem):,} premium paint colours from {numword(len(prem_brands))} brands sold in the UK can\u2019t be matched. {uniq_head}</h1>
+<p>We compared every one of the {N:,} colours published by {len(brands)} paint brands sold in the UK against every other, millions of comparisons in all, to see how many premium paint colours already have a near-identical twin and how many are unique.</p>
 <p class="muted">Updated automatically from PaintDial\u2019s live colour library. Last built {TODAY}.</p>
 
 <h2>1. Almost every premium colour has a close alternative</h2>
@@ -1815,7 +1836,7 @@ def build_choice_index_page():
                 'More than half of these colours are duplicates' if dup_pct > 55 else
                 f'{dup_pct}% of these colours are duplicates')
     body = f"""<span class="eyebrow">Research \u00b7 The UK Paint Choice Index</span>
-<h1>{numword(len(brands)).capitalize()} UK paint brands sell {N:,} colours between them. Only {distinct:,} are actually different.</h1>
+<h1>{numword(len(brands)).capitalize()} paint brands on the UK market sell {N:,} colours between them. Only {distinct:,} are actually different.</h1>
 <p>The {len(brands)} brands in PaintDial’s library ({brand_list()}) publish {N:,} colours between them. This study asks a simple question of all of them: <b>how much genuine choice is that?</b> It covers those brands, not the whole UK market: own-label ranges that publish no colour values are not in the library, so they are not in these figures.</p>
 <p class="muted">Computed automatically from PaintDial\u2019s live colour library, using the same thresholds as every page on this site. Last built {TODAY}.</p>
 
@@ -1850,7 +1871,7 @@ def build_choice_index_page():
 </ul>
 <p class="muted">Companion study: <a href="/paint-match-index/">The UK Paint Match Index</a>, on how closely premium colours can be matched across brands. Questions or corrections: <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("The UK Paint Choice Index",
-        f"{numword(len(brands)).capitalize()} UK paint brands sell {N:,} colours between them. Only {distinct:,} are actually different, and just {purp_vivid} {'purple is' if purp_vivid == 1 else 'purples are'} vivid.",
+        f"{numword(len(brands)).capitalize()} paint brands on the UK market sell {N:,} colours between them. Only {distinct:,} are actually different, and just {purp_vivid} {'purple is' if purp_vivid == 1 else 'purples are'} vivid.",
         "/paint-choice-index/", body)
 
 
@@ -1864,10 +1885,10 @@ def build_research_hub():
     _rc_purp = 'One exists.' if _rc['purp_vivid'] == 1 else f'Only {_rc["purp_vivid"]} exist.'
     body = f"""<span class="eyebrow">PaintDial</span>
 <h1>Research</h1>
-<p>Original studies computed from PaintDial\u2019s live library of {N:,} colours across {len(brands)} UK brands, compared with the same metric and thresholds used on every page of this site. Each study rebuilds automatically as brands are added.</p>
+<p>Original studies computed from PaintDial\u2019s live library of {N:,} colours across {len(brands)} brands sold in the UK, compared with the same metric and thresholds used on every page of this site. Each study rebuilds automatically as brands are added.</p>
 <div class="rsch-cards">
-<a class="rsch-card" href="/paint-match-index/"><small>The UK Paint Match Index</small><b>Only {_rm['n_uniq']} of the {_rm['n_prem']:,} premium paint colours from {numword(_rm['n_prem_brands'])} UK brands can\u2019t be matched. {_rm['uniq_head']}</b><span>{_rm['pct_vc']}% of premium colours have a very close match from a value brand.{_rm_deep}</span></a>
-<a class="rsch-card" href="/paint-choice-index/"><small>The UK Paint Choice Index</small><b>{numword(len(brands)).capitalize()} UK paint brands sell {N:,} colours between them. Only {_rc['distinct']:,} are actually different.</b><span>{_rc['dup_pct']}% of them are near-identical duplicates, {_rc['exact_total']} colours share an exact value with a sibling from their own range, and there is one colour almost nobody makes: a vivid purple. {_rc_purp}</span></a>
+<a class="rsch-card" href="/paint-match-index/"><small>The UK Paint Match Index</small><b>Only {_rm['n_uniq']} of the {_rm['n_prem']:,} premium paint colours from {numword(_rm['n_prem_brands'])} brands sold in the UK can\u2019t be matched. {_rm['uniq_head']}</b><span>{_rm['pct_vc']}% of premium colours have a very close match from a value brand.{_rm_deep}</span></a>
+<a class="rsch-card" href="/paint-choice-index/"><small>The UK Paint Choice Index</small><b>{numword(len(brands)).capitalize()} paint brands on the UK market sell {N:,} colours between them. Only {_rc['distinct']:,} are actually different.</b><span>{_rc['dup_pct']}% of them are near-identical duplicates, {_rc['exact_total']} colours share an exact value with a sibling from their own range, and there is one colour almost nobody makes: a vivid purple. {_rc_purp}</span></a>
 </div>
 <p class="muted">Journalists and researchers: every underlying comparison is public, colour by colour, across the site. Questions or corrections: <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("Research", 
@@ -1908,7 +1929,7 @@ def build_about_page():
 
 <p>I answer the <a href="/contact/">contact form</a> myself, so if something looks wrong, tell me.</p>"""
     return _page_shell("About PaintDial",
-        f"PaintDial is a one-person site comparing {N:,} paints across {NBRANDS} UK brands. Why I made it and how it’s paid for.",
+        f"PaintDial is a one-person site comparing {N:,} paints across {NBRANDS} brands sold in the UK. Why I made it and how it’s paid for.",
         "/about/", body)
 
 
@@ -1985,7 +2006,7 @@ def build_photo_match_page():
               "url": f"{DOMAIN}/match-paint-from-a-photo/",
               "applicationCategory": "UtilitiesApplication", "operatingSystem": "Web",
               "offers": {"@type": "Offer", "price": "0", "priceCurrency": "GBP"},
-              "description": f"Upload a photo and find the closest paint colour from {BRANDS_WORD} UK brands."}
+              "description": f"Upload a photo and find the closest paint colour from {BRANDS_WORD} brands sold in the UK."}
     body = f"""<style>
 .pm-hero{{display:grid;grid-template-columns:1fr 360px;gap:36px;align-items:start;margin:8px 0 6px}}
 .pm-diff{{background:#eef1f0;border-left:3px solid var(--pc);border-radius:0 10px 10px 0;padding:13px 16px;font-size:15px;margin-top:14px}}
@@ -2010,7 +2031,7 @@ def build_photo_match_page():
 <div class="pm-hero">
 <div>
 <p>Upload a photo of a wall, a fabric or anything else, tap the colour you want, and see the closest paint from every brand side by side. It’s free and runs in your browser.</p>
-<div class="pm-diff"><b>Unlike a single brand’s app</b>, PaintDial matches your photo against {N:,} paints from {BRANDS_WORD} UK brands at once.</div>
+<div class="pm-diff"><b>Unlike a single brand’s app</b>, PaintDial matches your photo against {N:,} paints from {BRANDS_WORD} brands sold in the UK at once.</div>
 </div>
 <div>
 <div class="pm-up"><div style="font-family:var(--serif);font-size:19px;font-weight:600">Match from a photo</div><a class="pm-cta" href="/#photoBtn">Upload a photo</a><small>or take one on your phone · free · no sign-up</small></div>
@@ -2022,7 +2043,7 @@ def build_photo_match_page():
 <div class="rsch-cards">
 <div class="rsch-card"><b>1. Upload a photo</b><span>Any image: a painted wall, a cushion, a photo you saved from Pinterest.</span></div>
 <div class="rsch-card"><b>2. Tap the colour</b><span>Point at the exact spot; PaintDial reads the colour under your finger.</span></div>
-<div class="rsch-card"><b>3. See every brand</b><span>The closest paint from {BRANDS_WORD} UK brands, ranked, with how close each one is.</span></div>
+<div class="rsch-card"><b>3. See every brand</b><span>The closest paint from {BRANDS_WORD} brands sold in the UK, ranked, with how close each one is.</span></div>
 </div>
 
 <h2>Getting the best match</h2>
@@ -2035,15 +2056,15 @@ def build_photo_match_page():
 </ul>
 
 <h2>Why it beats a single brand’s visualiser</h2>
-<p>Dulux’s and Valspar’s photo tools only show you <em>their</em> paints. PaintDial compares your colour across {BRANDS_WORD} UK brands at once, including Farrow &amp; Ball, Little Greene, Dulux and Johnstone’s, so you see every close option side by side. It uses the same <a href="/how-it-works/">matching</a> as the rest of the site.</p>
+<p>Dulux’s and Valspar’s photo tools only show you <em>their</em> paints. PaintDial compares your colour across {BRANDS_WORD} brands sold in the UK at once, including Farrow &amp; Ball, Little Greene, Dulux and Johnstone’s, so you see every close option side by side. It uses the same <a href="/how-it-works/">matching</a> as the rest of the site.</p>
 
 <h2>Common questions</h2>
 {faq_html}
 
 <p class="muted" style="margin-top:20px"><a class="pm-cta" href="/#photoBtn" style="color:#fff">Match a colour from a photo →</a></p>
 {_ldjson(app_ld, faq_ld)}"""
-    return _page_shell(f"Match Paint From a Photo — {NBRANDS} UK Brands",
-        f"Upload a photo and get the closest paint from {BRANDS_WORD} UK brands, including Farrow & Ball, Dulux and Little Greene. Free, in your browser, with no app or sign-up.",
+    return _page_shell(f"Match Paint From a Photo — {NBRANDS} Brands Sold in the UK",
+        f"Upload a photo and get the closest paint from {BRANDS_WORD} brands sold in the UK, including Farrow & Ball, Dulux and Little Greene. Free, in your browser, with no app or sign-up.",
         "/match-paint-from-a-photo/", body)
 
 
@@ -2160,7 +2181,7 @@ def build_alternatives_page(i):
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{brand} {name} alternatives \u2014 dupes &amp; closest matches | PaintDial</title>
-<meta name="description" content="The closest alternative to {brand} {name} is {H.escape(paints[closest]['name'])} by {H.escape(paints[closest]['brand'])} ({matchword(d[closest])}). See all {len(alts)} matches from other UK brands, ranked, including value-brand options.">
+<meta name="description" content="The closest alternative to {brand} {name} is {H.escape(paints[closest]['name'])} by {H.escape(paints[closest]['brand'])} ({matchword(d[closest])}). See all {len(alts)} matches from other brands, ranked, including value-brand options.">
 <link rel="canonical" href="{DOMAIN}/alternatives/{slugs[i]}">
 {_ldjson(
   _breadcrumb([("Home","/"),("Colours","/colours/"),(p['name'],f"/colours/{slugs[i]}"),("Alternatives",f"/alternatives/{slugs[i]}")]),
@@ -2191,7 +2212,7 @@ def build_alternatives_page(i):
 <div class="q"><h3>How close are these to <span class="pn"><i></i>{name}</span>?</h3>
 <p>They\u2019re ranked nearest first by perceptual colour difference, and the label on each card says how close it is. Screens differ from paint on a wall, so treat these as a shortlist and order tester pots.</p></div></div>
 <div class="cta"><b style="font-family:var(--serif);font-size:18px">Matching a different colour?</b>
-<p style="font-size:14px;color:var(--muted);margin:6px 0 0">Search any paint name in the tool to see its closest matches across every UK brand.</p>
+<p style="font-size:14px;color:var(--muted);margin:6px 0 0">Search any paint name in the tool to see its closest matches across all {BRANDS_WORD} brands.</p>
 <a href="/colours/{slugs[i]}">See the full {name} colour page \u2192</a></div>
 <footer>{FOOT}</footer>
 </div><div class="top-band"></div>{COMPARE_SCRIPT}</body></html>"""

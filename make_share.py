@@ -29,7 +29,7 @@ def dmatch(i):
 # Brand line is built from the data, so a new brand in paints.json shows up here without a hand edit.
 _ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT',
           'Lakeland Paints', 'Earthborn', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany',
-          'Mylands', 'Sanderson']
+          'Mylands', 'Sanderson', 'Benjamin Moore', 'Tikkurila']
 _present = {p['brand'] for p in paints}
 _BRANDS = [b.upper() for b in _ORDER if b in _present] + [b.upper() for b in sorted(_present - set(_ORDER))]
 def brand_lines(dr, f, maxw):
@@ -50,7 +50,8 @@ def build(i, out):
     picks=sorted(best.values(), key=lambda k:d[k])[:4]
     im=Image.new('RGB',(W,H),PAPER); dr=ImageDraw.Draw(im)
     dr.text((60,46),'Pick any colour, find the',font=font(FR,44,800,48),fill=INK)
-    dr.text((60,98),'paint — across every UK brand',font=font(FR,44,800,48),fill=INK)
+    # Count from the data, and 'sold in the UK': not every brand here is a UK brand any more.
+    dr.text((60,98),f'paint across {len(_present)} brands sold in the UK',font=font(FR,44,800,48),fill=INK)
     # Brand roll call: 14px, up to two lines, sitting between the title and the swatch row (y 210).
     fb=font(FR,14,600,14)
     for n,ln in enumerate(brand_lines(dr, fb, W-120)[:2]): dr.text((60,158+n*19),ln,font=fb,fill=MUTED)
