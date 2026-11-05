@@ -362,6 +362,19 @@
   .photo-hint{margin-top:8px; font-size:12px; color:var(--muted); display:flex; justify-content:space-between; align-items:center;}
   .photo-hint button{border:none; background:none; font-family:var(--sans); font-size:12px; font-weight:600; color:var(--ink); cursor:pointer; border-bottom:1px solid var(--hairline); padding:0;}
   .photo-hint button:hover{border-color:var(--ink);}
+  .photo-btns{display:flex; gap:14px; flex:none;}
+  .photo-hint #photoHintText{padding-right:10px;}
+  /* Shown with every photo: a phone photo carries the room's light, so a warm bulb or a
+     dark corner shifts the colour a long way. The fix offered is a white reference. */
+  .photo-light{margin:8px 0 0; font-size:12px; line-height:1.45; color:var(--ink);}
+  #photoWrap.wb-pick canvas#photo{outline:2px dashed var(--ink); outline-offset:3px;}
+  /* Exact match: the picked colour IS a paint in the library (a screenshot of a swatch,
+     a search, a hex). Said plainly above the ranked list. */
+  .exact-note{display:flex; gap:10px; align-items:center; margin:2px 0 10px; padding:10px 12px;
+    border:1px solid var(--hairline); border-radius:10px; background:#fff; font-size:14px; line-height:1.35;}
+  .exact-note[hidden]{display:none;}
+  .ex-sw{width:22px; height:22px; border-radius:6px; flex:none; border:1px solid rgba(0,0,0,.08);}
+  .exact-note a{color:var(--ink); font-weight:600; text-decoration:none; border-bottom:1px solid var(--hairline);}
 
 
 
@@ -706,7 +719,8 @@
       <div class="photo-wrap" id="photoWrap">
         <canvas id="photo"></canvas>
         <div class="photo-marker" id="photoMarker"></div>
-        <div class="photo-hint"><span>Tap or drag anywhere on the image</span><button id="photoClear">Remove image</button></div>
+        <p class="photo-light" id="photoLight">Artificial light and dark rooms throw a photo&rsquo;s colour right off. For a truer match, hold a sheet of white paper against the wall when you take the photo, then tap <b>Correct the light</b> and tap the paper.</p>
+        <div class="photo-hint"><span id="photoHintText">Tap or drag anywhere on the image</span><span class="photo-btns"><button id="photoWB" type="button">Correct the light</button><button id="photoClear" type="button">Remove image</button></span></div>
       </div>
 
       <div class="search-row" id="searchRow" hidden>
@@ -721,6 +735,7 @@
 
   <main class="results" id="results">
     <h2>Closest matching paints</h2>
+    <p class="exact-note" id="exactNote" hidden></p>
     <p class="sub" id="subline">Ranked by closeness of match, across the library.</p>
     <p class="results-note">Every swatch is split: your colour on the left, the match on the right, touching so you can judge the difference yourself. Compare on any card shows the pair full screen. Matched on each brand&rsquo;s own published values. <span id="priceNote"></span> <a href="/how-it-works/">How matching works &rarr;</a></p>
 
@@ -1234,7 +1249,7 @@ function colourFamily(p){
   return 'purple';
 }
 function qualityColor(d){return d<6?'#3E7A4C':d<14?'#C08A2D':'#9A6B6B';}
-function qualityWord(d,pOk,pickOk){if(d>=20)return'nearest available';if(d<2)return'near-identical';if(d<5)return'very close';if(d<10)return'close';try{const a=okLch(pickOk),b=okLch(pOk);if(a[1]<0.04||b[1]<0.04)return'similar tone';const minc=Math.min(a[1],b[1]);const tol=minc>=0.12?28:minc>=0.08?22:16;const dh=hueDiff(a[2],b[2]);if(dh<=tol)return'same family';return'related';}catch(e){return'related';}}
+function qualityWord(d,pOk,pickOk){if(d>=20)return'nearest available';if(d<EXACT_D)return'exact match';if(d<2)return'near-identical';if(d<5)return'very close';if(d<10)return'close';try{const a=okLch(pickOk),b=okLch(pOk);if(a[1]<0.04||b[1]<0.04)return'similar tone';const minc=Math.min(a[1],b[1]);const tol=minc>=0.12?28:minc>=0.08?22:16;const dh=hueDiff(a[2],b[2]);if(dh<=tol)return'same family';return'related';}catch(e){return'related';}}
 
 function labToLch(l){const C=Math.hypot(l[1],l[2]);let h=Math.atan2(l[2],l[1])*180/Math.PI;if(h<0)h+=360;return [l[0],C,h];}
 function hueDiff(a,b){let d=Math.abs(a-b)%360;return d>180?360-d:d;}
@@ -1321,13 +1336,41 @@ function cmpBtnHTML(srcHex,p,word){
   return `<button class="pd-cmp-btn" type="button" data-ahex="${srcHex}" data-aname="Your colour" data-abrand="${srcHex}" data-bhex="${p.hex}" data-bname="${q(p.name)}" data-bbrand="${q(p.brand)}" data-word="${q(word)}" aria-label="Compare your colour with ${q(p.name)} full screen" title="See the pair full screen">${CMP_SVG}<span>Compare</span></button>`;
 }
 
+/* "What is this colour?" A screenshot of a brand's swatch, or a typed hex, lands on that
+   paint at a distance of 0. Different paints can sit as close as 0.21 apart (941 of them
+   have a neighbour under 0.5), so "exact" is kept for the same published value, give or
+   take rounding: under 0.15. A colour that is very close to one paint and clearly further
+   from everything else (a re-saved screenshot, say) gets "almost certainly" instead. */
+const EXACT_D=0.15;
+function renderExact(ranked){
+  const el=document.getElementById('exactNote'); if(!el) return;
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  const say=list=>{
+    const names=list.slice(0,3).map(p=>`<a href="${colourPageUrl(p)}">${esc(p.name)}</a> by ${esc(p.brand)}`);
+    return names.length===1?names[0]:names.slice(0,-1).join(', ')+' and '+names[names.length-1];
+  };
+  const best=ranked[0];
+  let html='';
+  if(best && best.d<EXACT_D){
+    const ex=ranked.filter(p=>p.d<EXACT_D);
+    html=`<b>Exact match:</b> ${say(ex)}${ex.length>1?', which share the same published colour':''}.`;
+  } else if(best && best.d<1){
+    const twin=ranked.filter(p=>p.hex===best.hex), next=ranked.find(p=>p.hex!==best.hex);
+    if(!next || next.d-best.d>=1)
+      html=`<b>Almost certainly</b> ${say(twin)}. Nothing else in the library is this close.`;
+  }
+  if(!html){ el.hidden=true; el.innerHTML=''; return; }
+  el.innerHTML=`<span class="ex-sw" style="background:${best.hex}"></span><span>${html}</span>`;
+  el.hidden=false;
+}
 function renderMatches(){
   const hx=currentHex();
   const lab=rgbToLab(...hexToRgb(hx));
   const pool=currentPool();
-  if(pool.length===0){document.getElementById('bestWrap').innerHTML='';document.getElementById('grid').innerHTML='';document.getElementById('ladderSec').style.display='none';document.getElementById('subline').textContent='No brands selected \u2014 tap All to reset.';return;}
+  if(pool.length===0){renderExact([]);document.getElementById('bestWrap').innerHTML='';document.getElementById('grid').innerHTML='';document.getElementById('ladderSec').style.display='none';document.getElementById('subline').textContent='No brands selected \u2014 tap All to reset.';return;}
   const PICK_OK=rgbToOklab(...hexToRgb(hx));
   const ranked=pool.map(p=>({...p,d:okDistM(PICK_OK,p.ok)})).sort((a,b)=>a.d-b.d);
+  renderExact(ranked);
   renderLadder(lab, pool);
   const avail=Math.min(Math.max(ranked.length-4,0),48);
   shown=Math.min(fullRows(shown),avail);
@@ -1498,6 +1541,8 @@ photoFile.addEventListener('change',()=>{
     photoCanvas.width=Math.round(img.width*scale);
     photoCanvas.height=Math.round(img.height*scale);
     pctx.drawImage(img,0,0,photoCanvas.width,photoCanvas.height);
+    photoOrig=pctx.getImageData(0,0,photoCanvas.width,photoCanvas.height);
+    wbMode=false; wbOn=false; setPhotoUI();
     photoWrap.classList.add('show');
     photoMarker.style.display='none';
     URL.revokeObjectURL(img.src);
@@ -1505,12 +1550,59 @@ photoFile.addEventListener('change',()=>{
   img.src=URL.createObjectURL(f);
 });
 document.getElementById('photoClear').addEventListener('click',()=>{
-  photoWrap.classList.remove('show'); photoFile.value='';
+  photoWrap.classList.remove('show'); photoFile.value=''; photoOrig=null; wbMode=false; wbOn=false; setPhotoUI();
 });
+/* ---------- correct the light: white balance and exposure from a tapped white ----------
+   A phone photo carries the room's light: a warm bulb pushes everything orange, a dark
+   corner pulls it down. Tapping something white that sits in the same light as the wall
+   (a sheet of paper held against it, or a white ceiling or skirting) gives a reference:
+   each channel is scaled, in linear light, so that patch comes out as white paint. The
+   whole photo is redrawn corrected, so you can see what changed before you tap the wall.
+   0.86 is the reflectance assumed for the white (office paper and white emulsion are both
+   roughly 0.85 to 0.9). It can't fix mixed lighting or a phone's own heavy processing,
+   and it is only as good as the white you tap. */
+let photoOrig=null, wbMode=false, wbOn=false;
+const WB_WHITE=0.86;
+const photoWB=document.getElementById('photoWB'), photoHintText=document.getElementById('photoHintText');
+function setPhotoUI(){
+  photoWrap.classList.toggle('wb-pick',wbMode);
+  photoWB.textContent = wbOn ? 'Undo correction' : wbMode ? 'Cancel' : 'Correct the light';
+  photoHintText.textContent = wbMode ? 'Now tap the white paper, or a white ceiling or skirting'
+    : wbOn ? 'Light corrected. Now tap the wall.' : 'Tap or drag anywhere on the image';
+}
+photoWB.addEventListener('click',()=>{
+  if(!photoOrig) return;
+  if(wbOn){ pctx.putImageData(photoOrig,0,0); wbOn=false; wbMode=false; photoMarker.style.display='none'; }
+  else wbMode=!wbMode;
+  setPhotoUI();
+});
+const toLin=v=>{v/=255; return v>0.04045?Math.pow((v+0.055)/1.055,2.4):v/12.92;};
+const toSrgb=v=>{v=Math.max(0,Math.min(1,v)); return Math.round(255*(v<=0.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-0.055));};
+function applyWhite(x,y){
+  const W=photoOrig.width, H=photoOrig.height, half=4, src=photoOrig.data;
+  let r=0,g=0,b=0,n=0;
+  for(let yy=Math.max(0,y-half); yy<=Math.min(H-1,y+half); yy++)
+    for(let xx=Math.max(0,x-half); xx<=Math.min(W-1,x+half); xx++){
+      const i=(yy*W+xx)*4; r+=toLin(src[i]); g+=toLin(src[i+1]); b+=toLin(src[i+2]); n++;
+    }
+  r/=n; g/=n; b/=n;
+  if(Math.max(r,g,b)<0.02 || Math.min(r,g,b)<0.004){
+    photoHintText.textContent='That patch is too dark to use. Tap something white in the light.';
+    return;
+  }
+  const clampG=v=>Math.max(0.25,Math.min(8,v));
+  const gains=[clampG(WB_WHITE/r),clampG(WB_WHITE/g),clampG(WB_WHITE/b)];
+  const lut=gains.map(k=>{const a=new Uint8ClampedArray(256); for(let v=0;v<256;v++) a[v]=toSrgb(toLin(v)*k); return a;});
+  const out=new ImageData(new Uint8ClampedArray(src), W, H), d=out.data;
+  for(let i=0;i<d.length;i+=4){ d[i]=lut[0][d[i]]; d[i+1]=lut[1][d[i+1]]; d[i+2]=lut[2][d[i+2]]; }
+  pctx.putImageData(out,0,0);
+  wbOn=true; wbMode=false; photoMarker.style.display='none'; setPhotoUI();
+}
 function samplePhoto(e){
   const rect=photoCanvas.getBoundingClientRect();
   const x=Math.round((e.clientX-rect.left)*(photoCanvas.width/rect.width));
   const y=Math.round((e.clientY-rect.top)*(photoCanvas.height/rect.height));
+  if(wbMode){ if(e.type==='pointerdown') applyWhite(Math.min(photoCanvas.width-1,Math.max(0,x)),Math.min(photoCanvas.height-1,Math.max(0,y))); return; }
   // average a 5x5 patch so one noisy pixel doesn't skew the pick
   const half=2, x0=Math.max(0,x-half), y0=Math.max(0,y-half);
   const w=Math.min(photoCanvas.width-x0, half*2+1), h=Math.min(photoCanvas.height-y0, half*2+1);

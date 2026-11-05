@@ -1375,7 +1375,7 @@ def build_method_page():
 <p>Dulux Trade Colour Palette codes work the same way. Type one off the tin (say, “10RR 73/016”) and PaintDial sets the wheel to that colour, using the value Dulux Trade publishes for it, and tells you when it’s exactly the same colour as a retail Dulux paint, as hundreds of them are.</p>
 
 <h2>Why photo matching is approximate</h2>
-<p>The \u201c<a href="/match-paint-from-a-photo/">match from a photo</a>\u201d tool reads the pixel colour from your image. That pixel is shaped by the room\u2019s lighting, the camera\u2019s processing, and your screen \u2014 so treat photo matches as a strong starting point, not a guarantee. The same wall photographed at noon and at dusk will match to different paints.</p>
+<p>The \u201c<a href="/match-paint-from-a-photo/">match from a photo</a>\u201d tool reads the pixel colour from your image. That pixel is shaped by the room\u2019s lighting, the camera\u2019s processing, and your screen \u2014 so treat photo matches as a strong starting point, not a guarantee. The same wall photographed at noon and at dusk will match to different paints. Holding a sheet of white paper against the wall when you take the photo helps: tap <b>Correct the light</b>, tap the paper, and the tool scales the photo so the paper comes out white, which takes out most of a bulb\u2019s colour cast and brightens a dark room. It can\u2019t fix mixed lighting or heavy processing by the phone.</p>
 
 <h2>Why you should still order testers</h2>
 <p>Screen colours are indicative. Real paint changes with sheen, light, and the surface underneath it \u2014 and every screen shows colour slightly differently. Before committing to any colour (or any match), order tester pots of both and look at them in the room they\u2019ll live in, in daylight and lamplight.</p>
@@ -1836,7 +1836,7 @@ def build_photo_match_page():
         ("Can you really match paint from a photo?",
          f"Yes. Upload any photo, tap the colour you want, and PaintDial compares it against all {N:,} UK paint swatches in the library using the same colour science as the rest of the site — then ranks the closest match from every brand."),
         ("How accurate is matching paint from a photo?",
-         "As accurate as your photo. A well-lit shot in daylight gives a genuinely close shortlist; a photo taken under a warm bulb or of a screen will drift. Treat any match as a strong starting point, not a guarantee — always order a tester pot."),
+         "As accurate as your photo. A well-lit shot in daylight gives a genuinely close shortlist; a photo taken under a warm bulb or in a dark room will drift a long way. Holding a sheet of white paper against the wall and using Correct the light takes most of that out, but it can't fix mixed lighting or a phone's own heavy processing. Treat any match as a strong starting point, not a guarantee, and always order a tester pot."),
         ("Can I match a colour from a fabric, tile or wallpaper?",
          "Yes — anything in a photo works: a fabric, a cushion, a tile, a flower, even a room you screenshotted. If it’s a colour in an image, PaintDial can find the nearest paints to it."),
         ("Is it free?",
@@ -1894,6 +1894,7 @@ def build_photo_match_page():
 <h2>Getting the best match</h2>
 <ul>
 <li>Shoot in <b>natural daylight</b> — camera flash and warm bulbs shift the colour.</li>
+<li>Indoors or under lamps, <b>hold a sheet of white paper against the wall</b> when you take the photo. Then tap <b>Correct the light</b> and tap the paper, and PaintDial takes out the colour cast and brightens a dark photo before you pick the wall.</li>
 <li><b>Fill the frame</b> with the colour you want, and avoid shadows and glare.</li>
 <li>A photo of a <b>screen</b> drifts from real paint — use the real surface where you can.</li>
 <li>A match is a <b>shortlist, not a promise</b> — always order a tester pot before committing.</li>
