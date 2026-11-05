@@ -38,7 +38,7 @@
   /* Brands whose values come from a stockist because the brand publishes none, as
      brand: stockist. Must match SOURCE_NOTE in gen_pages.py, which asserts it on every
      build. When either side of the comparison is one of these, the strip says so. */
-  var SOURCED = {"Zoffany": "Brewers"};
+  var SOURCED = {"Zoffany": "Brewers", "Sanderson": "Brewers"};
   var BASE_NOTE = 'Screens vary. Compare these two to each other, then order testers before you buy.';
 
   var ov = null, handle = null, wordEl = null, noteEl = null, lastBtn = null, x = 50, dragging = false;

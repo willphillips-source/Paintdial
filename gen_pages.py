@@ -94,7 +94,7 @@ AWIN_AFFID = "2971455"
 FRESHLICK_MID = None
 FRESHLICK_BRANDS = {"Little Greene", "Crown"}
 BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints',
-               'Earthborn', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany']
+               'Earthborn', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany', 'Mylands', 'Sanderson']
 # SOURCED FROM A STOCKIST, NOT THE BRAND. Every other brand's values are its own published swatches.
 # Zoffany (156, added 4 Nov 2026) publishes none: zoffany.design shows JPEG swatches only and its
 # product API has no colour field. Its values are the ones Brewers, its main UK stockist, publishes
@@ -103,9 +103,26 @@ BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johns
 # differently (Manila/Sheepskin vs Zoffany's Manilla/Sheep Skin). Will chose this on 4 Nov 2026 over
 # leaving Zoffany out. Anything that says "each brand's own published swatch" must say so, so the
 # claim is built from SOURCE_NOTE below rather than typed, and the brand and colour pages carry it.
+# Sanderson (154, added 5 Nov 2026) is Zoffany's sister brand (Sanderson Design Group) on the same
+# site platform, with the same gap: sanderson.design shows JPEG swatches and none of its pages
+# carries a value. Brewers' values (brewers.co.uk/colours/sanderson, 154 colours, checksummed
+# against the live listing; 10 of 10 spot-checked colour pages agree) are used, with Sanderson's
+# own names, codes (SAP1001-1154, alphabetical, identical to Brewers' list) and links.
+# Supporting evidence that Brewers mirrors brand values: for Mylands, which does publish its own,
+# all 157 colours Brewers also lists carry exactly the same value on both sites.
 SOURCE_NOTE = {
     'Zoffany': ('Brewers', 'https://www.brewers.co.uk/colours/zoffany'),
+    'Sanderson': ('Brewers', 'https://www.brewers.co.uk/colours/sanderson'),
 }
+# Mylands (193, added 5 Nov 2026): the brand's own values. Each product page on mylands.com sets
+# the colour as a CSS variable on its colour band (<div class="ux-pdp" style="--ux-band:#...">).
+# Core range (No.1-297) plus the Beata Heuman (BH.01-24) and Jinny Blom (JB.01-12) collections,
+# all Marble Matt Emulsion 2.5L £68. The Film, TV & Theatre (FTT) scenic range is left out: it is
+# specialist stage and screen paint (CSO Green is chroma-key green), four of its 20 are metallics
+# with no value, and one value (#0026FF) is not a credible paint swatch.
+# Valspar was expanded on 5 Nov 2026 from 284 to its full published UK range, 1,970 colours
+# (valsparpaint.co.uk/all-colours/, 73 pages, each colour's chip background; 40 of 40 random colour
+# pages agree with the listing; all 284 existing values unchanged).
 # Dulux Heritage (113, added 4 Nov 2026) is Dulux's designer range with its own names, site and
 # price (Velvet Matt 2.5L £45-47), so it is its own brand here rather than more Dulux rows. Values
 # are the "rgb" field in duluxheritage.co.uk's page data, which the site renders its own swatches
@@ -125,6 +142,7 @@ SOURCE_NOTE = {
 # colour links to the matchpot page, where the picker lives.
 TIER = {'Farrow & Ball': 3, 'Little Greene': 3, 'Craig & Rose': 3, 'Lick': 3, 'COAT': 3,
         'Earthborn': 3, 'Paint & Paper Library': 3, 'Edward Bulmer': 3, 'Dulux Heritage': 3, 'Zoffany': 3,
+        'Mylands': 3, 'Sanderson': 3,
         'Dulux': 2, 'Crown': 2, 'Lakeland Paints': 2, "Johnstone's": 1, 'Valspar': 1}
 TIER_WORD = {3: 'Premium', 2: 'Mid-range', 1: 'Value'}
 
@@ -147,6 +165,19 @@ def brand_list(sep=', ', last=' and ', esc=True):
 
 assert set(SOURCE_NOTE) <= set(BRAND_ORDER), "SOURCE_NOTE names a brand not in BRAND_ORDER"
 
+STOCKIST_HOME = {'Brewers': 'https://www.brewers.co.uk/'}
+
+def _and(names):
+    return names[0] if len(names) == 1 else ', '.join(names[:-1]) + ' and ' + names[-1]
+
+def _by_stockist():
+    # {stockist: [brands...]} in BRAND_ORDER, so one sentence covers every brand a stockist sources.
+    out = {}
+    for b in BRAND_ORDER:
+        if b in SOURCE_NOTE:
+            out.setdefault(SOURCE_NOTE[b][0], []).append(b)
+    return out
+
 def source_exception(html=True):
     # The clause that qualifies "each brand's own published swatch", or '' if every brand
     # publishes its own. Gives e.g. ", except Zoffany, which publishes none: its values are
@@ -154,19 +185,31 @@ def source_exception(html=True):
     if not SOURCE_NOTE:
         return ''
     bits = []
-    for b, (stockist, url) in SOURCE_NOTE.items():
+    for stockist, brands in _by_stockist().items():
+        url = SOURCE_NOTE[brands[0]][1] if len(brands) == 1 else STOCKIST_HOME.get(stockist, SOURCE_NOTE[brands[0]][1])
         sname = (f'<a href="{url}" rel="nofollow noopener" target="_blank">{stockist}</a>' if html else stockist)
-        bname = H.escape(b) if html else b
-        bits.append(f'{bname}, which publishes none: its values are the ones {sname}, its main UK stockist, publishes')
+        names = [H.escape(b) if html else b for b in brands]
+        if len(names) == 1:
+            bits.append(f'{names[0]}, which publishes none: its values are the ones {sname}, its main UK stockist, publishes')
+        else:
+            bits.append(f'{_and(names)}, which publish none: their values are the ones {sname}, their main UK stockist, publishes')
     return ', except ' + '; and '.join(bits)
 
 def source_short():
     # Short bracketed form for method notes: " (Zoffany's come from its stockist Brewers, as
-    # Zoffany publishes none)". '' if every brand publishes its own.
+    # Zoffany publishes none)", or for two: " (Zoffany's and Sanderson's come from their stockist
+    # Brewers, as neither brand publishes any)". '' if every brand publishes its own.
     if not SOURCE_NOTE:
         return ''
-    bits = [f'{H.escape(b)}’s come from its stockist {s}, as {H.escape(b)} publishes none'
-            for b, (s, _) in SOURCE_NOTE.items()]
+    bits = []
+    for s, brands in _by_stockist().items():
+        names = [H.escape(b) for b in brands]
+        if len(names) == 1:
+            bits.append(f'{names[0]}’s come from its stockist {s}, as {names[0]} publishes none')
+        else:
+            poss = _and([n + '’s' for n in names])
+            bits.append(f'{poss} come from their stockist {s}, as neither brand publishes any' if len(names) == 2
+                        else f'{poss} come from their stockist {s}, as none of them publishes any')
     return ' (' + '; '.join(bits) + ')'
 
 def source_line(brand):
@@ -1412,9 +1455,40 @@ def build_match_index_page():
         f'<span class="bnote">{n} from {sz:,}</span></div>' for b, v, n, sz in per100)
 
     prem_brands = sorted({paints[i]['brand'] for i in prem})
-    RESEARCH['match'] = dict(pct_vc=pct_vc, n_uniq=len(uniq), n_prem=len(prem), n_prem_brands=len(prem_brands))
+    # Which brands own the unmatchable colours. This was typed as "all from one brand" and went
+    # false when Zoffany arrived (Nov 2026), so every sentence about it is built from the data.
+    ub = [b for b, _n in uniq_brands.most_common()]
+    ub_names = _and([H.escape(b) for b in ub]) if ub else ''
+    ub_split = _and([f'{n} from {H.escape(b)}' for b, n in uniq_brands.most_common()])
+    if len(ub) == 1:
+        uniq_head = 'They\u2019re all from one brand.'
+        uniq_h2 = 'and they\u2019re all one brand'
+        uniq_p = f'Every one belongs to <b>{ub_names}</b>.'
+    elif 1 < len(ub) <= 3:
+        uniq_head = f'They all come from just {numword(len(ub))} brands.'
+        uniq_h2 = f'and they come from just {numword(len(ub))} brands'
+        uniq_p = f'They come from <b>{ub_names}</b>: {ub_split}.'
+    else:
+        uniq_head = ''
+        uniq_h2 = f'from {numword(len(ub))} brands'
+        uniq_p = f'By brand: {ub_split}.'
+    deep_top = [b for b, _n in deep_c.most_common(len(ub))]
+    deep_of_ub = sum(deep_c[b] for b in ub)
+    if ub and set(deep_top) == set(ub) and deep_of_ub * 2 > len(deep):
+        if len(ub) == 1:
+            deep_p = (f'That single fact explains the finding above. {ub_names} isn\u2019t unmatchable because it\u2019s premium \u2014 '
+                      f'it\u2019s unmatchable because it\u2019s the only brand making colours that dark. '
+                      f'<b>Depth, not prestige, is what can\u2019t be copied.</b>')
+        else:
+            deep_p = (f'That explains the finding above. {ub_names} make {deep_of_ub} of the {len(deep)}. They aren\u2019t unmatchable '
+                      f'because they\u2019re premium \u2014 they\u2019re unmatchable because they\u2019re the brands making colours that dark. '
+                      f'<b>Depth, not prestige, is what can\u2019t be copied.</b>')
+    else:
+        deep_p = ''
+    RESEARCH['match'] = dict(pct_vc=pct_vc, n_uniq=len(uniq), n_prem=len(prem), n_prem_brands=len(prem_brands),
+                             uniq_head=uniq_head, n_uniq_brands=len(ub), deep_story=bool(deep_p))
     body = f"""<span class="eyebrow">Research \u00b7 The UK Paint Match Index</span>
-<h1>Only {len(uniq)} of the {len(prem):,} premium paint colours from {numword(len(prem_brands))} UK brands can\u2019t be matched. They\u2019re all from one brand.</h1>
+<h1>Only {len(uniq)} of the {len(prem):,} premium paint colours from {numword(len(prem_brands))} UK brands can\u2019t be matched. {uniq_head}</h1>
 <p>We compared every one of the {N:,} colours published by {len(brands)} UK paint brands against every other \u2014 millions of pairwise comparisons \u2014 to answer one question: how many premium paint colours are genuinely unique, and how many already have a near-identical twin?</p>
 <p class="muted">Updated automatically from PaintDial\u2019s live colour library. Last built {TODAY}.</p>
 
@@ -1425,13 +1499,13 @@ def build_match_index_page():
 <h2>2. The closest pairs differ by a single step in their hex code</h2>
 {dupe_rows}
 
-<h2>3. Only {len(uniq)} premium colours can\u2019t be matched \u2014 and they\u2019re all one brand</h2>
-<p>Of {len(prem)} premium colours, just <b>{len(uniq)}</b> have no very-close match from any other brand. Every one belongs to <b>{uniq_brands.most_common(1)[0][0]}</b>.</p>
+<h2>3. Only {len(uniq)} premium colours can\u2019t be matched \u2014 {uniq_h2}</h2>
+<p>Of {len(prem):,} premium colours, just <b>{len(uniq)}</b> have no very-close match from any other brand. {uniq_p}</p>
 <div class="uq-grid">{uniq_rows}</div>
 
 <h2>4. The reason: these brands barely go dark</h2>
 <p>Only <b>{len(deep)} of {N:,}</b> colours across all {len(brands)} brands are genuinely deep. By brand: {deep_rows}.</p>
-<p>That single fact explains the finding above. {uniq_brands.most_common(1)[0][0]} isn\u2019t unmatchable because it\u2019s premium \u2014 it\u2019s unmatchable because it\u2019s the only brand making colours that dark. <b>Depth, not prestige, is what can\u2019t be copied.</b></p>
+<p>{deep_p}</p>
 
 <h2>5. Whose palette is most Farrow &amp; Ball-like?</h2>
 <p>Raw counts favour whoever publishes most colours. Corrected for range size \u2014 closest-match wins per 100 colours of each brand\u2019s own range \u2014 the picture changes:</p>
@@ -1585,12 +1659,23 @@ def build_choice_index_page():
     unc_pink = round(100*(((SH >= _E[6]) | (SH < _E[0])) & unc).sum()/unc.sum())
 
     RESEARCH['choice'] = dict(distinct=distinct, dup_pct=dup_pct, exact_total=exact_total, purp_vivid=purp_vivid)
+    # The peak-chroma contrast held at 9-15 brands (purple stopped at under half red's peak) but not
+    # once Valspar's full range went in (Nov 2026: 0.20 vs 0.21), so it is only claimed when true.
+    if purp_max < red_max / 2:
+        purp_peak_line = f'red reaches a peak chroma of {red_max:.2f}, yet purple stops at {purp_max:.2f} \u2014 less than half.'
+    else:
+        purp_peak_line = (f'the most saturated purple (chroma {purp_max:.2f}) gets close to the most saturated red ({red_max:.2f}), '
+                          f'but almost nothing else does.')
+    purp_count_line = 'Exactly one purple does.' if purp_vivid == 1 else f'Only {purp_vivid} purples do.'
+    dup_head = ('Half of these colours are duplicates' if 45 <= dup_pct <= 55 else
+                'More than half of these colours are duplicates' if dup_pct > 55 else
+                f'{dup_pct}% of these colours are duplicates')
     body = f"""<span class="eyebrow">Research \u00b7 The UK Paint Choice Index</span>
 <h1>{numword(len(brands)).capitalize()} UK paint brands sell {N:,} colours between them. Only {distinct:,} are actually different.</h1>
 <p>The {len(brands)} brands in PaintDial’s library ({brand_list()}) publish {N:,} colours between them. This study asks a simple question of all of them: <b>how much genuine choice is that?</b> It covers those brands, not the whole UK market: own-label ranges that publish no colour values are not in the library, so they are not in these figures.</p>
 <p class="muted">Computed automatically from PaintDial\u2019s live colour library, using the same thresholds as every page on this site. Last built {TODAY}.</p>
 
-<h2>1. Half of these colours are duplicates</h2>
+<h2>1. {dup_head}</h2>
 <p class="bignum">{distinct:,} of {N:,}<small>colours are genuinely distinct at our near-identical threshold</small></p>
 <p>You could remove <b>{dup_pct}%</b> of the colours these {len(brands)} brands sell and every one removed would still have a near-identical match among the survivors. Without any clustering at all: <b>{round(100*twin_any/N)}%</b> of colours have a near-identical twin somewhere in the library, and <b>{round(100*twin_cross/N)}%</b> have one from a <em>different brand</em>. <a href="/">Check any colour\u2019s twins in the tool \u2192</a></p>
 
@@ -1606,7 +1691,7 @@ def build_choice_index_page():
 
 <h2>4. The colour these brands don\u2019t sell</h2>
 <p>Take every colour a standard screen can display and ask: does any paint in the library come <b>very close</b> to it (our site-wide \u0394E&nbsp;&lt;&nbsp;5)? The answer is yes for just <b>{cover_pct}%</b> of them. The missing colour isn\u2019t evenly spread \u2014 it is overwhelmingly the vivid end of <b>purple ({unc_purple}% of the gap), blue ({unc_blue}%) and the reds and pinks ({unc_pink}%)</b>.</p>
-<p>Part of that is physics: screens emit light and pigment can\u2019t, so no paint will ever match a glowing violet. But the pattern holds <em>inside</em> paint itself: across these {len(brands)} brands, red reaches a peak chroma of {red_max:.2f}, yet purple stops at {purp_max:.2f} \u2014 less than half. <b>{red_vivid} red paints exceed a chroma of 0.10. Exactly {purp_vivid} purple does.</b></p>
+<p>Part of that is physics: screens emit light and pigment can\u2019t, so no paint will ever match a glowing violet. But the pattern holds <em>inside</em> paint itself: across these {len(brands)} brands, {purp_peak_line} <b>{red_vivid} red paints exceed a chroma of 0.10. {purp_count_line}</b></p>
 
 <h2>Method</h2>
 <p>Every colour is each brand\u2019s <a href="/how-it-works/">own published digital swatch</a>{source_short()}. Distinctness uses greedy clustering at the site\u2019s published near-identical threshold (\u0394E&nbsp;&lt;&nbsp;2 in our hue-weighted OKLab metric), averaged over five seeded random orderings; the spread across orderings is about 1%, so the count is not an artefact of ordering. Colour families are the site\u2019s own live classification \u2014 the same rule that files every colour in the <a href="/colours/">library</a>. Screen-colour coverage samples the sRGB gamut uniformly in OKLab volume (40,000 seeded points) and measures distance to the nearest paint with the site\u2019s own metric and thresholds.</p>
@@ -1621,19 +1706,24 @@ def build_choice_index_page():
 </ul>
 <p class="muted">Companion study: <a href="/paint-match-index/">The UK Paint Match Index</a> \u2014 how closely premium colours can be matched across brands. Questions or corrections \u2014 <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("The UK Paint Choice Index",
-        f"{numword(len(brands)).capitalize()} UK paint brands sell {N:,} colours between them. Only {distinct:,} are genuinely distinct \u2014 and just {purp_vivid} purple is genuinely vivid.",
+        f"{numword(len(brands)).capitalize()} UK paint brands sell {N:,} colours between them. Only {distinct:,} are genuinely distinct \u2014 and just {purp_vivid} {'purple is' if purp_vivid == 1 else 'purples are'} genuinely vivid.",
         "/paint-choice-index/", body)
 
 
 def build_research_hub():
     brands = sorted({p['brand'] for p in paints})
     _rm, _rc = RESEARCH['match'], RESEARCH['choice']
+    _one = _rm['n_uniq_brands'] == 1
+    _rm_deep = ((' The ones that don\u2019t aren\u2019t special because they\u2019re expensive. '
+                 + ('They\u2019re the only ones that go properly dark.' if _one else 'They\u2019re the ones that go properly dark.'))
+                if _rm['deep_story'] else '')
+    _rc_purp = 'One exists.' if _rc['purp_vivid'] == 1 else f'Only {_rc["purp_vivid"]} exist.'
     body = f"""<span class="eyebrow">PaintDial</span>
 <h1>Research</h1>
 <p>Original studies computed from PaintDial\u2019s live library \u2014 {N:,} colours across {len(brands)} UK brands, compared with the same metric and thresholds used on every page of this site. Each study rebuilds automatically as brands are added.</p>
 <div class="rsch-cards">
-<a class="rsch-card" href="/paint-match-index/"><small>The UK Paint Match Index</small><b>Only {_rm['n_uniq']} of the {_rm['n_prem']:,} premium paint colours from {numword(_rm['n_prem_brands'])} UK brands can\u2019t be matched. They\u2019re all from one brand.</b><span>{_rm['pct_vc']}% of premium colours have a very close match from a value brand. The ones that don\u2019t aren\u2019t special because they\u2019re expensive. They\u2019re the only ones that go properly dark.</span></a>
-<a class="rsch-card" href="/paint-choice-index/"><small>The UK Paint Choice Index</small><b>{numword(len(brands)).capitalize()} UK paint brands sell {N:,} colours between them. Only {_rc['distinct']:,} are actually different.</b><span>{_rc['dup_pct']}% of them have a near-identical twin, {_rc['exact_total']} colours share an exact value with a sibling from their own range, and there is one colour almost nobody makes: a vivid purple. {_rc['purp_vivid']} exists.</span></a>
+<a class="rsch-card" href="/paint-match-index/"><small>The UK Paint Match Index</small><b>Only {_rm['n_uniq']} of the {_rm['n_prem']:,} premium paint colours from {numword(_rm['n_prem_brands'])} UK brands can\u2019t be matched. {_rm['uniq_head']}</b><span>{_rm['pct_vc']}% of premium colours have a very close match from a value brand.{_rm_deep}</span></a>
+<a class="rsch-card" href="/paint-choice-index/"><small>The UK Paint Choice Index</small><b>{numword(len(brands)).capitalize()} UK paint brands sell {N:,} colours between them. Only {_rc['distinct']:,} are actually different.</b><span>{_rc['dup_pct']}% of them are near-identical duplicates, {_rc['exact_total']} colours share an exact value with a sibling from their own range, and there is one colour almost nobody makes: a vivid purple. {_rc_purp}</span></a>
 </div>
 <p class="muted">Journalists and researchers: every underlying comparison is public, colour by colour, across the site. Questions or corrections \u2014 <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("Research", 
