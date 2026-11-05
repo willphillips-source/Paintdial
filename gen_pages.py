@@ -100,13 +100,15 @@ AWIN_AFFID = "2971455"
 # DORMANT while None -> direct links. Set to 101923 once Freshlick approves you, then regenerate.
 FRESHLICK_MID = None
 FRESHLICK_BRANDS = {"Little Greene", "Crown"}
-# Valspar is sold through B&Q. valspar-bq.json maps each colour code to its 236ml tester
-# pot on diy.com, taken from the B&Q links on valsparpaint.co.uk and checked against B&Q
-# (a link whose page keeps the colour code). Colours not in it fall back to a B&Q search.
-try:
-    VALSPAR_BQ = json.load(open('valspar-bq.json', encoding='utf-8'))['testers']
-except FileNotFoundError:
-    VALSPAR_BQ = {}
+# buy-links.json holds a direct link per colour for brands whose links can't be built
+# from the name: Valspar (its tester pot on B&Q), Johnstone's (its colour page) and Lick
+# (its product page with the sample selected). Keyed by colour code, or name where the
+# brand has no codes. Each brand's _source says where the links came from.
+_BL = json.load(open('buy-links.json', encoding='utf-8'))
+BUY_LINKS = {b: v['links'] for b, v in _BL.items() if not b.startswith('_')}
+# Colours the brand's own site no longer has a page for: no button rather than a link
+# that lands on the wrong page.
+UNLISTED = {b: set(v.get('unlisted', [])) for b, v in _BL.items() if not b.startswith('_')}
 BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints',
                'Earthborn', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany', 'Mylands', 'Sanderson']
 # SOURCED FROM A STOCKIST, NOT THE BRAND. Every other brand's values are its own published swatches.
@@ -325,14 +327,16 @@ def _awin_wrap(mid, dest):
     return f"https://www.awin1.com/cread.php?awinmid={mid}&awinaffid={AWIN_AFFID}&ued={quote(dest, safe='')}"
 
 def buy_link(p):
+    if (p.get('code') or p['name']) in UNLISTED.get(p['brand'], ()):
+        return None
     # Retailer route (Freshlick) takes priority for its brands, once live.
     if FRESHLICK_MID and p['brand'] in FRESHLICK_BRANDS:
         from urllib.parse import quote
         dest = "https://www.freshlick.com/catalogsearch/result/?q=" + quote(f"{p['brand']} {p['name']}")
         return _awin_wrap(FRESHLICK_MID, dest)
     if p.get('url'): return p['url']
-    if p['brand'] == 'Valspar' and p.get('code') in VALSPAR_BQ:
-        return VALSPAR_BQ[p['code']]
+    _bl = BUY_LINKS.get(p['brand'], {}).get(p.get('code') or p['name'])
+    if _bl: return _bl
     s = base_slug(p['name'])
     if p['brand'] == 'Farrow & Ball':
         return f"https://www.farrow-ball.com/paint/{s}"
@@ -594,18 +598,30 @@ def a_an(w):
 
 def buy_cta(p):
     """The colour page's buy button: link, label and the line under it, worded from where
-    buy_link() actually goes. Brand sites sell testers, and Valspar colours go straight to
-    their tester pot on B&Q; the B&Q search fallback is only a search, so it promises none."""
+    buy_link() actually goes, so the button never promises more than the page offers."""
     url = buy_link(p)
     name = H.escape(p['name'])
-    if 'diy.com/departments/' in url:
-        return url, f'Order {a_an(p["name"])} {name} tester →', 'Opens the tester pot on B&amp;Q’s site.'
-    if 'diy.com' in url:
+    a = a_an(p['name'])
+    brand = H.escape(p['brand'])
+    if url is None:
+        return None, None, f'{brand}’s website no longer has a page for this colour, so there’s no tester to link to.'
+    brand_s = (brand if brand.endswith(('’s', "'s", '&#x27;s'))   # Johnstone's page
+               else brand + '’' if brand.endswith('s')               # Mylands’ page
+               else brand + '’s')
+    if 'diy.com/departments/' in url:          # Valspar: the colour's tester pot at B&Q
+        return url, f'Order {a} {name} tester →', 'Opens the tester pot on B&amp;Q’s site.'
+    if 'diy.com' in url:                       # should not happen: the build warns about any
         return url, f'Find {name} at B&amp;Q →', 'Opens B&amp;Q’s search for it.'
+    if 'valsparpaint.co.uk' in url:            # Valspar colours with no tester online
+        return url, f'See {name} at Valspar →', 'Opens Valspar’s page for it, with where to buy.'
+    if 'lick.com' in url and 'variant=' in url:
+        return url, f'Order {a} {name} sample →', 'Opens Lick’s page for it with the sample selected.'
+    if 'lakelandpaints.co.uk/testers/' in url:  # Lakeland has one tester page for every colour
+        return url, f'Order {a} {name} tester →', f'Opens Lakeland’s tester page: choose {name} from its colour list.'
     if 'freshlick' in url or 'awin1.com' in url:
-        return url, f'Order {a_an(p["name"])} {name} tester →', 'Opens Freshlick, where you can order a tester or a full tin.'
-    return (url, f'Order {a_an(p["name"])} {name} tester →',
-            f'Opens {H.escape(p["brand"])}’s page, where you can order a tester or a full tin.')
+        return url, f'Order {a} {name} tester →', 'Opens Freshlick, where you can order a tester or a full tin.'
+    return (url, f'Order {a} {name} tester →',
+            f'Opens {brand_s} page, where you can order a tester or a full tin.')
 
 def build_colour_page(i):
     p = paints[i]; lab = LAB[i]
@@ -679,8 +695,8 @@ def build_colour_page(i):
 <div class="hero"><div class="hero-swatch">{heart(p['name'], p['brand'], p['hex'])}</div><div class="hero-body">
 <span class="eyebrow">{brand}</span><h1>{name}</h1>
 <div class="facts"><span>Hex <b>{p['hex']}</b></span><span>LRV <b>\u2248\u2009{lrv(L0):.0f}</b></span><span>Lightness <b>{L0:.0f}/100</b></span></div>{source_line(p['brand'])}
-<a class="btn" href="{buy_url}" target="_blank" rel="noopener sponsored">{buy_label}</a>
-<p class="afftext">{buy_note} Affiliate link: PaintDial may earn a small commission at no cost to you.</p>
+{f'<a class="btn" href="{buy_url}" target="_blank" rel="noopener sponsored">{buy_label}</a>' if buy_url else ''}
+<p class="afftext">{buy_note}{' Affiliate link: PaintDial may earn a small commission at no cost to you.' if buy_url else ''}</p>
 </div></div>
 <p class="colour-summary">{name} is a {_depth} {_fam} from {brand}. Its closest match from another brand is <a href="/colours/{slugs[_x0]}">{seo_top}</a> ({seo_word}), with the full ranked list below.</p>
 <h2>Closest matches from other brands</h2>
@@ -2187,6 +2203,14 @@ if __name__ == '__main__':
     # wipe old colour pages so removed slugs don't linger
     for fn in os.listdir('site/colours'):
         if fn.endswith('.html'): os.remove('site/colours/'+fn)
+
+    # Every buy button should go to the colour itself, never to a search page.
+    _search = [p for p in paints if re.search(r'/search\b|catalogsearch|[?&]q=', buy_link(p) or '')]
+    if _search:
+        print(f'WARNING: {len(_search)} colour pages link to a search, not the colour, e.g. '
+              + ', '.join(f"{p['brand']} {p['name']}" for p in _search[:5]))
+    else:
+        print('buy links: every colour page links to its colour directly')
 
     count = 0
     for i in range(N):
