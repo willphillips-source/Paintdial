@@ -353,7 +353,12 @@
   .photo-btn:focus-visible{outline:2px solid var(--pick); outline-offset:2px;}
   .photo-wrap{position:relative; margin-top:14px; display:none;}
   .photo-wrap.show{display:block;}
-  canvas#photo{width:100%; display:block; border-radius:10px; border:1px solid var(--hairline); cursor:crosshair; touch-action:none;}
+  /* touch-action is left as the page's (manipulation), not none, so a finger dragging over
+     the photo scrolls the page. Picking on touch is a tap, or press-and-hold then drag (see
+     the script). No callout or text selection on a long press. */
+  canvas#photo{width:100%; display:block; border-radius:10px; border:1px solid var(--hairline); cursor:crosshair;
+    -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;}
+  #photoWrap.fine .photo-marker{width:34px; height:34px;}
   .photo-marker{
     position:absolute; width:26px; height:26px; border-radius:50%;
     border:3px solid #fff; box-shadow:0 0 0 1.5px rgba(0,0,0,.55), 0 2px 6px rgba(0,0,0,.3);
@@ -727,7 +732,7 @@
         <canvas id="photo"></canvas>
         <div class="photo-marker" id="photoMarker"></div>
         <p class="photo-light" id="photoLight">Artificial light and dark rooms throw a photo&rsquo;s colour right off. For a truer match, hold a sheet of white paper against the wall when you take the photo, then tap <b>Correct the light</b> and tap the paper.</p>
-        <div class="photo-hint"><span id="photoHintText">Tap or drag anywhere on the image</span><span class="photo-btns"><button id="photoWB" type="button">Correct the light</button><button id="photoClear" type="button">Remove image</button></span></div>
+        <div class="photo-hint"><span id="photoHintText">Click or drag anywhere on the image</span><span class="photo-btns"><button id="photoWB" type="button">Correct the light</button><button id="photoClear" type="button">Remove image</button></span></div>
       </div>
 
       <div class="search-row" id="searchRow" hidden>
@@ -1584,11 +1589,13 @@ document.getElementById('photoClear').addEventListener('click',()=>{
 let photoOrig=null, wbMode=false, wbOn=false;
 const WB_WHITE=0.86;
 const photoWB=document.getElementById('photoWB'), photoHintText=document.getElementById('photoHintText');
+const PHOTO_TOUCH=matchMedia('(pointer:coarse)').matches;
+const PICK_HINT=PHOTO_TOUCH ? 'Tap to pick a colour. Press and hold, then drag, to fine-tune.' : 'Click or drag anywhere on the image';
 function setPhotoUI(){
   photoWrap.classList.toggle('wb-pick',wbMode);
   photoWB.textContent = wbOn ? 'Undo correction' : wbMode ? 'Cancel' : 'Correct the light';
   photoHintText.textContent = wbMode ? 'Now tap the white paper, or a white ceiling or skirting'
-    : wbOn ? 'Light corrected. Now tap the wall.' : 'Tap or drag anywhere on the image';
+    : wbOn ? 'Light corrected. Now tap the wall.' : PICK_HINT;
 }
 photoWB.addEventListener('click',()=>{
   if(!photoOrig) return;
@@ -1635,10 +1642,41 @@ function samplePhoto(e){
   photoMarker.style.top=((e.clientY-rect.top)/z)+'px';
   setFromHex(hex);
 }
-let photoDrag=false;
-photoCanvas.addEventListener('pointerdown',e=>{photoDrag=true;photoCanvas.setPointerCapture(e.pointerId);samplePhoto(e);});
-photoCanvas.addEventListener('pointermove',e=>{if(photoDrag)samplePhoto(e);});
-photoCanvas.addEventListener('pointerup',()=>photoDrag=false);
+/* Mouse and pen: press or drag anywhere to pick, as before.
+   Touch: a photo can fill a phone screen, so a finger dragging over it has to scroll the
+   page or you're stuck in it. So on touch a quick tap picks, a drag scrolls (the browser
+   does it, and sends pointercancel), and press-and-hold (finger still for HOLD_MS) starts
+   a fine-tune: the pick follows the finger and touchmove is cancelled so the page stays
+   put. The white-paper tap for Correct the light is a tap too. */
+const HOLD_MS=350, SLOP=10;
+let photoDrag=false, tch=null, holdT=null;
+function endTouch(){ clearTimeout(holdT); tch=null; photoWrap.classList.remove('fine'); }
+photoCanvas.addEventListener('pointerdown',e=>{
+  if(e.pointerType!=='touch'){ photoDrag=true; photoCanvas.setPointerCapture(e.pointerId); samplePhoto(e); return; }
+  endTouch();
+  tch={id:e.pointerId, x0:e.clientX, y0:e.clientY, moved:false, hold:false};
+  if(wbMode) return;
+  holdT=setTimeout(()=>{
+    if(!tch || tch.moved) return;
+    tch.hold=true; photoWrap.classList.add('fine');
+    if(navigator.vibrate) navigator.vibrate(8);
+    samplePhoto({clientX:tch.x0, clientY:tch.y0, type:'hold'});
+  },HOLD_MS);
+});
+photoCanvas.addEventListener('pointermove',e=>{
+  if(e.pointerType!=='touch'){ if(photoDrag) samplePhoto(e); return; }
+  if(!tch || e.pointerId!==tch.id) return;
+  if(tch.hold){ samplePhoto(e); return; }
+  if(Math.hypot(e.clientX-tch.x0, e.clientY-tch.y0)>SLOP){ tch.moved=true; clearTimeout(holdT); }
+});
+photoCanvas.addEventListener('pointerup',e=>{
+  if(e.pointerType!=='touch'){ photoDrag=false; return; }
+  if(tch && e.pointerId===tch.id && !tch.hold && !tch.moved)
+    samplePhoto({clientX:e.clientX, clientY:e.clientY, type:'pointerdown'});
+  endTouch();
+});
+photoCanvas.addEventListener('pointercancel',endTouch);
+photoCanvas.addEventListener('touchmove',e=>{ if(tch && tch.hold && e.cancelable) e.preventDefault(); },{passive:false});
 
 /* ---------- update loop: cheap visuals instantly, heavy re-ranking debounced ---------- */
 let matchTimer=null;
