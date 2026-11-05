@@ -353,12 +353,33 @@
   .photo-btn:focus-visible{outline:2px solid var(--pick); outline-offset:2px;}
   .photo-wrap{position:relative; margin-top:14px; display:none;}
   .photo-wrap.show{display:block;}
+  .photo-stage{position:relative;}   /* the photo and what sits on it: marker, banner, chip */
   /* touch-action is left as the page's (manipulation), not none, so a finger dragging over
      the photo scrolls the page. Picking on touch is a tap, or press-and-hold then drag (see
      the script). No callout or text selection on a long press. */
   canvas#photo{width:100%; display:block; border-radius:10px; border:1px solid var(--hairline); cursor:crosshair;
     -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;}
   #photoWrap.fine .photo-marker{width:34px; height:34px;}
+  /* Messages for Correct the light sit ON the photo, because on a phone the photo fills
+     the screen and the hint underneath it is out of sight. */
+  .photo-banner{position:absolute; top:10px; left:10px; right:10px; z-index:3; display:flex; align-items:center;
+    justify-content:space-between; gap:10px; padding:9px 10px 9px 13px; border-radius:9px;
+    background:rgba(33,31,27,.86); color:#fff; font-size:13px; line-height:1.35; box-shadow:0 2px 10px rgba(0,0,0,.25);}
+  .photo-banner[hidden]{display:none;}
+  .photo-banner .pb-acts{display:flex; gap:6px; flex:none;}
+  .photo-banner button{font-family:var(--sans); font-size:12.5px; font-weight:600; color:#211F1B; background:#fff;
+    border:none; border-radius:7px; padding:6px 10px; cursor:pointer;}
+  .photo-banner button[hidden]{display:none;}
+  /* The picked colour, shown on the photo on single-column layouts, where "Your colour"
+     and the matches are off screen while you're tapping the photo. */
+  .photo-chip{display:none;}
+  @media(max-width:860px){
+    .photo-chip.show{position:absolute; left:10px; bottom:10px; z-index:2; display:flex; align-items:center; gap:8px;
+      padding:6px 7px 6px 6px; border-radius:9px; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.22); font-size:12.5px;}
+    .photo-chip i{width:26px; height:26px; border-radius:6px; border:1px solid rgba(0,0,0,.12); flex:none;}
+    .photo-chip b{font-family:var(--sans); font-weight:600; letter-spacing:.02em;}
+    .photo-chip a{color:#fff; background:var(--ink); border-radius:7px; padding:5px 9px; text-decoration:none; font-weight:600; white-space:nowrap;}
+  }
   .photo-marker{
     position:absolute; width:26px; height:26px; border-radius:50%;
     border:3px solid #fff; box-shadow:0 0 0 1.5px rgba(0,0,0,.55), 0 2px 6px rgba(0,0,0,.3);
@@ -729,8 +750,12 @@
       </div>
       <input type="file" id="photoFile" accept="image/*" hidden>
       <div class="photo-wrap" id="photoWrap">
+        <div class="photo-stage">
         <canvas id="photo"></canvas>
         <div class="photo-marker" id="photoMarker"></div>
+        <div class="photo-banner" id="photoBanner" hidden><span id="photoBannerText"></span><span class="pb-acts"><button type="button" id="pbUse" hidden>Use it anyway</button><button type="button" id="pbAct">Cancel</button></span></div>
+        <div class="photo-chip" id="photoChip"><i id="photoChipSw"></i><b id="photoChipHex"></b><a href="#results" id="photoChipGo">See matches &darr;</a></div>
+        </div>
         <p class="photo-light" id="photoLight">Artificial light and dark rooms throw a photo&rsquo;s colour right off. For a truer match, hold a sheet of white paper against the wall when you take the photo, then tap <b>Correct the light</b> and tap the paper.</p>
         <div class="photo-hint"><span id="photoHintText">Click or drag anywhere on the image</span><span class="photo-btns"><button id="photoWB" type="button">Correct the light</button><button id="photoClear" type="button">Remove image</button></span></div>
       </div>
@@ -1567,15 +1592,15 @@ photoFile.addEventListener('change',()=>{
     photoCanvas.height=Math.round(img.height*scale);
     pctx.drawImage(img,0,0,photoCanvas.width,photoCanvas.height);
     photoOrig=pctx.getImageData(0,0,photoCanvas.width,photoCanvas.height);
-    wbMode=false; wbOn=false; setPhotoUI();
+    wbMode=false; wbOn=false; lastPick=null; brightRef=null; pendingWhite=null; setPhotoUI();
     photoWrap.classList.add('show');
-    photoMarker.style.display='none';
+    photoMarker.style.display='none'; photoChip.classList.remove('show');
     URL.revokeObjectURL(img.src);
   };
   img.src=URL.createObjectURL(f);
 });
 document.getElementById('photoClear').addEventListener('click',()=>{
-  photoWrap.classList.remove('show'); photoFile.value=''; photoOrig=null; wbMode=false; wbOn=false; setPhotoUI();
+  photoWrap.classList.remove('show'); photoFile.value=''; photoOrig=null; wbMode=false; wbOn=false; lastPick=null; pendingWhite=null; setPhotoUI();
 });
 /* ---------- correct the light: white balance and exposure from a tapped white ----------
    A phone photo carries the room's light: a warm bulb pushes everything orange, a dark
@@ -1591,21 +1616,62 @@ const WB_WHITE=0.86;
 const photoWB=document.getElementById('photoWB'), photoHintText=document.getElementById('photoHintText');
 const PHOTO_TOUCH=matchMedia('(pointer:coarse)').matches;
 const PICK_HINT=PHOTO_TOUCH ? 'Tap to pick a colour. Press and hold, then drag, to fine-tune.' : 'Click or drag anywhere on the image';
+let lastPick=null, brightRef=null, pendingWhite=null, bannerT=null;
+const photoBanner=document.getElementById('photoBanner'), photoBannerText=document.getElementById('photoBannerText'),
+      pbUse=document.getElementById('pbUse'), pbAct=document.getElementById('pbAct'),
+      photoChip=document.getElementById('photoChip');
+function banner(text, act, use){
+  clearTimeout(bannerT);
+  if(!text){ photoBanner.hidden=true; return; }
+  photoBannerText.textContent=text; pbAct.textContent=act||''; pbAct.hidden=!act; pbUse.hidden=!use;
+  photoBanner.hidden=false;
+}
 function setPhotoUI(){
   photoWrap.classList.toggle('wb-pick',wbMode);
   photoWB.textContent = wbOn ? 'Undo correction' : wbMode ? 'Cancel' : 'Correct the light';
   photoHintText.textContent = wbMode ? 'Now tap the white paper, or a white ceiling or skirting'
-    : wbOn ? 'Light corrected. Now tap the wall.' : PICK_HINT;
+    : wbOn ? (lastPick ? 'Light corrected.' : 'Light corrected. Now tap the wall.') : PICK_HINT;
+  if(wbMode) banner(pendingWhite ? 'That looks too dark to be the paper. Tap the paper.'
+                                 : 'Tap the white paper in your photo', 'Cancel', !!pendingWhite);
+  else if(photoBanner.dataset.flash!=='1') banner('');
 }
-photoWB.addEventListener('click',()=>{
+function flashBanner(text){
+  banner(text,'Undo'); photoBanner.dataset.flash='1';
+  bannerT=setTimeout(()=>{ photoBanner.dataset.flash=''; banner(''); },3500);
+}
+function toggleWB(){
   if(!photoOrig) return;
-  if(wbOn){ pctx.putImageData(photoOrig,0,0); wbOn=false; wbMode=false; photoMarker.style.display='none'; }
-  else wbMode=!wbMode;
+  photoBanner.dataset.flash=''; pendingWhite=null;
+  if(wbOn){ pctx.putImageData(photoOrig,0,0); wbOn=false; wbMode=false; repick(); }
+  else{
+    wbMode=!wbMode;
+    // the banner is at the top of the photo; on a phone that can be above the screen
+    if(wbMode){ const r=photoWrap.getBoundingClientRect(); if(r.top<0) window.scrollBy({top:r.top-12, behavior:'smooth'}); }
+  }
   setPhotoUI();
+}
+photoWB.addEventListener('click',toggleWB);
+pbAct.addEventListener('click',toggleWB);
+pbUse.addEventListener('click',()=>{ if(pendingWhite) applyWhite(pendingWhite.x,pendingWhite.y,true); });
+document.getElementById('photoChipGo').addEventListener('click',e=>{
+  e.preventDefault(); document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
 });
 const toLin=v=>{v/=255; return v>0.04045?Math.pow((v+0.055)/1.055,2.4):v/12.92;};
 const toSrgb=v=>{v=Math.max(0,Math.min(1,v)); return Math.round(255*(v<=0.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-0.055));};
-function applyWhite(x,y){
+/* The paper should be one of the brightest things in the photo. 97th percentile of the
+   brightest channel, from every fourth pixel of the original. A tapped patch well below
+   it (under 80%) is probably not the paper, e.g. a mid blue wall, which used as "white"
+   blows the whole photo out. The person can still use it anyway (a window in shot can be
+   brighter than the paper). */
+function photoBright(){
+  if(brightRef!==null) return brightRef;
+  const d=photoOrig.data, hist=new Uint32Array(256); let n=0;
+  for(let i=0;i<d.length;i+=16){ hist[Math.max(d[i],d[i+1],d[i+2])]++; n++; }
+  let c=0; brightRef=255;
+  for(let v=0;v<256;v++){ c+=hist[v]; if(c>=n*0.97){ brightRef=v; break; } }
+  return brightRef;
+}
+function applyWhite(x,y,force){
   const W=photoOrig.width, H=photoOrig.height, half=4, src=photoOrig.data;
   let r=0,g=0,b=0,n=0;
   for(let yy=Math.max(0,y-half); yy<=Math.min(H-1,y+half); yy++)
@@ -1614,33 +1680,59 @@ function applyWhite(x,y){
     }
   r/=n; g/=n; b/=n;
   if(Math.max(r,g,b)<0.02 || Math.min(r,g,b)<0.004){
+    pendingWhite=null; setPhotoUI();
+    banner('That patch is too dark to use. Tap something white in the light.','Cancel');
     photoHintText.textContent='That patch is too dark to use. Tap something white in the light.';
     return;
   }
+  if(!force && toSrgb(Math.max(r,g,b)) < 0.8*photoBright()){ pendingWhite={x,y}; setPhotoUI(); return; }
   const clampG=v=>Math.max(0.25,Math.min(8,v));
   const gains=[clampG(WB_WHITE/r),clampG(WB_WHITE/g),clampG(WB_WHITE/b)];
   const lut=gains.map(k=>{const a=new Uint8ClampedArray(256); for(let v=0;v<256;v++) a[v]=toSrgb(toLin(v)*k); return a;});
   const out=new ImageData(new Uint8ClampedArray(src), W, H), d=out.data;
   for(let i=0;i<d.length;i+=4){ d[i]=lut[0][d[i]]; d[i+1]=lut[1][d[i+1]]; d[i+2]=lut[2][d[i+2]]; }
   pctx.putImageData(out,0,0);
-  wbOn=true; wbMode=false; photoMarker.style.display='none'; setPhotoUI();
+  wbOn=true; wbMode=false; pendingWhite=null;
+  // re-pick the spot you had already chosen, so your colour and the matches update now
+  const had=repick();
+  setPhotoUI();
+  flashBanner(had ? 'Light corrected. Your colour has been updated.' : 'Light corrected. Now tap the wall.');
 }
-function samplePhoto(e){
-  const rect=screenRect(photoCanvas), z=pageZoom();
-  const x=Math.round((e.clientX-rect.left)*(photoCanvas.width/rect.width));
-  const y=Math.round((e.clientY-rect.top)*(photoCanvas.height/rect.height));
-  if(wbMode){ if(e.type==='pointerdown') applyWhite(Math.min(photoCanvas.width-1,Math.max(0,x)),Math.min(photoCanvas.height-1,Math.max(0,y))); return; }
+/* Pick at a point given as a fraction of the photo (0 to 1), so it can be repeated after
+   the photo is corrected or the correction undone. */
+function pickAt(fx,fy){
+  const W=photoCanvas.width, H=photoCanvas.height;
+  const x=Math.min(W-1,Math.round(fx*W)), y=Math.min(H-1,Math.round(fy*H));
   // average a 5x5 patch so one noisy pixel doesn't skew the pick
   const half=2, x0=Math.max(0,x-half), y0=Math.max(0,y-half);
-  const w=Math.min(photoCanvas.width-x0, half*2+1), h=Math.min(photoCanvas.height-y0, half*2+1);
+  const w=Math.min(W-x0, half*2+1), h=Math.min(H-y0, half*2+1);
   const px=pctx.getImageData(x0,y0,w,h).data;
   let r=0,g=0,b=0,n=px.length/4;
   for(let i=0;i<px.length;i+=4){r+=px[i];g+=px[i+1];b+=px[i+2];}
   const hex=rgbToHex(r/n,g/n,b/n);
   photoMarker.style.display='block';
-  photoMarker.style.left=((e.clientX-rect.left)/z)+'px';
-  photoMarker.style.top=((e.clientY-rect.top)/z)+'px';
+  photoMarker.style.left=(fx*photoCanvas.offsetWidth)+'px';
+  photoMarker.style.top=(fy*photoCanvas.offsetHeight)+'px';
+  lastPick={fx,fy};
+  document.getElementById('photoChipSw').style.background=hex;
+  document.getElementById('photoChipHex').textContent=hex.toUpperCase();
+  photoChip.classList.add('show');
   setFromHex(hex);
+}
+function repick(){
+  if(!lastPick){ photoMarker.style.display='none'; photoChip.classList.remove('show'); return false; }
+  pickAt(lastPick.fx,lastPick.fy); return true;
+}
+function samplePhoto(e){
+  const rect=screenRect(photoCanvas);
+  const fx=Math.min(1,Math.max(0,(e.clientX-rect.left)/rect.width));
+  const fy=Math.min(1,Math.max(0,(e.clientY-rect.top)/rect.height));
+  if(wbMode){
+    if(e.type==='pointerdown') applyWhite(Math.min(photoCanvas.width-1,Math.round(fx*photoCanvas.width)),
+                                          Math.min(photoCanvas.height-1,Math.round(fy*photoCanvas.height)));
+    return;
+  }
+  pickAt(fx,fy);
 }
 /* Mouse and pen: press or drag anywhere to pick, as before.
    Touch: a photo can fill a phone screen, so a finger dragging over it has to scroll the
