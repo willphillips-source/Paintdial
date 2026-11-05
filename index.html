@@ -712,6 +712,10 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
    window edges, and 2560 screens have larger pixels so the type already reads fine.
    The script converts pointer positions for it (pageZoom/screenRect). Same rule is in
    FONTS in gen_pages.py so the generated pages match. */
+/* Ko-fi strip under the results: hidden until someone uses the tool (wheel, dial, photo, search,
+   filters or a heart). Twin of KOFI_STRIP_CSS / kofi_strip() in gen_pages.py; change both together. */
+.kofi-s{display:flex;align-items:center;gap:16px;margin:30px 0 0;padding:16px 22px;background:var(--card);border:1px solid var(--hairline);border-radius:14px}.kofi-s .kofi-cup{flex:none;width:46px;height:46px}.kofi-s p{flex:1;font-family:var(--serif);font-size:19px;font-weight:600;line-height:1.3;margin:0;max-width:none;color:var(--ink)}.kofi-s a{flex:none;background:var(--ink);color:var(--paper)!important;font-family:var(--sans);font-size:14px;font-weight:600;text-decoration:none!important;padding:10px 18px;border-radius:9px;transition:transform .12s,box-shadow .12s}.kofi-s a:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(33,31,27,.18)}@media(max-width:560px){.kofi-s{flex-wrap:wrap;gap:10px;padding:14px}.kofi-s .kofi-cup{width:32px;height:32px}.kofi-s p{font-size:16px;text-wrap:balance}.kofi-s a{width:100%;text-align:center;padding:11px 18px}}
+.kofi-s[hidden]{display:none}
 @media(min-width:2800px){ html{ zoom:1.1; } }
 </style>
 </head>
@@ -817,6 +821,7 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
     <h3 class="sec-head" id="gridHead">All close matches</h3>
     <div class="grid" id="grid"></div>
     <div id="moreWrap" style="text-align:center;margin-top:18px"></div>
+    <div class="kofi-s" id="kofiTool" hidden><svg class="kofi-cup" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><defs><clipPath id="kofi-mug"><path d="M12 20h36v24a10 10 0 0 1-10 10H22a10 10 0 0 1-10-10z"/></clipPath></defs><path d="M48 27h3.5a7 7 0 0 1 0 14H48" fill="none" stroke="#211F1B" stroke-width="3.4"/><path d="M12 20h36v24a10 10 0 0 1-10 10H22a10 10 0 0 1-10-10z" fill="#F6F1E7"/><path clip-path="url(#kofi-mug)" fill="#5E7E8B" d="M10 18H50V26.5C47 26.5 45.5 27 45.5 29V38a2.4 2.4 0 0 1-4.8 0V29c0-1.6-1-2.5-3-2.5H33.6c-1.6 0-2.4.8-2.4 2.2v2.6a2.1 2.1 0 0 1-4.2 0V28.7c0-1.4-.8-2.2-2.2-2.2H22.4c-1.4 0-2.3.9-2.3 2.3v6a2.3 2.3 0 0 1-4.6 0V28.5c0-1.3-.9-2-2-2H10z"/><path d="M12 20h36v24a10 10 0 0 1-10 10H22a10 10 0 0 1-10-10z" fill="none" stroke="#211F1B" stroke-width="2.4" stroke-linejoin="round"/><path d="M23 13c-2.4-2.8 2.2-4.2.2-7.6M30 12c-2.4-2.8 2.2-4.2.2-7.6M37 13c-2.4-2.8 2.2-4.2.2-7.6" fill="none" stroke="#9C9488" stroke-width="2.2" stroke-linecap="round"/></svg><p>If you found PaintDial useful…</p><a href="https://ko-fi.com/paintdial" target="_blank" rel="noopener">Buy Will a coffee on Ko-fi</a></div>
   </section>
 </div>
 
@@ -2070,6 +2075,17 @@ window.addEventListener('hashchange',()=>{ const hx=hexFromHash(); if(hx) setFro
   window.addEventListener('pd:rendered',e=>bindHearts(e.detail||document));
 })();
 
+</script>
+<script>
+/* Show the Ko-fi strip once the visitor has actually used the tool, not on first load. */
+(function(){
+  var el=document.getElementById('kofiTool'); if(!el) return;
+  var USED='#wheel,#dial,#photo,#photoWrap,#searchResults,#brandChips,#ladder,#grid,#bestWrap,.pd-heart';
+  function show(){ el.hidden=false; document.removeEventListener('pointerdown',onDown,true); document.removeEventListener('keydown',onKey,true); }
+  function onDown(e){ if(e.target.closest && e.target.closest(USED)) show(); }
+  function onKey(e){ if(e.key==='Enter' && e.target && (e.target.id==='nameSearch' || (e.target.closest && e.target.closest('#searchResults')))) show(); }
+  document.addEventListener('pointerdown',onDown,true); document.addEventListener('keydown',onKey,true);
+})();
 </script>
 <script src="/pd-compare.js" defer></script>
 </body>

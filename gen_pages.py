@@ -711,7 +711,7 @@ def build_colour_page(i):
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{img_url}">
 {FAVICON}
-{FONTS}<style>{CSS}.hero-swatch{{background:{p['hex']}}}{SHORTLIST_CSS}{COMPARE_BTN_CSS}</style></head><body style="--pc:{p['hex']}"><div class="top-band"></div><div class="wrap">
+{FONTS}<style>{CSS}.hero-swatch{{background:{p['hex']}}}{SHORTLIST_CSS}{COMPARE_BTN_CSS}{KOFI_STRIP_CSS}</style></head><body style="--pc:{p['hex']}"><div class="top-band"></div><div class="wrap">
 {hdr_tool}
 <div class="hero"><div class="hero-swatch">{heart(p['name'], p['brand'], p['hex'])}</div><div class="hero-body">
 <span class="eyebrow">{brand}</span><h1>{name}</h1>
@@ -734,6 +734,7 @@ def build_colour_page(i):
 <div class="cta"><h2 style="margin-top:0">Not quite right?</h2>
 <p>Use the colour tool to find a lighter, darker, warmer or cooler version of this colour across all {N:,} paints.</p>
 <a class="btn" href="{tool_url}">Open {name} in the colour tool \u2192</a></div>
+{kofi_strip()}
 <footer>{FOOT}</footer>
 </div><div class="top-band"></div><script>{SHORTLIST_JS}</script>{COMPARE_SCRIPT}</body></html>"""
     return page
@@ -1534,7 +1535,7 @@ PAGES_CSS += """
 # A mug with PaintDial-blue paint dripping from the rim (option E of six, chosen 5 Nov 2026).
 _MUG = 'M12 20h36v24a10 10 0 0 1-10 10H22a10 10 0 0 1-10-10z'
 KOFI_ICON = (
-    '<svg class="kofi-cup" viewBox="0 0 64 64" aria-hidden="true">'
+    '<svg class="kofi-cup" viewBox="0 0 64 64" aria-hidden="true" focusable="false">'
     f'<defs><clipPath id="kofi-mug"><path d="{_MUG}"/></clipPath></defs>'
     '<path d="M48 27h3.5a7 7 0 0 1 0 14H48" fill="none" stroke="#211F1B" stroke-width="3.4"/>'
     f'<path d="{_MUG}" fill="#F6F1E7"/>'
@@ -1551,6 +1552,26 @@ def kofi_block(line="If you found PaintDial useful…"):
             f'<div><p class="kofi-line">{line}</p>'
             f'<a class="kofi-btn" href="{KOFI_URL}" target="_blank" rel="noopener">'
             f'Buy Will a coffee on Ko-fi</a></div></div>')
+
+
+# Slim one-line version at the foot of every colour and alternatives page. index.html has a
+# hand-copied twin under the tool's results (shown only once someone has used the tool), so
+# change both if the wording or look changes.
+KOFI_STRIP_CSS = (
+    '.kofi-s{display:flex;align-items:center;gap:16px;margin:28px 0 0;padding:16px 22px;background:var(--card);'
+    'border:1px solid var(--hairline);border-radius:14px}'
+    '.kofi-s .kofi-cup{flex:none;width:46px;height:46px}'
+    '.kofi-s p{flex:1;font-family:var(--serif);font-size:19px;font-weight:600;line-height:1.3;margin:0;max-width:none;color:var(--ink)}'
+    '.kofi-s a{flex:none;background:var(--ink);color:var(--paper)!important;font-family:var(--sans);font-size:14px;font-weight:600;'
+    'text-decoration:none!important;padding:10px 18px;border-radius:9px;transition:transform .12s,box-shadow .12s}'
+    '.kofi-s a:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(33,31,27,.18)}'
+    '@media(max-width:560px){.kofi-s{flex-wrap:wrap;gap:10px;padding:14px}.kofi-s .kofi-cup{width:32px;height:32px}'
+    '.kofi-s p{font-size:16px;text-wrap:balance}.kofi-s a{width:100%;text-align:center;padding:11px 18px}}')
+
+
+def kofi_strip():
+    return (f'<div class="kofi-s">{KOFI_ICON}<p>If you found PaintDial useful…</p>'
+            f'<a href="{KOFI_URL}" target="_blank" rel="noopener">Buy Will a coffee on Ko-fi</a></div>')
 
 
 def _page_shell(title, desc, path, body, head=""):
@@ -2289,7 +2310,7 @@ def build_alternatives_page(i):
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{DOMAIN}/share/{slugs[i]}.jpg">
 {FAVICON}
-{FONTS}<style>{ALT_CSS}{COMPARE_BTN_CSS}</style></head><body style="--pc:{p['hex']}"><div class="top-band"></div><div class="wrap">
+{FONTS}<style>{ALT_CSS}{COMPARE_BTN_CSS}{KOFI_STRIP_CSS}</style></head><body style="--pc:{p['hex']}"><div class="top-band"></div><div class="wrap">
 <header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a><a href="/">Colour tool</a></div>
 <h1>{brand} <span class="pn"><i></i>{name}</span> alternatives</h1>
 <div class="hero-card"><div class="hero-sw" style="background:{p['hex']}"></div>
@@ -2310,6 +2331,7 @@ def build_alternatives_page(i):
 <div class="cta"><b style="font-family:var(--serif);font-size:18px">Matching a different colour?</b>
 <p style="font-size:14px;color:var(--muted);margin:6px 0 0">Search any paint name in the tool to see its closest matches across all {BRANDS_WORD} brands.</p>
 <a href="/colours/{slugs[i]}">See the full {name} colour page \u2192</a></div>
+{kofi_strip()}
 <footer>{FOOT}</footer>
 </div><div class="top-band"></div>{COMPARE_SCRIPT}</body></html>"""
 
