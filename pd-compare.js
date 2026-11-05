@@ -4,8 +4,11 @@
    shared by the homepage tool and every generated page, so the behaviour can't
    drift between them. The trigger button is plain HTML on the card; this script
    only listens for it, so it can load deferred and cards can be rendered before
-   it runs. No divider line along the seam, on purpose: if you can't find the
-   seam, that's the answer. */
+   it runs. The seam is marked with a faint dotted line, the same as the split
+   swatches on the cards (alternating light and dark dashes so it shows on any
+   colour). A solid line would exaggerate a tiny difference; with no line at all,
+   near-identical pairs looked like one flat colour and people couldn't tell
+   where one paint ended. */
 (function () {
   'use strict';
   var CSS =
@@ -24,6 +27,7 @@
     '.pd-cmp-b .pd-cmp-lbl{left:10px;max-width:min(calc(100% - 66px),260px)}' +
     '.pd-cmp-lbl b{display:block;font-family:"Fraunces Amp","Fraunces",Georgia,serif;font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
     '.pd-cmp-lbl small{display:block;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#665F54;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+    '.pd-cmp-seam{position:absolute;top:0;bottom:0;left:var(--x);width:1px;margin-left:-.5px;pointer-events:none;background:repeating-linear-gradient(180deg,rgba(255,255,255,.55) 0 4px,rgba(0,0,0,.22) 4px 8px,transparent 8px 14px)}' +
     '.pd-cmp-h{position:absolute;left:var(--x);top:50%;width:42px;height:42px;transform:translate(-50%,-50%);border-radius:50%;background:rgba(255,255,255,.9);box-shadow:0 2px 10px rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;cursor:ew-resize;color:#211F1B}' +
     '.pd-cmp-h:focus-visible{outline:2px solid #5E7E8B;outline-offset:2px}' +
     '.pd-cmp-h svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}' +
@@ -102,6 +106,7 @@
     ov.innerHTML =
       '<div class="pd-cmp-pane pd-cmp-a"><div class="pd-cmp-lbl"><b></b><small></small></div></div>' +
       '<div class="pd-cmp-pane pd-cmp-b"><div class="pd-cmp-lbl"><b></b><small></small></div></div>' +
+      '<div class="pd-cmp-seam" aria-hidden="true"></div>' +
       '<div class="pd-cmp-h" role="slider" tabindex="0" aria-label="Seam between the two colours: drag, or use the arrow keys" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">' +
         '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/></svg></div>' +
       '<button class="pd-cmp-x" type="button" aria-label="Close the comparison" title="Close">' +
