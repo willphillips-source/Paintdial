@@ -1531,6 +1531,7 @@ PAGES_CSS += """
 .kofi-act .kofi-cup{flex:none;width:58px;height:58px;margin-top:-6px}
 .kofi-btn{display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--paper)!important;font-size:16px;font-weight:600;text-decoration:none!important;padding:13px 24px;border-radius:11px;transition:transform .12s,box-shadow .12s}
 .kofi-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(33,31,27,.18)}
+.col{max-width:720px;margin-left:auto;margin-right:auto}.col .kofi{max-width:none}
 @media(max-width:560px){.kofi{text-align:center;padding:24px 20px}.kofi-line{font-size:20px}.kofi-act{justify-content:center}.kofi-btn{flex:1}.kofi-act .kofi-cup{width:50px;height:50px}}
 """
 # A mug with PaintDial-blue paint dripping from the rim (option E of six, chosen 5 Nov 2026).
@@ -1574,7 +1575,13 @@ def kofi_strip():
             f'<a href="{KOFI_URL}" target="_blank" rel="noopener">Buy Will a coffee on Ko-fi</a>{KOFI_ICON}</div>')
 
 
-def _page_shell(title, desc, path, body, head=""):
+def _page_shell(title, desc, path, body, head="", centred=False):
+    # centred=True: short text-only pages (About, Contact) keep the full-width header but put
+    # the text and footer in one centred reading column, so on a wide monitor they don't sit
+    # in a narrow strip at the left with empty space to the right.
+    if centred:
+        body = f'<main class="col">{body}</main>'
+    foot = f'<footer class="col">{FOOT}</footer>' if centred else f'<footer>{FOOT}</footer>'
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title} | PaintDial</title>
@@ -1583,7 +1590,7 @@ def _page_shell(title, desc, path, body, head=""):
 {FONTS}<style>{PAGES_CSS}</style></head><body><div class="wrap">
 {HDR}
 {body}
-<footer>{FOOT}</footer>
+{foot}
 </div></body></html>"""
 
 def build_method_page():
@@ -2046,7 +2053,7 @@ def build_about_page():
 <p>I answer the <a href="/contact/">contact form</a> myself, so if something looks wrong, tell me.</p>"""
     return _page_shell("About PaintDial",
         f"PaintDial is a one-person site comparing {N:,} paints across {NBRANDS} brands sold in the UK. Why I made it and how it’s paid for.",
-        "/about/", body)
+        "/about/", body, centred=True)
 
 
 def build_contact_page():
@@ -2092,7 +2099,7 @@ def build_contact_page():
 <p class="muted" style="margin-top:34px">Not a message, just a question about the site? The <a href="/how-it-works/">how it works</a> page covers the data, the matching and the labels, and <a href="/about/">about</a> covers who runs it and how it is funded.</p>"""
     return _page_shell("Contact PaintDial",
         "Send a correction, ask about the matching or the Match Index, or get in touch as a brand, retailer or journalist. PaintDial is one person, and I read every message.",
-        "/contact/", body)
+        "/contact/", body, centred=True)
 
 
 def build_contact_thanks_page():
@@ -2101,7 +2108,7 @@ def build_contact_thanks_page():
 <p>Your message has been sent. I will reply by email, usually within a few days.</p>
 <p class="muted">In the meantime: <a href="/">back to the colour tool</a> or <a href="/colours/">browse the library</a>.</p>"""
     return _page_shell("Message sent", "Your message to PaintDial has been sent.", "/contact/thanks/", body,
-                       head='<meta name="robots" content="noindex">')
+                       head='<meta name="robots" content="noindex">', centred=True)
 
 
 def build_photo_match_page():
