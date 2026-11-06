@@ -2071,7 +2071,7 @@ def build_contact_page():
 <span class="eyebrow">Contact</span>
 <h1>Get in touch</h1>
 <p>PaintDial is run by one person, so messages come to me directly and I read all of them. Corrections are the most useful thing you can send: if a colour looks wrong, a match seems off, or a brand link goes somewhere odd, tell me and I will check the source data.</p>
-<p>Journalists and researchers using the <a href="/paint-match-index/">Match Index</a> or <a href="/paint-choice-index/">Choice Index</a> are welcome to ask about method or request the underlying figures. Brands and retailers can ask about data, links or listings here too; nothing you offer changes how your colours rank.</p>
+<p>Journalists and researchers using the <a href="/paint-match-index/">Match Index</a> or <a href="/paint-choice-index/">Choice Index</a> are welcome to ask about method or request the underlying figures. If you’re a brand or retailer, you’re welcome to get in touch about your colour data or links. The rankings are worked out from the colour values alone.</p>
 
 <form class="cf" name="contact" method="POST" action="/contact/thanks/" data-netlify="true" netlify-honeypot="website">
   <input type="hidden" name="form-name" value="contact">
