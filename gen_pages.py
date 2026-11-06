@@ -1899,7 +1899,14 @@ def build_match_index_page():
     ub = [b for b, _n in uniq_brands.most_common()]
     ub_names = _and([H.escape(b) for b in ub]) if ub else ''
     ub_split = _and([f'{n} from {H.escape(b)}' for b, n in uniq_brands.most_common()])
-    if len(ub) == 1:
+    _top, _top_n = uniq_brands.most_common(1)[0] if ub else ('', 0)
+    if len(ub) > 1 and _top_n * 2 > len(uniq):
+        # One brand owns most of them (Benjamin Moore, Nov 2026): say so, or the headline reads
+        # as if the hard-to-match colours were spread across several brands.
+        uniq_head = f'{_top_n} of them are {H.escape(_top)}\u2019s.'
+        uniq_h2 = f'and {_top_n} of them are {H.escape(_top)}\u2019s'
+        uniq_p = f'They come from <b>{ub_names}</b>: {ub_split}.'
+    elif len(ub) == 1:
         uniq_head = 'They\u2019re all from one brand.'
         uniq_h2 = 'and they\u2019re all one brand'
         uniq_p = f'Every one belongs to <b>{ub_names}</b>.'
@@ -1941,7 +1948,7 @@ def build_match_index_page():
 <p>Of {len(prem):,} premium colours, just <b>{len(uniq)}</b> have no very-close match from any other brand. {uniq_p}</p>
 <div class="uq-grid">{uniq_rows}</div>
 
-<h2>4. Why: hardly any paints go that dark</h2>
+<h2>4. {"Why: hardly any paints go that dark" if deep_p else "Hardly any paints go very dark"}</h2>
 <p class="bignum">{len(deep)} of {N:,}<small>colours across all {len(brands)} brands are very deep</small></p>
 <p>Only <b>{len(deep)} of {N:,}</b> colours across all {len(brands)} brands are very deep. By brand: {deep_rows}.</p>
 <p>{deep_p}</p>
