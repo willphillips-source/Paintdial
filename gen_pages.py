@@ -460,7 +460,7 @@ h2::after{content:'';display:block;width:34px;height:4px;border-radius:2px;backg
 .rung .r-n{font-family:var(--serif);font-size:11.5px;font-weight:600;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;height:28px}
 .rung .r-br{font-size:9px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
 .cta{margin-top:40px;border:1px solid var(--hairline);border-radius:14px;background:var(--card);padding:24px 26px;text-align:center}
-.cta p{font-size:14px;color:var(--muted);margin:6px 0 14px}
+.cta p{font-size:14px;color:var(--muted);margin:6px 0 14px}.cta h2::after{margin:7px auto 0}
 .afftext{font-size:11px;color:var(--muted);margin-top:12px}
 .colour-summary{font-size:15px;color:var(--ink);max-width:72ch;margin:22px 0 2px;line-height:1.6}
 .colour-summary a{color:var(--pc);text-decoration:none;font-weight:600}
@@ -1525,12 +1525,13 @@ PAGES_CSS += NAV_CSS + WIDE_SHELL_CSS + PAGES_WIDE_CSS
 # stays on every page; this is the big version.
 KOFI_URL = "https://ko-fi.com/paintdial"
 PAGES_CSS += """
-.kofi{display:flex;align-items:center;gap:24px;max-width:640px;margin:30px 0 34px;padding:26px 30px;background:var(--card);border:1px solid var(--hairline);border-radius:16px;box-shadow:0 1px 3px rgba(33,31,27,.05)}
-.kofi-cup{flex:none;width:72px;height:72px}
-.kofi-line{font-family:var(--serif);font-size:23px;font-weight:600;line-height:1.3;margin:0 0 14px;text-wrap:balance}
-.kofi-btn{display:inline-flex;align-items:center;gap:10px;background:var(--ink);color:var(--paper)!important;font-size:16px;font-weight:600;text-decoration:none!important;padding:13px 24px;border-radius:11px;transition:transform .12s,box-shadow .12s}
+.kofi{max-width:640px;margin:30px 0 34px;padding:26px 30px;background:var(--card);border:1px solid var(--hairline);border-radius:16px;box-shadow:0 1px 3px rgba(33,31,27,.05)}
+.kofi-line{font-family:var(--serif);font-size:23px;font-weight:600;line-height:1.3;margin:0 0 16px;text-wrap:balance}
+.kofi-act{display:flex;align-items:center;gap:14px}
+.kofi-act .kofi-cup{flex:none;width:58px;height:58px;margin-top:-6px}
+.kofi-btn{display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--paper)!important;font-size:16px;font-weight:600;text-decoration:none!important;padding:13px 24px;border-radius:11px;transition:transform .12s,box-shadow .12s}
 .kofi-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(33,31,27,.18)}
-@media(max-width:560px){.kofi{flex-direction:column;text-align:center;gap:14px;padding:24px 20px}.kofi-cup{width:62px;height:62px}.kofi-line{font-size:20px}.kofi-btn{width:100%;justify-content:center}}
+@media(max-width:560px){.kofi{text-align:center;padding:24px 20px}.kofi-line{font-size:20px}.kofi-act{justify-content:center}.kofi-btn{flex:1}.kofi-act .kofi-cup{width:50px;height:50px}}
 """
 # A mug with PaintDial-blue paint dripping from the rim (option E of six, chosen 5 Nov 2026).
 _MUG = 'M12 20h36v24a10 10 0 0 1-10 10H22a10 10 0 0 1-10-10z'
@@ -1548,30 +1549,29 @@ KOFI_ICON = (
 
 
 def kofi_block(line="If you found PaintDial useful…"):
-    return (f'<div class="kofi">{KOFI_ICON}'
-            f'<div><p class="kofi-line">{line}</p>'
+    return (f'<div class="kofi"><p class="kofi-line">{line}</p><div class="kofi-act">'
             f'<a class="kofi-btn" href="{KOFI_URL}" target="_blank" rel="noopener">'
-            f'Buy Will a coffee on Ko-fi</a></div></div>')
+            f'Buy Will a coffee on Ko-fi</a>{KOFI_ICON}</div></div>')
 
 
 # Slim one-line version at the foot of every colour and alternatives page. index.html has a
 # hand-copied twin under the tool's results (shown only once someone has used the tool), so
 # change both if the wording or look changes.
 KOFI_STRIP_CSS = (
-    '.kofi-s{display:flex;align-items:center;gap:16px;margin:28px 0 0;padding:16px 22px;background:var(--card);'
+    '.kofi-s{display:flex;align-items:center;gap:14px;margin:28px 0 0;padding:16px 22px;background:var(--card);'
     'border:1px solid var(--hairline);border-radius:14px}'
-    '.kofi-s .kofi-cup{flex:none;width:46px;height:46px}'
+    '.kofi-s .kofi-cup{flex:none;width:46px;height:46px;margin-top:-5px}'
     '.kofi-s p{flex:1;font-family:var(--serif);font-size:19px;font-weight:600;line-height:1.3;margin:0;max-width:none;color:var(--ink)}'
     '.kofi-s a{flex:none;background:var(--ink);color:var(--paper)!important;font-family:var(--sans);font-size:14px;font-weight:600;'
-    'text-decoration:none!important;padding:10px 18px;border-radius:9px;transition:transform .12s,box-shadow .12s}'
+    'text-align:center;text-decoration:none!important;padding:10px 18px;border-radius:9px;transition:transform .12s,box-shadow .12s}'
     '.kofi-s a:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(33,31,27,.18)}'
-    '@media(max-width:560px){.kofi-s{flex-wrap:wrap;gap:10px;padding:14px}.kofi-s .kofi-cup{width:32px;height:32px}'
-    '.kofi-s p{font-size:16px;text-wrap:balance}.kofi-s a{width:100%;text-align:center;padding:11px 18px}}')
+    '@media(max-width:560px){.kofi-s{flex-wrap:wrap;gap:10px 12px;padding:14px}'
+    '.kofi-s p{flex-basis:100%;font-size:16.5px;text-wrap:balance}.kofi-s a{flex:1;padding:11px 18px}.kofi-s .kofi-cup{width:42px;height:42px}}')
 
 
 def kofi_strip():
-    return (f'<div class="kofi-s">{KOFI_ICON}<p>If you found PaintDial useful…</p>'
-            f'<a href="{KOFI_URL}" target="_blank" rel="noopener">Buy Will a coffee on Ko-fi</a></div>')
+    return (f'<div class="kofi-s"><p>If you found PaintDial useful…</p>'
+            f'<a href="{KOFI_URL}" target="_blank" rel="noopener">Buy Will a coffee on Ko-fi</a>{KOFI_ICON}</div>')
 
 
 def _page_shell(title, desc, path, body, head=""):
