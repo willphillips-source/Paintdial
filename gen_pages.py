@@ -913,15 +913,70 @@ footer{font-size:14.5px}
 """
 
 PAGES_WIDE_CSS = """
-/* Prose stays a readable width, starting at the same left edge as the logo. */
-@media(min-width:1500px){
-p,li{font-size:16px}p{max-width:70ch}ul{max-width:68ch}
-.rsch-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
-.pair,.stack,.stack-key,.bars,table,.faq,.uq-grid{max-width:1100px}
+/* Text pages on wide screens. Same outer edges as the homepage and colour pages; the width
+   is filled with columns rather than one long strip of text:
+   - "grid" pages (About, How it works, Contact, photo page): each section is a block, two
+     across from 1100px and three from 1500px. Sections holding something wide (step cards,
+     a long FAQ, a form) span the full row.
+   - "split" pages (the two research studies): each finding is a row, text on the left third,
+     its swatches or chart on the right two-thirds.
+   Below 1100px everything stacks in one readable column, as before. */
+.lead>p{max-width:68ch}
+.lead h1{max-width:36ch}
+.lead .pm-hero{max-width:1400px}
+@media(min-width:1100px){
+.lead{padding-top:10px}
+.lead>p{font-size:16px}
+.secs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:56px;row-gap:12px;margin-top:22px;align-items:start}
+.sec{border-top:1px solid var(--hairline);padding-top:4px;min-width:0}
+.sec>h2,.sec-text>h2{margin-top:20px}
+.sec p,.sec ul{max-width:none}
+.sec-wide{grid-column:1/-1}
+.sec .kofi{max-width:none;margin:22px 0 10px}
+.sec .faq{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:56px}
+.sec .faq details:last-child{border-bottom:none}
+.splits{margin-top:22px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);column-gap:56px;border-top:1px solid var(--hairline);padding:4px 0 26px}
+.split .sec-fig{padding-top:24px;min-width:0}
+.split .sec-fig>.pair:last-child,.split .sec-fig>.bars{margin-bottom:0}
+.split .sec-text p,.split .sec-text ul{max-width:none}
+.split .bignum{margin-top:0;font-size:44px}.split .bignum small{font-size:15px;margin-top:6px}
+.rsch-cards{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:22px}
+.lead .rsch-cards{margin-top:30px}
+a.rsch-card{padding:28px 30px}
+a.rsch-card b{font-size:24px;line-height:1.25}
+a.rsch-card span{font-size:15px}
+.split .sec-note{padding-top:0}
+.split .sec-note>h2{margin-top:20px}
 }
-@media(min-width:1900px){p,li{font-size:17px}}
-@media(min-width:2400px){p,li{font-size:18px}}
+@media(min-width:1500px){
+.lead{padding-top:40px}
+.lead>p{font-size:17px}
+.secs{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:64px;margin-top:30px}
+.sec .faq{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:64px}
+.split{column-gap:64px}
+p,li{font-size:16px}
+aa.rsch-card{padding:34px 38px}.split .bignum{font-size:56px}.split .bignum small{font-size:16px}a.rsch-card b{font-size:28px}a.rsch-card span{font-size:16px}
+}
+@media(min-width:1900px){
+.lead{padding-top:72px}
+.lead>p{font-size:19px}
+.secs{column-gap:76px;margin-top:40px}
+.sec .faq{column-gap:76px}
+.split{column-gap:76px}
+p,li{font-size:17px}
+.rsch-cards{gap:28px}.lead .rsch-cards{margin-top:44px}
+.split .bignum{font-size:64px}.split .bignum small{font-size:17px}
+a.rsch-card{padding:42px 46px}a.rsch-card b{font-size:33px}a.rsch-card span{font-size:17px}
+}
+@media(min-width:2400px){
+.lead{padding-top:96px}
+.lead>p{font-size:20px}
+p,li{font-size:18px}
+a.rsch-card b{font-size:38px}a.rsch-card span{font-size:18px}
+}
 """
+
 
 ALT_WIDE_CSS = """
 .intro a:not(.pn){color:inherit}
@@ -1531,7 +1586,6 @@ PAGES_CSS += """
 .kofi-act .kofi-cup{flex:none;width:58px;height:58px;margin-top:-6px}
 .kofi-btn{display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--paper)!important;font-size:16px;font-weight:600;text-decoration:none!important;padding:13px 24px;border-radius:11px;transition:transform .12s,box-shadow .12s}
 .kofi-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(33,31,27,.18)}
-.col{max-width:720px;margin-left:auto;margin-right:auto}.col .kofi{max-width:none}
 @media(max-width:560px){.kofi{text-align:center;padding:24px 20px}.kofi-line{font-size:20px}.kofi-act{justify-content:center}.kofi-btn{flex:1}.kofi-act .kofi-cup{width:50px;height:50px}}
 """
 # A mug with PaintDial-blue paint dripping from the rim (option E of six, chosen 5 Nov 2026).
@@ -1575,13 +1629,107 @@ def kofi_strip():
             f'<a href="{KOFI_URL}" target="_blank" rel="noopener">Buy Will a coffee on Ko-fi</a>{KOFI_ICON}</div>')
 
 
-def _page_shell(title, desc, path, body, head="", centred=False):
-    # centred=True: short text-only pages (About, Contact) keep the full-width header but put
-    # the text and footer in one centred reading column, so on a wide monitor they don't sit
-    # in a narrow strip at the left with empty space to the right.
-    if centred:
-        body = f'<main class="col">{body}</main>'
-    foot = f'<footer class="col">{FOOT}</footer>' if centred else f'<footer>{FOOT}</footer>'
+_VOID_TAGS = {'br', 'img', 'input', 'meta', 'link', 'hr', 'source', 'wbr'}
+_WIDE_CLASSES = {'rsch-cards', 'uq-grid', 'bars', 'stack', 'stack-key', 'pair', 'bignum'}
+_TAG_RE = re.compile(r'<!--(.*?)-->|<(/?)([a-zA-Z][a-zA-Z0-9]*)\b[^>]*?(/?)>', re.S)
+
+
+def _top_level_blocks(html):
+    """Split an HTML fragment into its top-level elements, in order (scripts and comments
+    included as their own blocks). Bare top-level text is not expected in page bodies."""
+    blocks, pos, depth, start = [], 0, 0, None
+    while True:
+        m = _TAG_RE.search(html, pos)
+        if not m:
+            break
+        if m.group(0).startswith('<!--'):
+            if depth == 0:
+                blocks.append(m.group(0))
+            pos = m.end()
+            continue
+        close, tag, selfclose = m.group(2), m.group(3).lower(), m.group(4)
+        if not close and tag in ('script', 'style'):
+            end = html.find(f'</{tag}>', m.end())
+            end = len(html) if end < 0 else end + len(tag) + 3
+            if depth == 0:
+                blocks.append(html[m.start():end])
+            pos = end
+            continue
+        if close:
+            depth -= 1
+            if depth == 0 and start is not None:
+                blocks.append(html[start:m.end()])
+                start = None
+        elif tag in _VOID_TAGS or selfclose:
+            if depth == 0:
+                blocks.append(m.group(0))
+        else:
+            if depth == 0:
+                start = m.start()
+            depth += 1
+        pos = m.end()
+    return blocks
+
+
+def _block_classes(block):
+    m = re.match(r'<([a-zA-Z0-9]+)([^>]*)>', block)
+    if not m:
+        return '', set()
+    c = re.search(r'class="([^"]*)"', m.group(2))
+    return m.group(1).lower(), set(c.group(1).split()) if c else set()
+
+
+def _is_visual(block):
+    tag, cls = _block_classes(block)
+    return tag in ('figure', 'table', 'form') or bool(cls & _WIDE_CLASSES)
+
+
+def _sectionise(body, layout):
+    """Wrap a text page's body for the wide-screen layout. Everything before the first <h2>
+    (or a <!--sec--> marker) is the lead: eyebrow, title, intro. Each <h2> starts a section."""
+    lead, secs, cur = [], [], None
+    for b in _top_level_blocks(body):
+        if b.startswith('<h2') or b == '<!--sec-->':
+            cur = []
+            secs.append(cur)
+            if b != '<!--sec-->':
+                cur.append(b)
+            continue
+        (cur if cur is not None else lead).append(b)
+    out = ['<div class="lead">' + '\n'.join(lead) + '</div>']
+    if not secs:
+        return out[0]
+    if layout == 'split':
+        rows, k = [], 0
+        while k < len(secs):
+            sec = secs[k]
+            text = [b for b in sec if not _is_visual(b)]
+            fig = [b for b in sec if _is_visual(b)]
+            nxt = secs[k + 1] if k + 1 < len(secs) else None
+            if not fig and nxt and not any(_is_visual(b) for b in nxt) and k + 2 >= len(secs):
+                # the last two text-only sections (Method, What this doesn't claim) share a row
+                rows.append('<section class="split"><div class="sec-text">' + '\n'.join(text) + '</div>'
+                            + '<div class="sec-fig sec-note">' + '\n'.join(nxt) + '</div></section>')
+                k += 2
+                continue
+            rows.append('<section class="split"><div class="sec-text">' + '\n'.join(text) + '</div>'
+                        + (f'<div class="sec-fig">{"".join(fig)}</div>' if fig else '') + '</section>')
+            k += 1
+        out.append('<div class="splits">' + '\n'.join(rows) + '</div>')
+    else:
+        cells = []
+        for sec in secs:
+            n_faq = sum(b.count('<details') + b.count('class="pm-q"') for b in sec)
+            wide = any('rsch-cards' in _block_classes(b)[1] for b in sec) or n_faq > 5
+            cells.append(f'<section class="sec{" sec-wide" if wide else ""}">' + '\n'.join(sec) + '</section>')
+        out.append('<div class="secs">' + '\n'.join(cells) + '</div>')
+    return '\n'.join(out)
+
+
+def _page_shell(title, desc, path, body, head="", layout="grid"):
+    # Text pages (About, How it works, Contact, research, photo page). The body is wrapped by
+    # _sectionise so wide screens get columns instead of one narrow strip; see PAGES_WIDE_CSS.
+    body = _sectionise(body, layout)
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title} | PaintDial</title>
@@ -1590,7 +1738,7 @@ def _page_shell(title, desc, path, body, head="", centred=False):
 {FONTS}<style>{PAGES_CSS}</style></head><body><div class="wrap">
 {HDR}
 {body}
-{foot}
+<footer>{FOOT}</footer>
 </div></body></html>"""
 
 def build_method_page():
@@ -1782,6 +1930,7 @@ def build_match_index_page():
 <p class="muted">Updated automatically from PaintDial\u2019s live colour library. Last built {TODAY}.</p>
 
 <h2>1. Almost every premium colour has a close alternative</h2>
+<p class="bignum">{pct_vc}%<small>of premium colours have at least a very close match from a value brand</small></p>
 <p><b>{pct_id}%</b> of premium colours ({n_id} of {len(prem)}) have a <b>near-identical</b> match from a value brand. <b>{pct_vc}%</b> ({n_vc}) have at least a <b>very close</b> one.</p>
 <p>So if you want a premium colour, there\u2019s a {pct_vc}% chance another brand makes something very close to it. <a href="/">Check any colour in the tool \u2192</a></p>
 
@@ -1793,6 +1942,7 @@ def build_match_index_page():
 <div class="uq-grid">{uniq_rows}</div>
 
 <h2>4. Why: hardly any paints go that dark</h2>
+<p class="bignum">{len(deep)} of {N:,}<small>colours across all {len(brands)} brands are very deep</small></p>
 <p>Only <b>{len(deep)} of {N:,}</b> colours across all {len(brands)} brands are very deep. By brand: {deep_rows}.</p>
 <p>{deep_p}</p>
 
@@ -1815,7 +1965,7 @@ def build_match_index_page():
 <p class="muted">Companion study: <a href="/paint-choice-index/">The UK Paint Choice Index</a>, on how many of these colours are actually different. Journalists and researchers: the underlying comparisons are all on the site, colour by colour. Questions or corrections: <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("The UK Paint Match Index",
         f"I compared {N:,} paint colours from {len(brands)} brands sold in the UK. {pct_vc}% of premium colours have a very close match from another brand, and only {len(uniq)} can\u2019t be matched at all.",
-        "/paint-match-index/", body)
+        "/paint-match-index/", body, layout="split")
 
 
 def build_choice_index_page():
@@ -1978,6 +2128,7 @@ def build_choice_index_page():
 <p>Bigger ranges duplicate more. Partly that\u2019s arithmetic: publish {max(brand_n.values()):,} colours into a finite space and some will overlap. It does mean a bigger colour card isn\u2019t proportionally more choice.</p>
 
 <h2>4. The colour these brands don\u2019t sell</h2>
+<p class="bignum">{cover_pct}%<small>of the colours a screen can show have a very close paint in the library</small></p>
 <p>Take every colour a standard screen can display and ask: does any paint in the library come <b>very close</b> to it (the site-wide \u0394E&nbsp;&lt;&nbsp;5)? The answer is yes for just <b>{cover_pct}%</b> of them. The missing colours aren\u2019t evenly spread: they sit overwhelmingly at the vivid end of <b>purple ({unc_purple}% of the gap), blue ({unc_blue}%) and the reds and pinks ({unc_pink}%)</b>.</p>
 <p>Some of that is physics, because a screen gives off light and paint can\u2019t, so no paint will match a glowing violet. The pattern still holds within paint alone: across these {len(brands)} brands, {purp_peak_line} <b>{red_vivid} red paints exceed a chroma of 0.10. {purp_count_line}</b></p>
 
@@ -1995,7 +2146,7 @@ def build_choice_index_page():
 <p class="muted">Companion study: <a href="/paint-match-index/">The UK Paint Match Index</a>, on how closely premium colours can be matched across brands. Questions or corrections: <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("The UK Paint Choice Index",
         f"{numword(len(brands)).capitalize()} paint brands on the UK market sell {N:,} colours between them. Only {distinct:,} are actually different, and just {purp_vivid} {'purple is' if purp_vivid == 1 else 'purples are'} vivid.",
-        "/paint-choice-index/", body)
+        "/paint-choice-index/", body, layout="split")
 
 
 def build_research_hub():
@@ -2040,6 +2191,7 @@ def _about_values_line():
 def build_about_page():
     body = f"""<span class="eyebrow">About</span>
 <h1>About PaintDial</h1>
+<!--sec-->
 <p>I made PaintDial as a result of doing a full house renovation and being frustrated by the mission of trying to find the right paint. I didn’t want to be restricted to just one brand, and I wanted to be able to easily find different shades of colours I liked.</p>
 <p>I work in visual effects, so getting colour to match between cameras and screens is my day job. PaintDial is just me, in my spare time, and no paint brand owns or sponsors it.</p>
 
@@ -2053,7 +2205,7 @@ def build_about_page():
 <p>I answer the <a href="/contact/">contact form</a> myself, so if something looks wrong, tell me.</p>"""
     return _page_shell("About PaintDial",
         f"PaintDial is a one-person site comparing {N:,} paints across {NBRANDS} brands sold in the UK. Why I made it and how it’s paid for.",
-        "/about/", body, centred=True)
+        "/about/", body)
 
 
 def build_contact_page():
@@ -2070,9 +2222,11 @@ def build_contact_page():
 </style>
 <span class="eyebrow">Contact</span>
 <h1>Get in touch</h1>
+<!--sec-->
 <p>PaintDial is run by one person, so messages come to me directly and I read all of them. Corrections are the most useful thing you can send: if a colour looks wrong, a match seems off, or a brand link goes somewhere odd, tell me and I will check the source data.</p>
 <p>Journalists and researchers using the <a href="/paint-match-index/">Match Index</a> or <a href="/paint-choice-index/">Choice Index</a> are welcome to ask about method or request the underlying figures. If you’re a brand or retailer, you’re welcome to get in touch about your colour data or links. The rankings are worked out from the colour values alone.</p>
 
+<!--sec-->
 <form class="cf" name="contact" method="POST" action="/contact/thanks/" data-netlify="true" netlify-honeypot="website">
   <input type="hidden" name="form-name" value="contact">
   <p class="hp"><label>Leave this empty <input name="website" tabindex="-1" autocomplete="off"></label></p>
@@ -2093,13 +2247,13 @@ def build_contact_page():
   <button type="submit">Send message</button>
   <p class="cf-note">Replies usually take a few days. Your details are used only to answer you; PaintDial keeps no mailing list.</p>
 </form>
-
+<!--sec-->
 {kofi_block()}
 
 <p class="muted" style="margin-top:34px">Not a message, just a question about the site? The <a href="/how-it-works/">how it works</a> page covers the data, the matching and the labels, and <a href="/about/">about</a> covers who runs it and how it is funded.</p>"""
     return _page_shell("Contact PaintDial",
         "Send a correction, ask about the matching or the Match Index, or get in touch as a brand, retailer or journalist. PaintDial is one person, and I read every message.",
-        "/contact/", body, centred=True)
+        "/contact/", body)
 
 
 def build_contact_thanks_page():
@@ -2108,7 +2262,7 @@ def build_contact_thanks_page():
 <p>Your message has been sent. I will reply by email, usually within a few days.</p>
 <p class="muted">In the meantime: <a href="/">back to the colour tool</a> or <a href="/colours/">browse the library</a>.</p>"""
     return _page_shell("Message sent", "Your message to PaintDial has been sent.", "/contact/thanks/", body,
-                       head='<meta name="robots" content="noindex">', centred=True)
+                       head='<meta name="robots" content="noindex">')
 
 
 def build_photo_match_page():
