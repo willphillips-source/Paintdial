@@ -112,14 +112,22 @@ UNLISTED = {b: set(v.get('unlisted', [])) for b, v in _BL.items() if not b.start
 BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints',
                'Earthborn', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany', 'Mylands', 'Sanderson',
                'Benjamin Moore', 'Tikkurila']
-# SOURCED FROM A STOCKIST, NOT THE BRAND. Every other brand's values are its own published swatches.
-# Zoffany (156, added 4 Nov 2026) publishes none: zoffany.design shows JPEG swatches only and its
-# product API has no colour field. Its values are the ones Brewers, its main UK stockist, publishes
-# as CSS backgrounds on brewers.co.uk/colours/zoffany (156 colours, hash-verified against the live
-# page). Names, codes (ZOP1001-1156) and links are Zoffany's own; Brewers spells two names
-# differently (Manila/Sheepskin vs Zoffany's Manilla/Sheep Skin). Will chose this on 4 Nov 2026 over
-# leaving Zoffany out. Anything that says "each brand's own published swatch" must say so, so the
-# claim is built from SOURCE_NOTE below rather than typed, and the brand and colour pages carry it.
+# NOT A PUBLISHED VALUE. Every other brand's values are its own published swatches, and anything
+# that says "each brand's own published swatch" must say where these differ, so the claim is built
+# from SWATCH_SAMPLED and SOURCE_NOTE below rather than typed, and the brand and colour pages carry it.
+# Zoffany (156, added 4 Nov 2026) publishes no colour values: zoffany.design shows each colour only
+# as a JPEG swatch, and its product API has no colour field. From 7 Nov 2026 its values are read
+# from those swatch images (the main product image on each colour's page, a flat field with no
+# texture or shading; sampled at 7 points, every one identical, so the value is the image's own
+# colour to within JPEG rounding of about 1). Until then they were the ones Brewers publishes for
+# Zoffany, which turned out to run on a tone curve of their own: whites close, darks 15-16 L*
+# darker than Zoffany's swatches, median dE00 8.1 across all 156, only 9 within 2. Eight sampled
+# values were cross-checked against allpaintcolours.co.uk, which also reads Zoffany's swatches: all
+# within 1. Will chose the switch on 7 Nov 2026. Names, codes (ZOP1001-1156) and links are Zoffany's.
+SWATCH_SAMPLED = {
+    'Zoffany': 'https://www.zoffany.design/paint',
+}
+# SOURCED FROM A STOCKIST, NOT THE BRAND.
 # Sanderson (154, added 5 Nov 2026) is Zoffany's sister brand (Sanderson Design Group) on the same
 # site platform, with the same gap: sanderson.design shows JPEG swatches and none of its pages
 # carries a value. Brewers' values (brewers.co.uk/colours/sanderson, 154 colours, checksummed
@@ -128,7 +136,6 @@ BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johns
 # Supporting evidence that Brewers mirrors brand values: for Mylands, which does publish its own,
 # all 157 colours Brewers also lists carry exactly the same value on both sites.
 SOURCE_NOTE = {
-    'Zoffany': ('Brewers', 'https://www.brewers.co.uk/colours/zoffany'),
     'Sanderson': ('Brewers', 'https://www.brewers.co.uk/colours/sanderson'),
 }
 # Mylands (193, added 5 Nov 2026): the brand's own values. Each product page on mylands.com sets
@@ -215,6 +222,25 @@ def brand_list(sep=', ', last=' and ', esc=True):
     return sep.join(names[:-1]) + last + names[-1]
 
 assert set(SOURCE_NOTE) <= set(BRAND_ORDER), "SOURCE_NOTE names a brand not in BRAND_ORDER"
+assert set(SWATCH_SAMPLED) <= set(BRAND_ORDER), "SWATCH_SAMPLED names a brand not in BRAND_ORDER"
+assert not set(SWATCH_SAMPLED) & set(SOURCE_NOTE), "a brand can't be in both SWATCH_SAMPLED and SOURCE_NOTE"
+
+def _swatch_brands():
+    # Brands whose values are read from their own swatch images, in BRAND_ORDER.
+    return [b for b in BRAND_ORDER if b in SWATCH_SAMPLED]
+
+def _swatch_clause(html=True):
+    # "Zoffany, which publishes no values, so they are read from the swatch images on its own
+    # site" (or the plural form). '' if no brand is swatch-sampled.
+    sw = _swatch_brands()
+    if not sw:
+        return ''
+    names = [H.escape(b) if html else b for b in sw]
+    if len(sw) == 1:
+        place = (f'<a href="{SWATCH_SAMPLED[sw[0]]}" rel="nofollow noopener" target="_blank">its own site</a>'
+                 if html else 'its own site')
+        return f'{names[0]}, which publishes no values, so they are read from the swatch images on {place}'
+    return f'{_and(names)}, which publish no values, so they are read from the swatch images on their own sites'
 
 STOCKIST_HOME = {'Brewers': 'https://www.brewers.co.uk/'}
 
@@ -231,11 +257,12 @@ def _by_stockist():
 
 def source_exception(html=True):
     # The clause that qualifies "each brand's own published swatch", or '' if every brand
-    # publishes its own. Gives e.g. ", except Zoffany, which publishes none: its values are
+    # publishes its own. Gives e.g. ", except Zoffany, which publishes no values, so they are read
+    # from the swatch images on its own site; and Sanderson, which publishes none: its values are
     # the ones Brewers, its main UK stockist, publishes".
-    if not SOURCE_NOTE:
+    if not SOURCE_NOTE and not SWATCH_SAMPLED:
         return ''
-    bits = []
+    bits = [_swatch_clause(html)] if SWATCH_SAMPLED else []
     for stockist, brands in _by_stockist().items():
         url = SOURCE_NOTE[brands[0]][1] if len(brands) == 1 else STOCKIST_HOME.get(stockist, SOURCE_NOTE[brands[0]][1])
         sname = (f'<a href="{url}" rel="nofollow noopener" target="_blank">{stockist}</a>' if html else stockist)
@@ -247,12 +274,18 @@ def source_exception(html=True):
     return ', except ' + '; and '.join(bits)
 
 def source_short():
-    # Short bracketed form for method notes: " (Zoffany's come from its stockist Brewers, as
-    # Zoffany publishes none)", or for two: " (Zoffany's and Sanderson's come from their stockist
-    # Brewers, as neither brand publishes any)". '' if every brand publishes its own.
-    if not SOURCE_NOTE:
+    # Short bracketed form for method notes: " (Zoffany's are read from the swatch images on its
+    # own site, as it publishes no values; Sanderson's come from its stockist Brewers, as Sanderson
+    # publishes none)". '' if every brand publishes its own.
+    if not SOURCE_NOTE and not SWATCH_SAMPLED:
         return ''
     bits = []
+    sw = [H.escape(b) for b in _swatch_brands()]
+    if len(sw) == 1:
+        bits.append(f'{sw[0]}’s are read from the swatch images on its own site, as it publishes no values')
+    elif sw:
+        bits.append(f'{_and([n + "’s" for n in sw])} are read from the swatch images on their own sites, '
+                    f'as {"neither brand publishes" if len(sw) == 2 else "none of them publishes"} values')
     for s, brands in _by_stockist().items():
         names = [H.escape(b) for b in brands]
         if len(names) == 1:
@@ -264,7 +297,13 @@ def source_short():
     return ' (' + '; '.join(bits) + ')'
 
 def source_line(brand):
-    # Note for the brand and colour pages of a brand sourced from a stockist; '' otherwise.
+    # Note for the brand and colour pages of a brand that is swatch-sampled or sourced from a
+    # stockist; '' otherwise.
+    if brand in SWATCH_SAMPLED:
+        b = H.escape(brand)
+        return (f'<p class="srcnote">{b} doesn’t publish digital colour values, so the values here are read '
+                f'from the swatch images on <a href="{SWATCH_SAMPLED[brand]}" rel="nofollow noopener" '
+                f'target="_blank">its own site</a>. Names and links are {b}’s own.</p>')
     if brand not in SOURCE_NOTE:
         return ''
     stockist, url = SOURCE_NOTE[brand]
@@ -2180,9 +2219,15 @@ def _about_values_line():
     # "The colour values are the ones each brand publishes, apart from ..." in the About page's
     # own first-person wording. Built from SOURCE_NOTE so it stays right as brands change.
     base = 'The colour values are the ones each brand publishes'
-    if not SOURCE_NOTE:
+    if not SOURCE_NOTE and not SWATCH_SAMPLED:
         return base + '.'
     bits = []
+    sw = [H.escape(b) for b in _swatch_brands()]
+    if len(sw) == 1:
+        bits.append(f'{sw[0]}, which doesn’t publish any, so I read them from the swatch images on '
+                    f'<a href="{SWATCH_SAMPLED[_swatch_brands()[0]]}" rel="nofollow noopener" target="_blank">its own site</a>')
+    elif sw:
+        bits.append(f'{_and(sw)}, which don’t publish any, so I read them from the swatch images on their own sites')
     for stockist, brands in _by_stockist().items():
         url = SOURCE_NOTE[brands[0]][1] if len(brands) == 1 else STOCKIST_HOME.get(stockist, SOURCE_NOTE[brands[0]][1])
         link = f'<a href="{url}" rel="nofollow noopener" target="_blank">{stockist}</a>'
@@ -2582,12 +2627,16 @@ if __name__ == '__main__':
     # The compare view's script is one shared file (see COMPARE_SCRIPT above). Copied
     # here rather than in build.sh so a plain `python3 gen_pages.py` run is complete too.
     import shutil as _sh
-    # The compare view names stockist-sourced brands from its own SOURCED map; it must
-    # agree with SOURCE_NOTE or the compare strip and the colour pages say different things.
+    # The compare view names stockist-sourced and swatch-sampled brands from its own SOURCED
+    # and SWATCHED lists; they must agree with SOURCE_NOTE and SWATCH_SAMPLED or the compare
+    # strip and the colour pages say different things.
     _js = open('pd-compare.js', encoding='utf-8').read()
     _m = re.search(r'var SOURCED = (\{[^}]*\});', _js)
     assert _m and json.loads(_m.group(1)) == {b: s for b, (s, _u) in SOURCE_NOTE.items()}, \
         'pd-compare.js SOURCED map does not match SOURCE_NOTE in gen_pages.py'
+    _m = re.search(r'var SWATCHED = (\[[^\]]*\]);', _js)
+    assert _m and sorted(json.loads(_m.group(1))) == sorted(SWATCH_SAMPLED), \
+        'pd-compare.js SWATCHED list does not match SWATCH_SAMPLED in gen_pages.py'
     _sh.copyfile('pd-compare.js', 'site/pd-compare.js')
     _sh.copyfile('fraunces-amp.woff2', 'site/fraunces-amp.woff2')
     print('pd-compare.js and fraunces-amp.woff2 copied')

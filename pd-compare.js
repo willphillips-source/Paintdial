@@ -88,7 +88,10 @@
   /* Brands whose values come from a stockist because the brand publishes none, as
      brand: stockist. Must match SOURCE_NOTE in gen_pages.py, which asserts it on every
      build. When either side of the comparison is one of these, the strip says so. */
-  var SOURCED = {"Zoffany": "Brewers", "Sanderson": "Brewers"};
+  var SOURCED = {"Sanderson": "Brewers"};
+  /* Brands whose values are read from the swatch images on their own site, as they publish
+     no values. Must match SWATCH_SAMPLED in gen_pages.py, which asserts it on every build. */
+  var SWATCHED = ["Zoffany"];
   var BASE_NOTE = 'Screens vary. Compare these two to each other, then order testers before you buy.';
 
   var ov = null, handle = null, wordEl = null, diffEl = null, noteEl = null, lastBtn = null, x = 50, dragging = false;
@@ -183,10 +186,12 @@
     wordEl.textContent = w ? w.charAt(0).toUpperCase() + w.slice(1) : '';
     var src = [];
     [d.abrand, d.bbrand].forEach(function (b) {
-      if (b && SOURCED.hasOwnProperty(b) && src.indexOf(b) < 0) src.push(b);
+      if (b && (SOURCED.hasOwnProperty(b) || SWATCHED.indexOf(b) >= 0) && src.indexOf(b) < 0) src.push(b);
     });
     diffEl.textContent = diffSentence(d.ahex, d.bhex, aName, bName);
     noteEl.textContent = BASE_NOTE + src.map(function (b) {
+      if (SWATCHED.indexOf(b) >= 0)
+        return ' ' + b + '’s values are read from the swatch images on its own site, as ' + b + ' publishes none.';
       return ' ' + b + '’s values come from its stockist ' + SOURCED[b] + ', as ' + b + ' publishes none.';
     }).join('');
     ov.setAttribute('aria-label', 'Comparing ' + aName + ' with ' + bName + ' full screen');
