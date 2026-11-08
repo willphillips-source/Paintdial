@@ -595,6 +595,43 @@
     border-bottom:2px solid var(--pick); padding-bottom:1px;}
   .bb-all:hover{opacity:.65;}
   .lib-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:14px;}
+  /* ---- browse by colour: family tabs, then that family lightest first ---- */
+  .fam-tabs{display:flex; gap:6px; overflow-x:auto; padding-top:2px; padding-bottom:12px; scrollbar-width:none;}
+  .fam-tabs::-webkit-scrollbar{display:none;}
+  .fam-tab{flex:none; display:inline-flex; align-items:center; gap:7px; padding:7px 13px 7px 9px;
+    border:1px solid var(--hairline); border-radius:999px; background:var(--card); cursor:pointer;
+    font-family:var(--sans); font-size:13px; font-weight:600; color:var(--ink); white-space:nowrap;}
+  .fam-tab i{width:14px; height:14px; border-radius:50%; flex:none; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);}
+  .fam-tab em{font-style:normal; font-weight:400; color:var(--muted); font-variant-numeric:tabular-nums;}
+  .fam-tab:hover{border-color:var(--muted);}
+  .fam-tab[aria-selected="true"]{background:var(--ink); border-color:var(--ink); color:var(--paper);}
+  .fam-tab[aria-selected="true"] em{color:rgba(247,245,240,.7);}
+  .fam-tab:focus-visible{outline:2px solid var(--ink); outline-offset:2px;}
+  .fam-tones{display:flex; gap:6px; margin-bottom:10px;}
+  .fam-tones button{font-family:var(--sans); font-size:12.5px; font-weight:600; color:var(--ink); background:none;
+    border:1px solid var(--hairline); border-radius:7px; padding:5px 11px; cursor:pointer;}
+  .fam-tones button:hover{border-color:var(--muted);}
+  .fam-tones button[aria-pressed="true"]{background:var(--card); border-color:var(--ink);}
+  .fam-tones button:focus-visible{outline:2px solid var(--ink); outline-offset:2px;}
+  @media(min-width:641px){ .fam-tabs{flex-wrap:wrap; overflow:visible;} }
+  @media(max-width:640px){ .fam-tabs{-webkit-mask-image:linear-gradient(90deg,#000 85%,transparent); mask-image:linear-gradient(90deg,#000 85%,transparent);} }
+  .fam-sub{font-size:12.5px; color:var(--muted); margin:0 auto 12px;}
+  .fam-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(118px,1fr)); gap:10px;}
+  .fam-tile{display:block; min-width:0; padding:0; border:1px solid var(--hairline); border-radius:10px; overflow:hidden;
+    background:var(--card); color:var(--ink); text-align:left; cursor:pointer; font:inherit;
+    transition:transform .12s ease, box-shadow .12s ease;}
+  .fam-tile:hover{transform:translateY(-2px); box-shadow:0 8px 18px rgba(33,31,27,.12);}
+  .fam-tile:focus-visible{outline:2px solid var(--ink); outline-offset:2px;}
+  .fam-tile i{display:block; height:70px;}
+  .fam-tile b{display:block; padding:7px 9px 0; font-family:var(--serif); font-size:13px; font-weight:600; line-height:1.2;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .fam-tile small{display:block; padding:2px 9px 8px; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .fam-more{text-align:center; margin-top:16px;}
+  .fam-more button{font-family:var(--sans); font-size:13px; font-weight:600; color:var(--ink); background:var(--card);
+    border:1px solid var(--hairline); border-radius:8px; padding:9px 18px; cursor:pointer;}
+  .fam-more button:hover{border-color:var(--muted);}
+  .browse-brands .bb-head + .bb-head{margin-top:40px;}
   .lib{display:block; border:1px solid var(--hairline); border-radius:14px; overflow:hidden; background:var(--card);
     text-decoration:none; color:inherit; transition:transform .13s ease, box-shadow .13s ease;}
   .lib:hover{transform:translateY(-3px); box-shadow:0 10px 24px rgba(33,31,27,.13);}
@@ -606,9 +643,12 @@
   .lib .l-n{font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums;}
   @media(max-width:640px){
     .browse-brands{padding:4px 16px 16px;}
+    .browse-brands > *{padding-left:0; padding-right:0;}
     .bb-head h2{font-size:20px;}
     .lib-grid{grid-template-columns:1fr 1fr; gap:10px;}
     .lib .l-fan{height:42px;} .lib .l-nm{font-size:14px;}
+    .fam-grid{grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px;}
+    .fam-tile i{height:58px;} .fam-tile b{font-size:12px; padding:6px 7px 0;} .fam-tile small{padding:2px 7px 7px; font-size:9px;}
   }
   .aff-note{font-size:11px; color:var(--muted); margin:22px 0 4px; line-height:1.4;}
 
@@ -827,7 +867,20 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
 
 <section class="browse-brands">
   <div class="bb-head">
-    <div><div class="bb-eyebrow">The colour library</div><h2>Browse by brand</h2></div>
+    <div><div class="bb-eyebrow">The colour library</div><h2>Browse by colour</h2></div>
+  </div>
+  <div class="fam-tabs" id="famTabs" role="tablist" aria-label="Colour families"></div>
+  <div class="fam-tones" id="famTones" role="group" aria-label="Tone">
+    <button type="button" data-tone="" aria-pressed="true">All</button>
+    <button type="button" data-tone="L" aria-pressed="false">Light</button>
+    <button type="button" data-tone="M" aria-pressed="false">Mid</button>
+    <button type="button" data-tone="D" aria-pressed="false">Dark</button>
+  </div>
+  <p class="fam-sub" id="famSub">Loading colours&hellip;</p>
+  <div class="fam-grid" id="famGrid" role="tabpanel" aria-labelledby="famSub"></div>
+  <div class="fam-more"><button type="button" id="famMore" hidden>Show more</button></div>
+  <div class="bb-head">
+    <div><h2>Browse by brand</h2></div>
     <a class="bb-all" href="/colours/">All colours &rarr;</a>
   </div>
   <div class="lib-grid" id="libGrid"></div>
@@ -1902,6 +1955,7 @@ if('IntersectionObserver' in window){
   ['wheel','dial','photo'].forEach(id=>{ const el=document.getElementById(id);
     if(el){ el.addEventListener('pointerdown',arm); el.addEventListener('keydown',arm); } });
   document.getElementById('searchResults').addEventListener('click',arm);
+  ['famGrid'].forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('click',arm); });
   document.getElementById('nameSearch').addEventListener('keydown',e=>{ if(e.key==='Enter') arm(); });
   if(/^#[0-9a-f]{6}$/i.test(location.hash)) arm();
   window.addEventListener('hashchange',arm);
@@ -1916,6 +1970,74 @@ function hexFromHash(){ const m=/^([0-9a-f]{6})$/i.exec(location.hash.slice(1));
 window.addEventListener('hashchange',()=>{ const hx=hexFromHash(); if(hx) setFromHex(hx); });
 </script>
 <script>
+/* Browse by colour: family tabs with counts, then that family lightest first. Families come
+   from /families.json, written by gen_pages.py with the same classifier as the library's
+   colour filters. Tap a colour to load it into the tool. Hidden brands are left out. */
+(function(){
+  var tabs=document.getElementById('famTabs'), grid=document.getElementById('famGrid'),
+      sub=document.getElementById('famSub'), more=document.getElementById('famMore');
+  if(!tabs) return;
+  var tonesEl=document.getElementById('famTones');
+  var fams=null, toneOf='', cur=null, tone='', shown=0, rows=[];
+  var TONE_WORD={L:'light ',M:'mid-tone ',D:'dark '};
+  /* a page is six full rows at whatever column count the grid has, so no half-empty last row */
+  var page=function(){ return 6*Math.max(1, getComputedStyle(grid).gridTemplateColumns.split(' ').length); };
+  var esc=function(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+  var visible=function(i){return !(typeof hiddenBrands!=='undefined' && hiddenBrands.has(PAINTS[i][0]));};
+  function nearestFamily(hx){
+    var t=hexToRgb(hx), best=null, bd=1e9;
+    Object.keys(fams).forEach(function(f){ fams[f].forEach(function(i){
+      var c=hexToRgb(PAINTS[i][2]), d=(c[0]-t[0])*(c[0]-t[0])+(c[1]-t[1])*(c[1]-t[1])+(c[2]-t[2])*(c[2]-t[2]);
+      if(d<bd){bd=d;best=f;}
+    });});
+    return best;
+  }
+  function drawTabs(){
+    tabs.innerHTML=Object.keys(fams).map(function(f){
+      var list=fams[f].filter(visible), mid=list[Math.floor(list.length*0.45)];
+      return '<button type="button" class="fam-tab" role="tab" data-fam="'+esc(f)+'" aria-selected="'+(f===cur)+'">'+
+        '<i style="background:'+(mid!==undefined?PAINTS[mid][2]:'transparent')+'"></i>'+esc(f)+' <em>'+list.length.toLocaleString('en-GB')+'</em></button>';
+    }).join('');
+  }
+  function tile(i){
+    var p=PAINTS[i];
+    return '<button type="button" class="fam-tile" data-hex="'+p[2]+'" aria-label="'+esc(p[1])+', '+esc(p[0])+'">'+
+      '<i style="background:'+p[2]+'"></i><b>'+esc(p[1])+'</b><small>'+esc(p[0])+'</small></button>';
+  }
+  function showMore(){
+    var n=page();
+    grid.insertAdjacentHTML('beforeend', rows.slice(shown, shown+n).map(tile).join(''));
+    shown=Math.min(rows.length, shown+n);
+    more.hidden = shown>=rows.length;
+    more.textContent='Show '+Math.min(n, rows.length-shown)+' more';
+  }
+  function choose(f){
+    cur=f; rows=fams[f].filter(function(i){ return visible(i) && (!tone || toneOf[i]===tone); }); shown=0; grid.innerHTML='';
+    tabs.querySelectorAll('.fam-tab').forEach(function(t){
+      var on=t.dataset.fam===f; t.setAttribute('aria-selected', on?'true':'false');
+      /* bring the chosen tab into view in the scrolling row, without moving the page */
+      if(on && tabs.scrollWidth>tabs.clientWidth) tabs.scrollLeft=t.offsetLeft-tabs.offsetLeft-16;
+    });
+    var hid=(typeof hiddenBrands!=='undefined' && hiddenBrands.size) ? ', leaving out the brands you have hidden' : '';
+    sub.textContent=rows.length.toLocaleString('en-GB')+' '+(TONE_WORD[tone]||'')+f.toLowerCase()+' from every brand, lightest first'+hid+'. Tap one to see its matches.';
+    showMore();
+  }
+  tabs.addEventListener('click',function(e){ var t=e.target.closest('.fam-tab'); if(t) choose(t.dataset.fam); });
+  tonesEl.addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b||!fams) return; tone=b.dataset.tone;
+    tonesEl.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed', x===b?'true':'false');});
+    choose(cur);
+  });
+  more.addEventListener('click',showMore);
+  grid.addEventListener('click',function(e){
+    var t=e.target.closest('.fam-tile'); if(!t) return;
+    setFromHex(t.dataset.hex);
+    document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+  fetch('/families.json').then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }).then(function(j){
+    fams=j.fams; toneOf=j.tone; cur=nearestFamily(currentHex()); drawTabs(); choose(cur);
+  }).catch(function(){ sub.textContent='Colours couldn\u2019t load. Browse them brand by brand below.'; });
+})();
 /* browse-by-brand fan-deck cards */
 (function(){
   var lg=document.getElementById('libGrid'); if(!lg||typeof PAINTS==='undefined') return;

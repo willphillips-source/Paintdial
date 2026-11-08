@@ -891,6 +891,15 @@ def family(hx):
 
 FAM_ORDER = ["Reds", "Pinks", "Oranges", "Browns", "Yellows", "Greens",
              "Teals", "Blues", "Purples", "Whites & neutrals", "Greys", "Blacks"]
+# Tabs for Browse by colour on the homepage: the neutrals most people start from first, then
+# round the colour wheel. Same families as FAM_ORDER, except that Blacks (only the darkest,
+# flattest paints: 14 in Nov 2026; Railings and most off-blacks are Greys) joins Greys, since
+# a tab of 14 reads as a gap in the library. Greys run lightest first, so the blacks end it.
+BROWSE_TAB = {f: f for f in FAM_ORDER}
+BROWSE_TAB.update({'Greys': 'Greys & blacks', 'Blacks': 'Greys & blacks'})
+BROWSE_FAMILIES = ["Whites & neutrals", "Greys & blacks", "Reds", "Pinks", "Oranges", "Browns",
+                   "Yellows", "Greens", "Teals", "Blues", "Purples"]
+assert set(BROWSE_TAB.values()) == set(BROWSE_FAMILIES)
 
 # Facets for the library filter. Modelled on how Farrow & Ball's own site browses: a colour
 # is not forced into ONE bucket. It carries its hue family AND, if it's muted enough, a
@@ -2651,6 +2660,24 @@ if __name__ == '__main__':
         'pd-compare.js SWATCHED list does not match SWATCH_SAMPLED in gen_pages.py'
     _sh.copyfile('pd-compare.js', 'site/pd-compare.js')
     _sh.copyfile('fraunces-amp.woff2', 'site/fraunces-amp.woff2')
+
+    # Browse by colour on the homepage: every paint in the homepage's own RAW list, grouped
+    # by family() (the same classifier as the library's colour filters, so a colour sits in
+    # the same family everywhere) and ordered lightest first. Stored as indexes into RAW, so
+    # it stays small; the homepage fetches it once, when the section is first used.
+    _raw = json.loads(re.search(r'const RAW=(\[.*?\]);\n', _IDX, re.S).group(1))
+    assert len(_raw) == N, f'homepage RAW has {len(_raw)} paints, paints.json has {N}'
+    # "tone" is each paint's Light/Mid/Dark (L/M/D), the same LRV bands as the library's Tone
+    # filter, one letter per RAW row.
+    _fams = {f: [] for f in BROWSE_FAMILIES}
+    _tone = []
+    for _i, (_b, _n, _hx) in enumerate(_raw):
+        _fams[BROWSE_TAB[family(_hx)]].append((rgb2oklab(*hex2rgb(_hx))[0], _i))
+        _tone.append(colour_facets(_hx)[0][0])
+    with open('site/families.json', 'w', encoding='utf-8') as _f:
+        json.dump({'fams': {f: [i for _L, i in sorted(v, key=lambda t: -t[0])] for f, v in _fams.items()},
+                   'tone': ''.join(_tone)}, _f, separators=(',', ':'))
+    print('families.json written:', ', '.join(f'{f} {len(v)}' for f, v in _fams.items()))
     print('pd-compare.js and fraunces-amp.woff2 copied')
 
 
