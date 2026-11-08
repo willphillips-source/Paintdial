@@ -124,20 +124,24 @@ BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johns
 # darker than Zoffany's swatches, median dE00 8.1 across all 156, only 9 within 2. Eight sampled
 # values were cross-checked against allpaintcolours.co.uk, which also reads Zoffany's swatches: all
 # within 1. Will chose the switch on 7 Nov 2026. Names, codes (ZOP1001-1156) and links are Zoffany's.
+# Sanderson (154, added 5 Nov 2026) is Zoffany's sister brand (Sanderson Design Group) on the same
+# site platform, with the same gap: sanderson.design shows each colour only as a JPEG swatch. From
+# 8 Nov 2026 its values are read from those swatch images the same way (flat fields, all 7 sample
+# points identical on every one). Until then they were Brewers' values, which differ less than
+# Zoffany's did (median dE00 3.3, 21 of 154 within 2, Sanderson's swatches about 2 L* lighter) but
+# the same direction. Sanderson's own swatches are rougher in places: seven greys are exactly
+# neutral (R=G=B) and Peony Pink reaches full red. Will chose the switch anyway, for one source
+# across both sister brands and because it is what people choosing a Sanderson colour see; the
+# site's job is a shortlist to order testers from. Names, codes (SAP1001-1154) and links are Sanderson's.
 SWATCH_SAMPLED = {
     'Zoffany': 'https://www.zoffany.design/paint',
+    'Sanderson': 'https://www.sanderson.design/paint',
 }
-# SOURCED FROM A STOCKIST, NOT THE BRAND.
-# Sanderson (154, added 5 Nov 2026) is Zoffany's sister brand (Sanderson Design Group) on the same
-# site platform, with the same gap: sanderson.design shows JPEG swatches and none of its pages
-# carries a value. Brewers' values (brewers.co.uk/colours/sanderson, 154 colours, checksummed
-# against the live listing; 10 of 10 spot-checked colour pages agree) are used, with Sanderson's
-# own names, codes (SAP1001-1154, alphabetical, identical to Brewers' list) and links.
-# Supporting evidence that Brewers mirrors brand values: for Mylands, which does publish its own,
-# all 157 colours Brewers also lists carry exactly the same value on both sites.
-SOURCE_NOTE = {
-    'Sanderson': ('Brewers', 'https://www.brewers.co.uk/colours/sanderson'),
-}
+# SOURCED FROM A STOCKIST, NOT THE BRAND: none at present. Kept so a brand can be added here with
+# (stockist, url) and every source sentence picks it up. Brewers mirrors brand values exactly where
+# a brand publishes its own (all 157 Mylands colours it lists match mylands.com), but did not for
+# Zoffany or Sanderson, so check a stockist against the brand's own swatches before using it.
+SOURCE_NOTE = {}
 # Mylands (193, added 5 Nov 2026): the brand's own values. Each product page on mylands.com sets
 # the colour as a CSS variable on its colour band (<div class="ux-pdp" style="--ux-band:#...">).
 # Core range (No.1-297) plus the Beata Heuman (BH.01-24) and Jinny Blom (JB.01-12) collections,
@@ -240,7 +244,15 @@ def _swatch_clause(html=True):
         place = (f'<a href="{SWATCH_SAMPLED[sw[0]]}" rel="nofollow noopener" target="_blank">its own site</a>'
                  if html else 'its own site')
         return f'{names[0]}, which publishes no values, so they are read from the swatch images on {place}'
-    return f'{_and(names)}, which publish no values, so they are read from the swatch images on their own sites'
+    return f'{_and(names)}, which publish no values, so they are read from the swatch images on their own sites{_swatch_links(html)}'
+
+def _swatch_links(html=True):
+    # " (Zoffany, Sanderson)" linking each brand's paint listing, for the plural sentences; '' in
+    # plain text, where the brands are already named.
+    if not html or len(_swatch_brands()) < 2:
+        return ''
+    return ' (' + ', '.join(f'<a href="{SWATCH_SAMPLED[b]}" rel="nofollow noopener" target="_blank">{H.escape(b)}</a>'
+                            for b in _swatch_brands()) + ')'
 
 STOCKIST_HOME = {'Brewers': 'https://www.brewers.co.uk/'}
 
@@ -2227,7 +2239,7 @@ def _about_values_line():
         bits.append(f'{sw[0]}, which doesn’t publish any, so I read them from the swatch images on '
                     f'<a href="{SWATCH_SAMPLED[_swatch_brands()[0]]}" rel="nofollow noopener" target="_blank">its own site</a>')
     elif sw:
-        bits.append(f'{_and(sw)}, which don’t publish any, so I read them from the swatch images on their own sites')
+        bits.append(f'{_and(sw)}, which don’t publish any, so I read them from the swatch images on their own sites{_swatch_links()}')
     for stockist, brands in _by_stockist().items():
         url = SOURCE_NOTE[brands[0]][1] if len(brands) == 1 else STOCKIST_HOME.get(stockist, SOURCE_NOTE[brands[0]][1])
         link = f'<a href="{url}" rel="nofollow noopener" target="_blank">{stockist}</a>'

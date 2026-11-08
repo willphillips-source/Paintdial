@@ -88,10 +88,10 @@
   /* Brands whose values come from a stockist because the brand publishes none, as
      brand: stockist. Must match SOURCE_NOTE in gen_pages.py, which asserts it on every
      build. When either side of the comparison is one of these, the strip says so. */
-  var SOURCED = {"Sanderson": "Brewers"};
+  var SOURCED = {};
   /* Brands whose values are read from the swatch images on their own site, as they publish
      no values. Must match SWATCH_SAMPLED in gen_pages.py, which asserts it on every build. */
-  var SWATCHED = ["Zoffany"];
+  var SWATCHED = ["Zoffany", "Sanderson"];
   var BASE_NOTE = 'Screens vary. Compare these two to each other, then order testers before you buy.';
 
   var ov = null, handle = null, wordEl = null, diffEl = null, noteEl = null, lastBtn = null, x = 50, dragging = false;
