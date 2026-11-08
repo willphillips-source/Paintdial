@@ -207,8 +207,6 @@
   .pick-panel .pp-lab{font-size:10.5px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; opacity:.75;}
   .pick-panel .pp-hex{font-family:var(--serif); font-size:19px; font-weight:600; font-variant-numeric:tabular-nums;}
 
-  .picker-note{margin-top:18px; font-size:12px; color:var(--muted); line-height:1.55;}
-  .picker-note b{color:var(--ink); font-weight:600;}
 
   /* ---------- results column ---------- */
   .results{padding:28px;}
@@ -319,22 +317,20 @@
   canvas#dial:focus-visible{outline:2px solid var(--pick); outline-offset:4px;}
 
 
-  .search-row{position:relative; margin-top:16px;}
-  .search-row input{width:100%; font-family:var(--sans); font-size:14px; padding:9px 12px;
-    border:1px solid var(--hairline); border-radius:8px; background:var(--card); color:var(--ink);}
-  .search-row input:focus-visible{outline:2px solid var(--pick); outline-offset:1px;}
-  .action-row{display:flex; flex-wrap:wrap; gap:8px; align-items:stretch; margin-top:14px;}
+  .search-row{position:relative; margin:0 0 4px;}
+  .search-lab{display:block; margin:0 0 7px; font-family:var(--sans); font-size:13px; font-weight:600; color:var(--ink);}
+  .search-box{position:relative;}
+  .search-box svg{position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none;}
+  /* 16px so iOS Safari doesn't zoom the page when the field is focused */
+  .search-row input{width:100%; font-family:var(--sans); font-size:16px; padding:13px 14px 13px 40px;
+    border:1.5px solid var(--ink); border-radius:10px; background:var(--card); color:var(--ink);
+    -webkit-appearance:none; appearance:none; box-shadow:0 1px 2px rgba(33,31,27,.06);}
+  .search-row input::placeholder{color:var(--muted);}
+  .search-row input::-webkit-search-cancel-button{-webkit-appearance:none;}
+  .search-row input:focus-visible{outline:2px solid var(--pick); outline-offset:2px;}
+  .search-hint{margin:7px 0 0; font-size:12px; color:var(--muted);}
+  .action-row{display:flex; flex-wrap:wrap; gap:8px; align-items:stretch; margin:12px 0 22px;}
   .action-row .photo-btn{flex:1 1 100%;}
-  .action-row .name-toggle{flex:1 1 100%;}
-  .name-toggle{display:flex; align-items:center; justify-content:center; gap:8px;
-    padding:9px 13px; background:var(--card); border:1px solid var(--hairline); border-radius:8px; cursor:pointer;
-    font-family:var(--sans); font-size:14px; font-weight:400; color:var(--ink); white-space:nowrap;
-    transition:color .12s, border-color .12s;}
-  .name-toggle:hover{border-color:var(--muted);}
-  .name-toggle:hover{color:var(--ink); border-color:var(--muted);}
-  .name-toggle svg{opacity:.75; flex:none;}
-  .name-toggle:focus-visible{outline:2px solid var(--pick); outline-offset:2px;}
-  .name-toggle[aria-expanded="true"]{color:var(--ink); border-color:var(--ink);}
   .search-results{position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:40;
     background:var(--card); border:1px solid var(--hairline); border-radius:10px; overflow:hidden;
     box-shadow:0 8px 24px rgba(33,31,27,.12); display:none; max-height:280px; overflow-y:auto;}
@@ -528,7 +524,7 @@
     .mini-label{display:block; text-align:center; margin-top:6px; font-size:10px; font-weight:600;
       letter-spacing:.1em; text-transform:uppercase; color:var(--muted);}
     canvas#dial{width:150px; height:150px;}
-    .action-row{margin-top:16px;}
+    .action-row{margin:12px 0 20px;}
     .current{margin-top:16px;}
   }
 
@@ -558,13 +554,10 @@
     .pick-row{max-width:100%;}
     .dial-wrap{min-width:0;}
     .hex-row{margin-top:8px;}
-    .action-row{margin-top:12px; gap:8px;}
-    .search-row{margin-top:10px;}
-    .search-row input{font-size:14px; padding:9px 12px;}
+    .action-row{margin:10px 0 18px; gap:8px;}
+    .search-hint{display:none;}
     .photo-btn{padding:11px 12px;}
-    .name-toggle{padding:9px 12px; font-size:13.5px;}
     .pick-panel{height:56px; margin-top:12px; flex-direction:row; align-items:center; justify-content:space-between; padding:0 14px;}
-    .picker-note{display:none;}
     .results{padding:20px 16px 0; display:flex; flex-direction:column;}
     .allmatches{padding:0 16px 90px;}
     .results h2{order:1;}
@@ -742,6 +735,19 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
 <div class="layout">
   <aside class="picker">
     <div class="picker-inner">
+      <div class="search-row" id="searchRow">
+        <label class="search-lab" for="nameSearch">Already have a paint in mind?</label>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+          <input id="nameSearch" type="search" placeholder="Search a paint, e.g. Hague Blue" spellcheck="false"
+            autocomplete="off" enterkeyhint="search" aria-label="Search for a paint by name, RAL, BS or Dulux Trade code">
+        </div>
+        <div class="search-results" id="searchResults"></div>
+        <p class="search-hint">Name, RAL, BS or Dulux Trade code.</p>
+      </div>
+      <div class="action-row">
+        <button class="photo-btn" id="photoBtn">&#128247; Match from a photo</button>
+      </div>
       <div class="pick-row">
       <div class="wheel-wrap">
         <div class="wheel-ring" id="wheelRing"><canvas id="wheel" width="600" height="600" tabindex="0" aria-label="Colour wheel: drag to choose hue and saturation, or use the arrow keys"></canvas></div>
@@ -759,13 +765,6 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
       </div>
 
 
-      <div class="action-row">
-        <button class="photo-btn" id="photoBtn">&#128247; Match from a photo</button>
-        <button class="name-toggle" id="nameToggle" aria-expanded="false" aria-controls="searchRow">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
-          Search by name, code, RAL or BS
-        </button>
-      </div>
       <div class="pick-panel" id="pickPanel" aria-hidden="true">
         <span class="pp-lab">Your colour</span>
         <span class="pp-hex" id="pickPanelHex">#5E7E8B</span>
@@ -786,13 +785,6 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
         <div class="photo-hint"><span id="photoHintText"></span><span class="photo-btns"><button id="photoClear" type="button">Remove image</button></span></div>
       </div>
 
-      <div class="search-row" id="searchRow" hidden>
-        <input id="nameSearch" type="text" placeholder="Try &#8216;Hague Blue&#8217;, &#8216;Slaked Lime&#8217;, &#8216;Setting Plaster&#8217;… or RAL code" spellcheck="false"
-          autocomplete="off" aria-label="Search for a paint by name">
-        <div class="search-results" id="searchResults"></div>
-      </div>
-
-      <p class="picker-note"><b>Already have a paint in mind?</b> Search by name, RAL, BS or Dulux Trade code.</p>
     </div>
   </aside>
 
@@ -1636,14 +1628,6 @@ function chooseSearch(i){
   searchResults.classList.remove('show');
   setFromHex(p.hex);
 }
-const nameToggle=document.getElementById('nameToggle'), searchRow=document.getElementById('searchRow');
-nameToggle.addEventListener('click',()=>{
-  const opening=searchRow.hidden;
-  searchRow.hidden=!opening;
-  nameToggle.setAttribute('aria-expanded', opening?'true':'false');
-  if(opening){ nameSearch.focus(); }
-  else { nameSearch.value=''; searchResults.classList.remove('show'); }
-});
 nameSearch.addEventListener('input',runSearch);
 nameSearch.addEventListener('keydown',e=>{
   if(!searchResults.classList.contains('show'))return;
@@ -1901,15 +1885,26 @@ function update(){
 window.addEventListener('resize',placePointer);
 /* show the jump bar on mobile only while results are off-screen */
 const jbEl=document.getElementById('jumpBar'), resEl=document.getElementById('results'), amEl=document.getElementById('allmatches');
+let jbArmed=false;
 if('IntersectionObserver' in window){
   /* the matches area is now two sibling sections; the bar should hide while
      EITHER is on screen, or it would reappear once you scroll into the grid */
   const vis=new WeakMap();
+  const jbSync=()=>jbEl.classList.toggle('show', jbArmed && !(vis.get(resEl) || vis.get(amEl)));
   const io=new IntersectionObserver(es=>{
     es.forEach(e=>vis.set(e.target, e.isIntersecting));
-    jbEl.classList.toggle('show', !(vis.get(resEl) || vis.get(amEl)));
+    jbSync();
   },{threshold:0.12});
   io.observe(resEl); io.observe(amEl);
+  /* The bar appears once the visitor has chosen a colour (wheel, dial, search or photo),
+     or arrived with one in the link. On first load it would sit over the search box. */
+  const arm=()=>{ if(!jbArmed){ jbArmed=true; jbSync(); } };
+  ['wheel','dial','photo'].forEach(id=>{ const el=document.getElementById(id);
+    if(el){ el.addEventListener('pointerdown',arm); el.addEventListener('keydown',arm); } });
+  document.getElementById('searchResults').addEventListener('click',arm);
+  document.getElementById('nameSearch').addEventListener('keydown',e=>{ if(e.key==='Enter') arm(); });
+  if(/^#[0-9a-f]{6}$/i.test(location.hash)) arm();
+  window.addEventListener('hashchange',arm);
 }else{jbEl.classList.add('show');}
 drawWheel();
 setFromHex('#5E7E8B'); /* start on Stone Blue territory */
