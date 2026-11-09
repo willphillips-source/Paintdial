@@ -109,6 +109,17 @@ BUY_LINKS = {b: v['links'] for b, v in _BL.items() if not b.startswith('_')}
 # Colours the brand's own site no longer has a page for: no button rather than a link
 # that lands on the wrong page.
 UNLISTED = {b: set(v.get('unlisted', [])) for b, v in _BL.items() if not b.startswith('_')}
+# Decorating Centre Online (Awin advertiser 105177): retailer route for the brands/colours it
+# stocks. dco-links.json (brand -> {code-or-name: raw DCO deep link}) is built by
+# build_dco_links.py from DCO's Awin product feed. Takes priority over a brand-direct link
+# because DCO pays commission and the brand sites (F&B, Dulux...) don't. Dormant if the file
+# is absent; only colours DCO stocks get a link, the rest keep their brand link.
+DCO_MID = "105177"
+try:
+    _dco = json.load(open('dco-links.json', encoding='utf-8'))
+    DCO_LINKS = {b: v for b, v in _dco.items() if not b.startswith('_')}
+except FileNotFoundError:
+    DCO_LINKS = {}
 BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints',
                'Earthborn', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany', 'Mylands', 'Sanderson',
                'Benjamin Moore', 'Tikkurila']
@@ -402,6 +413,12 @@ def buy_link(p):
         from urllib.parse import quote
         dest = "https://www.freshlick.com/catalogsearch/result/?q=" + quote(f"{p['brand']} {p['name']}")
         return _awin_wrap(FRESHLICK_MID, dest)
+    # Retailer route (Decorating Centre Online) for the colours it stocks. Before the
+    # brand-direct link below: DCO pays commission, the brand sites don't.
+    if DCO_MID and p['brand'] in DCO_LINKS:
+        _dco_url = DCO_LINKS[p['brand']].get(p.get('code') or p['name'])
+        if _dco_url:
+            return _awin_wrap(DCO_MID, _dco_url)
     if p.get('url'): return p['url']
     _bl = BUY_LINKS.get(p['brand'], {}).get(p.get('code') or p['name'])
     if _bl: return _bl
@@ -690,6 +707,8 @@ def buy_cta(p):
         return url, f'Order {a} {name} sample →', 'Opens Lick’s page for it with the sample selected.'
     if 'lakelandpaints.co.uk/testers/' in url:  # Lakeland has one tester page for every colour
         return url, f'Order {a} {name} tester →', f'Opens Lakeland’s tester page: choose {name} from its colour list.'
+    if 'decoratingcentreonline' in url:
+        return url, f'Order {a} {name} tester →', 'Opens Decorating Centre Online, where you can order a tester or a full tin.'
     if 'freshlick' in url or 'awin1.com' in url:
         return url, f'Order {a} {name} tester →', 'Opens Freshlick, where you can order a tester or a full tin.'
     return (url, f'Order {a} {name} tester →',
