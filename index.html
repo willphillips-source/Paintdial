@@ -19,7 +19,7 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"PaintDial","url":"https://www.paintdial.co.uk","logo":"https://www.paintdial.co.uk/share/farrow-and-ball-hague-blue.jpg","description":"An independent tool that matches any colour across more than 12,000 paints from 19 brands sold in the UK."}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"PaintDial","url":"https://www.paintdial.co.uk","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://www.paintdial.co.uk/colours/?q={search_term_string}"},"query-input":"required name=search_term_string"}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   /* Google's Fraunces only has the looped ampersand; this 3 KB cut of the font holds its plain one
      (the ss01 alternate), still variable so weight and optical size follow. Fetched only when an & renders. */
@@ -48,7 +48,7 @@
   .tagline{font-size:13px; color:var(--muted);}
   .lib-link{font-family:var(--sans); font-size:13px; font-weight:600; color:var(--ink); text-decoration:none;
     white-space:nowrap; display:inline-flex; align-items:center; gap:9px;
-    padding:6px 14px 6px 8px; background:#fff; border:1px solid var(--hairline); border-radius:9px;
+    padding:6px 14px 6px 8px; background:#fff; border:1px solid var(--hairline); border-radius:8px;
     box-shadow:0 1px 2px rgba(33,31,27,.05); transition:box-shadow .12s, transform .12s, border-color .12s;}
   .lib-link:hover{ box-shadow:0 4px 12px rgba(33,31,27,.10); transform:translateY(-1px); border-color:var(--muted); }
   .lib-swatches{display:inline-flex; gap:3px;}
@@ -165,7 +165,7 @@
   .pointer-hex{
     position:absolute; z-index:6; pointer-events:none; transform:translate(-50%,-50%);
     font-family:var(--sans); font-size:11px; font-weight:600; letter-spacing:.04em;
-    padding:2px 7px; border-radius:6px; white-space:nowrap;
+    padding:2px 7px; border-radius:8px; white-space:nowrap;
     background:rgba(255,255,255,.94); color:#211F1B;
     box-shadow:0 1px 4px rgba(0,0,0,.28); border:1px solid rgba(0,0,0,.08);
   }
@@ -177,7 +177,7 @@
   }
   .control label output{color:var(--ink); font-variant-numeric:tabular-nums;}
   input[type=range]{
-    -webkit-appearance:none; width:100%; height:14px; border-radius:7px;
+    -webkit-appearance:none; width:100%; height:14px; border-radius:8px;
     outline:none; border:1px solid rgba(0,0,0,.12); cursor:pointer;
   }
   input[type=range]::-webkit-slider-thumb{
@@ -200,7 +200,7 @@
   .hex-row input:focus-visible{outline:2px solid var(--pick); outline-offset:1px;}
 
   .pick-panel{
-    margin-top:14px; height:112px; border-radius:12px; background:var(--pick);
+    margin-top:14px; height:112px; border-radius:14px; background:var(--pick);
     transition:background .15s; box-shadow:inset 0 0 0 1px rgba(0,0,0,.08), 0 1px 2px rgba(33,31,27,.05);
     display:flex; flex-direction:column; justify-content:flex-end; padding:12px 14px;
   }
@@ -231,7 +231,7 @@
   /* Price band, £ to £££, so the rough cost reads at a glance; the per-litre figure
      follows in the same muted line. Unearned £ signs are drawn faint rather than left
      out, so every card's band sits at the same width and compares down a column. */
-  .pband{display:inline-block; background:#EEEAE2; border-radius:99px; padding:2px 8px; margin-right:6px;
+  .pband{display:inline-block; background:#EEEAE2; border-radius:999px; padding:2px 8px; margin-right:6px;
     font-weight:600; letter-spacing:.04em; color:var(--ink);}
   .pband i{font-style:normal; opacity:.25;}
 
@@ -282,7 +282,7 @@
   /* chip grid — the fan deck */
   .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:14px;}
   .chip{
-    border:1px solid var(--hairline); border-radius:10px; overflow:hidden;
+    border:1px solid var(--hairline); border-radius:14px; overflow:hidden;
     background:var(--card); cursor:pointer; text-align:left; padding:0;
     font-family:var(--sans); transition:transform .12s, box-shadow .12s;
     display:flex; flex-direction:column; text-decoration:none; color:inherit;
@@ -323,7 +323,7 @@
   .search-box svg{position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none;}
   /* 16px so iOS Safari doesn't zoom the page when the field is focused */
   .search-row input{width:100%; font-family:var(--sans); font-size:16px; padding:13px 14px 13px 40px;
-    border:1.5px solid var(--ink); border-radius:10px; background:var(--card); color:var(--ink);
+    border:1.5px solid var(--ink); border-radius:8px; background:var(--card); color:var(--ink);
     -webkit-appearance:none; appearance:none; box-shadow:0 1px 2px rgba(33,31,27,.06);}
   .search-row input::placeholder{color:var(--muted);}
   .search-row input::-webkit-search-cancel-button{-webkit-appearance:none;}
@@ -332,13 +332,13 @@
   .action-row{display:flex; flex-wrap:wrap; gap:8px; align-items:stretch; margin:12px 0 22px;}
   .action-row .photo-btn{flex:1 1 100%;}
   .search-results{position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:40;
-    background:var(--card); border:1px solid var(--hairline); border-radius:10px; overflow:hidden;
+    background:var(--card); border:1px solid var(--hairline); border-radius:8px; overflow:hidden;
     box-shadow:0 8px 24px rgba(33,31,27,.12); display:none; max-height:280px; overflow-y:auto;}
   .search-results.show{display:block;}
   .sr-item{display:flex; align-items:center; gap:10px; padding:8px 12px; cursor:pointer; border:none;
     background:none; width:100%; text-align:left; font-family:var(--sans);}
   .sr-item:hover,.sr-item.active{background:var(--paper);}
-  .sr-swatch{width:26px; height:26px; border-radius:6px; flex:none;}
+  .sr-swatch{width:26px; height:26px; border-radius:4px; flex:none;}
   .sr-txt{min-width:0;}
   .sr-name{font-family:var(--serif); font-size:14px; font-weight:600; color:var(--ink); line-height:1.2;}
   .sr-brand{font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);}
@@ -358,7 +358,7 @@
   /* touch-action is left as the page's (manipulation), not none, so a finger dragging over
      the photo scrolls the page. Picking on touch is a tap, or press-and-hold then drag (see
      the script). No callout or text selection on a long press. */
-  canvas#photo{width:100%; display:block; border-radius:10px; border:1px solid var(--hairline); cursor:crosshair;
+  canvas#photo{width:100%; display:block; border-radius:14px; border:1px solid var(--hairline); cursor:crosshair;
     -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;}
   #photoWrap.fine .photo-marker{width:34px; height:34px;}
   /* The three steps, above the photo so they're on screen with it on a phone. The current
@@ -366,7 +366,7 @@
      the Correct the light control itself. Ink and muted, not --pick: --pick is the picked
      colour, and a pale pick would make the ticks and button unreadable. */
   .photo-steps{list-style:none; margin:0 0 8px; padding:10px 12px; background:var(--card); border:1px solid var(--hairline);
-    border-radius:10px; display:grid; gap:7px; font-size:14px; line-height:1.3; color:var(--muted);}
+    border-radius:14px; display:grid; gap:7px; font-size:14px; line-height:1.3; color:var(--muted);}
   .photo-steps li{display:flex; align-items:center; gap:10px; min-height:28px;}
   .photo-steps .ps-n{flex:none; width:22px; height:22px; border-radius:50%; border:1.5px solid currentColor;
     display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;}
@@ -375,7 +375,7 @@
   .photo-steps li.done .ps-n{background:var(--muted); border-color:var(--muted); color:#fff; font-size:0;}
   .photo-steps li.done .ps-n::after{content:"\2713"; font-size:13px;}
   .photo-steps button{font-family:var(--sans); font-size:13.5px; font-weight:600; padding:5px 11px; margin-left:3px;
-    border:1.5px solid var(--ink); border-radius:7px; background:var(--card); color:var(--ink); cursor:pointer;}
+    border:1.5px solid var(--ink); border-radius:8px; background:var(--card); color:var(--ink); cursor:pointer;}
   .photo-steps li.cur button{background:var(--ink); color:#fff;}
   .photo-steps button[hidden]{display:none;}
   #photoWBCancel{border-color:var(--hairline); color:var(--ink); background:var(--card) !important;}
@@ -387,10 +387,10 @@
   .photo-chip{display:none;}
   @media(max-width:860px){
     .photo-chip.show{position:absolute; left:10px; bottom:10px; z-index:2; display:flex; align-items:center; gap:8px;
-      padding:6px 7px 6px 6px; border-radius:9px; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.22); font-size:12.5px;}
-    .photo-chip i{width:26px; height:26px; border-radius:6px; border:1px solid rgba(0,0,0,.12); flex:none;}
+      padding:6px 7px 6px 6px; border-radius:8px; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.22); font-size:12.5px;}
+    .photo-chip i{width:26px; height:26px; border-radius:4px; border:1px solid rgba(0,0,0,.12); flex:none;}
     .photo-chip b{font-family:var(--sans); font-weight:600; letter-spacing:.02em;}
-    .photo-chip a{color:#fff; background:var(--ink); border-radius:7px; padding:5px 9px; text-decoration:none; font-weight:600; white-space:nowrap;}
+    .photo-chip a{color:#fff; background:var(--ink); border-radius:8px; padding:5px 9px; text-decoration:none; font-weight:600; white-space:nowrap;}
   }
   .photo-marker{
     position:absolute; width:26px; height:26px; border-radius:50%;
@@ -409,9 +409,9 @@
   /* Exact match: the picked colour IS a paint in the library (a screenshot of a swatch,
      a search, a hex). Said plainly above the ranked list. */
   .exact-note{display:flex; gap:10px; align-items:center; margin:2px 0 10px; padding:10px 12px;
-    border:1px solid var(--hairline); border-radius:10px; background:#fff; font-size:14px; line-height:1.35;}
+    border:1px solid var(--hairline); border-radius:14px; background:#fff; font-size:14px; line-height:1.35;}
   .exact-note[hidden]{display:none;}
-  .ex-sw{width:22px; height:22px; border-radius:6px; flex:none; border:1px solid rgba(0,0,0,.08);}
+  .ex-sw{width:22px; height:22px; border-radius:4px; flex:none; border:1px solid rgba(0,0,0,.08);}
   .exact-note a{color:var(--ink); font-weight:600; text-decoration:none; border-bottom:1px solid var(--hairline);}
 
 
@@ -433,7 +433,7 @@
   .ladder-head .hint{font-size:12px; color:var(--muted); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;}
   @media(max-width:560px){ .ladder-head .hint{display:none;} }
   .ladder{
-    display:flex; gap:0; border:1px solid var(--hairline); border-radius:12px;
+    display:flex; gap:0; border:1px solid var(--hairline); border-radius:14px;
     overflow-x:auto; background:var(--card); box-shadow:0 1px 2px rgba(33,31,27,.05);
   }
   .rung{
@@ -455,7 +455,7 @@
   .rung .r-brand{display:block; font-size:9.5px; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); margin-top:2px;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .rung:hover .r-name{text-decoration:underline;}
-  .rung:focus-visible{outline:2px solid var(--pick); outline-offset:-2px; border-radius:10px;}
+  .rung:focus-visible{outline:2px solid var(--pick); outline-offset:-2px; border-radius:8px;}
 
 
   .alt-list{display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-top:4px;}
@@ -463,7 +463,7 @@
   @media(max-width:560px){ .alt-list{grid-template-columns:1fr;} }
   .alt-row{display:grid; grid-template-columns:1fr auto; grid-template-areas:'sw sw' 'txt txt' 'de de';
     text-decoration:none; color:inherit;
-    background:var(--card); border:1px solid var(--hairline); border-radius:10px; overflow:hidden;
+    background:var(--card); border:1px solid var(--hairline); border-radius:14px; overflow:hidden;
     cursor:pointer; transition:transform .12s, box-shadow .12s; padding:0;}
   .alt-row:hover{transform:translateY(-2px); box-shadow:0 6px 18px rgba(33,31,27,.10);}
   .alt-row:focus-within{outline:2px solid var(--pick); outline-offset:2px;}
@@ -473,7 +473,7 @@
   /* The split swatch's seam is drawn as a faint dotted line inside splitBG() below, so the
      split reads as deliberate. "yours"/"match" tags were tried and dropped: too busy. */
   .reach-note{font-size:13px; line-height:1.5; color:var(--ink); max-width:70ch; margin:12px 0 2px;
-    padding:9px 13px; border:1px solid var(--hairline); border-radius:9px; background:var(--card);}
+    padding:9px 13px; border:1px solid var(--hairline); border-radius:8px; background:var(--card);}
   .alt-txt{grid-area:txt; display:flex; flex-direction:column; padding:10px 12px 4px; min-width:0; line-height:1.25;}
   .alt-txt b{font-family:var(--serif); font-size:15px; font-weight:600; text-wrap:pretty;}
   .alt-txt small{font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-top:2px;}
@@ -487,7 +487,7 @@
     .best{display:none;}
     .alt-list{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0 4px;}
     .alt-row{display:flex; flex-direction:column; align-items:stretch; gap:0; text-align:left;
-      background:var(--card); border:1px solid var(--hairline); border-radius:12px; overflow:hidden; padding:0; cursor:pointer;}
+      background:var(--card); border:1px solid var(--hairline); border-radius:14px; overflow:hidden; padding:0; cursor:pointer;}
     .alt-swatch{width:100%; height:74px; border-radius:0; flex:none;}
     .alt-txt{flex:none; min-width:0; display:flex; flex-direction:column; line-height:1.2; padding:9px 11px 2px;}
     .alt-txt b{font-family:var(--serif); font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
@@ -629,7 +629,7 @@
 .pd-heart.on{color:#5E7E8B}.pd-heart.on svg{fill:currentColor;stroke:currentColor}
 #pd-tray{position:fixed;right:14px;bottom:14px;z-index:900;background:#fff;border:1px solid #E3DFD5;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:11px 12px;max-width:min(92vw,560px)}
 .pd-tray-head{display:flex;align-items:center;gap:8px;font-size:13px;color:#211F1B}
-.pd-tray-head b{font-weight:600}.pd-tray-n{background:#F1EEE7;border-radius:20px;padding:1px 8px;font-size:12px;color:#665F54}
+.pd-tray-head b{font-weight:600}.pd-tray-n{background:#F1EEE7;border-radius:999px;padding:1px 8px;font-size:12px;color:#665F54}
 .pd-tray-clear{margin-left:auto;border:none;background:none;color:#9A6B6B;font-size:12px;cursor:pointer;padding:2px 4px}
 .pd-tray-clear:hover{text-decoration:underline}
 .pd-tray-note{font-size:11px;color:#665F54;margin:3px 0 9px}
@@ -653,7 +653,7 @@
 #pd-tray.min{padding:0;cursor:pointer}
 #pd-tray.min .pd-tray-head{margin-bottom:0;padding:10px 13px}
 #pd-tray.min .pd-tray-note,#pd-tray.min .pd-tray-row,#pd-tray.min .pd-tray-mail,#pd-tray.min .pd-tray-clear{display:none}
-#pd-sl-flash{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(10px);background:#211F1B;color:#fff;padding:9px 15px;border-radius:9px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:950}
+#pd-sl-flash{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(10px);background:#211F1B;color:#fff;padding:9px 15px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:950}
 #pd-sl-flash.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .chip,.c-swatch,.alt-row,.hero-swatch{position:relative}
 @media(max-width:560px){#pd-tray{right:8px;bottom:8px;left:8px;max-width:none}.pd-heart{width:27px;height:27px}}
@@ -661,7 +661,7 @@
 /* Full-screen compare trigger (top-left of the swatch; the heart has top-right).
    Behaviour is in /pd-compare.js, shared with every generated page. Keep this CSS
    identical to COMPARE_BTN_CSS in gen_pages.py. */
-.pd-cmp-btn{position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 11px 0 9px;border:1px solid rgba(33,31,27,.14);border-radius:99px;background:rgba(255,255,255,.92);backdrop-filter:blur(3px);box-shadow:0 1px 2px rgba(33,31,27,.08);cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:.01em;line-height:1;color:#211F1B;white-space:nowrap;z-index:2;transition:transform .12s,box-shadow .12s}
+.pd-cmp-btn{position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 11px 0 9px;border:1px solid rgba(33,31,27,.14);border-radius:999px;background:rgba(255,255,255,.92);backdrop-filter:blur(3px);box-shadow:0 1px 2px rgba(33,31,27,.08);cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:.01em;line-height:1;color:#211F1B;white-space:nowrap;z-index:2;transition:transform .12s,box-shadow .12s}
 .pd-cmp-btn:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(33,31,27,.14)}
 canvas#wheel:focus{outline:none}
 canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
@@ -674,12 +674,12 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
 .popalt h2{font-family:var(--serif);font-size:19px;font-weight:600;margin:0 0 3px}
 .popalt p{font-size:13px;color:var(--muted);margin:0 0 13px}
 .popalt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
-.popalt-grid a{display:flex;align-items:center;gap:9px;padding:8px 11px;border:1px solid var(--hairline);border-radius:9px;background:var(--card);text-decoration:none;color:var(--ink);font-size:13px;transition:border-color .12s}
+.popalt-grid a{display:flex;align-items:center;gap:9px;padding:8px 11px;border:1px solid var(--hairline);border-radius:8px;background:var(--card);text-decoration:none;color:var(--ink);font-size:13px;transition:border-color .12s}
 .popalt-grid a:hover{border-color:var(--pick)}
 .popalt-grid i{width:15px;height:15px;border-radius:4px;flex:0 0 auto;border:1px solid rgba(0,0,0,.09)}
 @media(max-width:560px){.popalt{padding:18px 14px 12px;max-width:100%}.popalt-grid{grid-template-columns:1fr 1fr;gap:6px}.popalt-grid a{font-size:11.5px;padding:7px 8px;gap:6px}}
 .head-nav{font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:color .12s}.head-nav:hover{color:var(--ink)}.mnav{display:none}@media(max-width:560px){.head-nav{display:none}.mnav{display:flex;gap:18px;align-items:center;padding:7px 14px 9px;border-bottom:1px solid var(--hairline);overflow-x:auto;-webkit-overflow-scrolling:touch}.mnav a{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}.mnav a:active{color:var(--ink)}}
-@media(max-width:560px){header{align-items:center;flex-wrap:nowrap;gap:10px;padding:13px 14px 11px}.brand{font-size:21px;gap:7px}.brand .mark{width:21px;height:21px}.lib-link{font-size:10.5px;padding:4px 9px;border-radius:7px;box-shadow:none}}
+@media(max-width:560px){header{align-items:center;flex-wrap:nowrap;gap:10px;padding:13px 14px 11px}.brand{font-size:21px;gap:7px}.brand .mark{width:21px;height:21px}.lib-link{font-size:10.5px;padding:4px 9px;border-radius:8px;box-shadow:none}}
 
 /* ---------- wide screens: one shared content column ----------
    Above 1500px the page is capped and centred. --wide is the column width at each
@@ -707,9 +707,14 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
    FONTS in gen_pages.py so the generated pages match. */
 /* Ko-fi strip under the results: hidden until someone uses the tool (wheel, dial, photo, search,
    filters or a heart). Twin of KOFI_STRIP_CSS / kofi_strip() in gen_pages.py; change both together. */
-.kofi-s{display:flex;align-items:center;gap:14px;margin:30px 0 0;padding:16px 22px;background:var(--card);border:1px solid var(--hairline);border-radius:14px}.kofi-s .kofi-cup{flex:none;width:46px;height:46px;margin-top:-5px}.kofi-s p{flex:1;font-family:var(--serif);font-size:19px;font-weight:600;line-height:1.3;margin:0;max-width:none;color:var(--ink)}.kofi-s a{flex:none;background:var(--ink);color:var(--paper)!important;font-family:var(--sans);font-size:14px;font-weight:600;text-align:center;text-decoration:none!important;padding:10px 18px;border-radius:9px;transition:transform .12s,box-shadow .12s}.kofi-s a:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(33,31,27,.18)}@media(max-width:560px){.kofi-s{flex-wrap:wrap;gap:10px 12px;padding:14px}.kofi-s p{flex-basis:100%;font-size:16.5px;text-wrap:balance}.kofi-s a{flex:1;padding:11px 18px}.kofi-s .kofi-cup{width:42px;height:42px}}
+.kofi-s{display:flex;align-items:center;gap:14px;margin:30px 0 0;padding:16px 22px;background:var(--card);border:1px solid var(--hairline);border-radius:14px}.kofi-s .kofi-cup{flex:none;width:46px;height:46px;margin-top:-5px}.kofi-s p{flex:1;font-family:var(--serif);font-size:19px;font-weight:600;line-height:1.3;margin:0;max-width:none;color:var(--ink)}.kofi-s a{flex:none;background:var(--ink);color:var(--paper)!important;font-family:var(--sans);font-size:14px;font-weight:600;text-align:center;text-decoration:none!important;padding:10px 18px;border-radius:8px;transition:transform .12s,box-shadow .12s}.kofi-s a:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(33,31,27,.18)}@media(max-width:560px){.kofi-s{flex-wrap:wrap;gap:10px 12px;padding:14px}.kofi-s p{flex-basis:100%;font-size:16.5px;text-wrap:balance}.kofi-s a{flex:1;padding:11px 18px}.kofi-s .kofi-cup{width:42px;height:42px}}
 .kofi-s[hidden]{display:none}
 @media(min-width:2800px){ html{ zoom:1.1; } }
+
+/* Colour data (hex values) in IBM Plex Mono, as on the colour pages. Labels stay in Archivo. */
+:root{--mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.pointer-hex,#photoChipHex,.hexlbl,.hex-row input{font-family:var(--mono);font-weight:500;letter-spacing:0}
+.pick-panel .pp-hex{font-family:var(--mono);font-weight:500;font-size:18px;letter-spacing:0}
 </style>
 </head>
 <body>

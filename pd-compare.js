@@ -22,7 +22,7 @@
     '@container (max-width:176px){.pd-cmp-b .pd-cmp-lbl{display:none}}' +
     '.pd-cmp-a{left:0;right:calc(100% - var(--x))}' +
     '.pd-cmp-b{left:var(--x);right:0}' +
-    '.pd-cmp-lbl{position:absolute;top:12px;max-width:min(calc(100% - 20px),260px);background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border-radius:9px;padding:6px 9px;line-height:1.2;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.14)}' +
+    '.pd-cmp-lbl{position:absolute;top:12px;max-width:min(calc(100% - 20px),260px);background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border-radius:8px;padding:6px 9px;line-height:1.2;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.14)}' +
     '.pd-cmp-a .pd-cmp-lbl{right:10px;text-align:right}' +
     '.pd-cmp-b .pd-cmp-lbl{left:10px;max-width:min(calc(100% - 66px),260px)}' +
     '.pd-cmp-lbl b{display:block;font-family:"Fraunces Amp","Fraunces",Georgia,serif;font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
@@ -35,7 +35,7 @@
     '.pd-cmp-x:focus-visible{outline:2px solid #5E7E8B;outline-offset:2px}' +
     '.pd-cmp-x svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}' +
     '.pd-cmp-s{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:10px 16px max(12px,env(safe-area-inset-bottom));display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 12px;text-align:center;touch-action:auto}' +
-    '.pd-cmp-word{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#211F1B;border:1px solid #E3DFD5;border-radius:99px;padding:4px 10px;background:#F7F5F0;white-space:nowrap}' +
+    '.pd-cmp-word{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#211F1B;border:1px solid #E3DFD5;border-radius:999px;padding:4px 10px;background:#F7F5F0;white-space:nowrap}' +
     '.pd-cmp-word:empty{display:none}' +
     '.pd-cmp-diff{font-size:13px;color:#211F1B;line-height:1.4;flex-basis:100%}' +
     '.pd-cmp-diff:empty{display:none}' +
