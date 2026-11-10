@@ -123,6 +123,11 @@ except FileNotFoundError:
 # Crown Paints (Awin advertiser 122260, approved 10 Nov 2026): brand-direct programme. Its own
 # crownpaints.com colour URLs are wrapped with Awin to earn commission; dormant if None.
 CROWN_MID = "122260"
+# Farrow & Ball colours Decorating Centre Online sells only as a 750ml tin, with no sample pot
+# (link audit, 10 Nov 2026). The button says "Order a tester", so these go to farrow-ball.com,
+# whose colour pages are sample-pot pages, and give up the commission.
+DCO_NO_SAMPLE = {'Farrow & Ball': {'No.13', 'No.15', 'No.2009', 'No.253', 'No.290', 'No.44', 'No.49', 'No.60', 'No.95',
+                                   'No.CC8', 'No.W101', 'No.W40', 'No.W5', 'No.W53', 'No.W55', 'No.W7', 'No.W92', 'No.W93'}}
 BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints',
                'Earthborn', 'Fired Earth', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany', 'Mylands', 'Sanderson',
                'Benjamin Moore', 'Tikkurila']
@@ -434,8 +439,9 @@ def buy_link(p):
     # Retailer route (Decorating Centre Online) for the colours it stocks. Before the
     # brand-direct link below: DCO pays commission, the brand sites don't.
     if DCO_MID and p['brand'] in DCO_LINKS:
-        _dco_url = DCO_LINKS[p['brand']].get(p.get('code') or p['name'])
-        if _dco_url:
+        _dco_key = p.get('code') or p['name']
+        _dco_url = DCO_LINKS[p['brand']].get(_dco_key)
+        if _dco_url and _dco_key not in DCO_NO_SAMPLE.get(p['brand'], ()):
             return _awin_wrap(DCO_MID, _dco_url)
     # Brand-direct Awin route (Crown Paints): wrap its own colour URL to earn commission.
     if CROWN_MID and p['brand'] == 'Crown':
@@ -459,6 +465,26 @@ def buy_link(p):
         return f"https://coatpaints.com/products/{s}-flat-matt"
     from urllib.parse import quote
     return "https://www.diy.com/search?term="+quote(f"{p['brand']} {p['name']} paint")
+
+# Two checks from the 10 Nov 2026 link audit, which found seven tester buttons going to the
+# wrong colour. All seven were bad data rows, and either check below would have stopped them.
+# 1. Johnstone's has no codes of its own: its "code" is the colour name in capitals and the
+#    tester link is looked up by it. Six rows had another colour's name as the code.
+_key = lambda t: re.sub(r'[^a-z0-9]', '', unicodedata.normalize('NFKD', t).encode('ascii', 'ignore').decode().lower())
+for _p in paints:
+    if _p['brand'] == "Johnstone's":
+        assert _key(_p['code']) == _key(_p['name']), \
+            f"Johnstone's {_p['name']} has the code {_p['code']}: its tester link would go to another colour"
+# 2. No two colours in a brand may share a destination. (Lakeland is the exception: one tester
+#    page for every colour.) Dulux "Sapphire Splendor" was a duplicate of "Sapphire Splendour".
+_dest = {}
+for _p in paints:
+    if _p['brand'] == 'Lakeland Paints': continue
+    _u = buy_link(_p)
+    if _u is None: continue
+    _k = (_p['brand'], _u)
+    assert _k not in _dest, f"{_p['brand']} {_dest[_k]} and {_p['name']} both link to {_u}"
+    _dest[_k] = _p['name']
 
 FAVICON = ("<link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' "
            "viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23F7F5F0'/%3E"
@@ -490,6 +516,7 @@ FOOT = ("<span class=\"foot-links\">"
         "<a href=\"/match-paint-from-a-photo/\">Match from a photo</a> \u00b7 "
         "<a href=\"/paint-visualiser/\">Paint visualiser</a> \u00b7 "
         "<a href=\"/contact/\">Contact</a> \u00b7 "
+        "<a href=\"/privacy/\">Privacy</a> \u00b7 "
         "<a href=\"/colours/\">Colour library</a> \u00b7 "
         "<a href=\"/\">Colour tool</a>"
         "</span>"
@@ -796,6 +823,8 @@ def build_colour_page(i):
     # Plain brand/retailer links (Fired Earth, B&Q, Lick, Lakeland, etc.) get nofollow,
     # matching the stockist links elsewhere, and must never claim to be sponsored.
     buy_rel = 'noopener sponsored' if (buy_url and 'awin1.com' in buy_url) else 'nofollow noopener'
+    if buy_url and 'awin1.com' in buy_url:
+        buy_note += ' I earn a small commission if you buy through this link, at no extra cost to you.'
 
     # "Open in the colour tool" opens the homepage tool on this colour (/#5B7E8F, read there)
     tool_url = '/#' + p['hex'][1:]
@@ -2469,7 +2498,7 @@ def build_about_page():
 <p>I work in visual effects, so getting colour to match between cameras and screens is my day job. PaintDial is just me, in my spare time, and no paint brand owns or sponsors it.</p>
 
 <h2>Who pays for it</h2>
-<p>At the moment it’s paid for by me, plus the odd coffee people have bought me on <a href="https://ko-fi.com/paintdial" target="_blank" rel="noopener">Ko-fi</a>. I’m planning to add affiliate links to some of the “where to buy” buttons, so I’d get a small commission if you buy through one, at no extra cost to you. There are no ads, and no brand can pay to move up the rankings, which are worked out from the colour values alone.</p>
+<p>At the moment it’s paid for by me, plus the odd coffee people have bought me on <a href="https://ko-fi.com/paintdial" target="_blank" rel="noopener">Ko-fi</a>. Some of the tester buttons are affiliate links, so I get a small commission if you buy through one, at no extra cost to you. Those buttons say so underneath. There are no ads, and no brand can pay to move up the rankings, which are worked out from the colour values alone.</p>
 {kofi_block()}
 
 <h2>Where the colours come from</h2>
@@ -2479,6 +2508,37 @@ def build_about_page():
     return _page_shell("About PaintDial",
         f"PaintDial is a one-person site comparing {N:,} paints across {NBRANDS} brands sold in the UK. Why I made it and how it’s paid for.",
         "/about/", body)
+
+
+def build_privacy_page():
+    body = """<span class="eyebrow">Privacy</span>
+<h1>Privacy</h1>
+<!--sec-->
+<p>PaintDial is run by me, Will Phillips. There are no accounts and no adverts, and I don’t sell or pass on anything about the people who use it. This page lists what the site does collect.</p>
+
+<h2>Visitor statistics</h2>
+<p>I use two tools to see how the site is used. Cloudflare Web Analytics counts page views without cookies and without identifying you. Microsoft Clarity records how pages are used (clicks, scrolling and movement around the page) so I can see where the site is confusing; it is set up to run without cookies, and Microsoft processes that data for me. Neither tells me who you are.</p>
+
+<h2>Things saved in your browser</h2>
+<p>Your shortlist and the brands you’ve switched off are saved in your own browser so they are still there next time. They stay on your device and are never sent to me. Clearing your browser’s site data removes them.</p>
+
+<h2>Photos</h2>
+<p>Photos you use in the photo match or the visualiser stay on your device. The work is done in your browser and the photo isn’t uploaded.</p>
+
+<h2>The contact form</h2>
+<p>If you send a message, I get your name, email address and what you wrote. The form is handled by Netlify, which hosts the site, and the message arrives in my email. I use it to reply to you and for nothing else. There is no mailing list.</p>
+
+<h2>Links to shops</h2>
+<p>Buttons that take you to a brand or retailer open their site, which has its own privacy policy. Some are affiliate links through Awin: if you buy after following one, Awin records that the sale came from PaintDial so I can be paid a commission. I’m never told who bought what.</p>
+
+<h2>Fonts</h2>
+<p>The site’s fonts load from Google Fonts, so your browser makes a request to Google when a page loads.</p>
+
+<h2>Asking about your data</h2>
+<p>If you’ve sent me a message and want it deleted, or have any question about this page, email <a href="mailto:hello@paintdial.co.uk">hello@paintdial.co.uk</a>.</p>"""
+    return _page_shell("Privacy",
+        "What PaintDial collects and what it doesn’t: visitor statistics, what is saved in your browser, photos, the contact form and affiliate links.",
+        "/privacy/", body)
 
 
 def build_contact_page():
@@ -2913,6 +2973,8 @@ if __name__ == '__main__':
     open('site/how-it-works/index.html', 'w', encoding='utf-8').write(build_method_page())
     os.makedirs('site/about', exist_ok=True)
     open('site/about/index.html', 'w', encoding='utf-8').write(build_about_page())
+    os.makedirs('site/privacy', exist_ok=True)
+    open('site/privacy/index.html', 'w', encoding='utf-8').write(build_privacy_page())
     os.makedirs('site/contact/thanks', exist_ok=True)
     open('site/contact/index.html', 'w', encoding='utf-8').write(build_contact_page())
     open('site/contact/thanks/index.html', 'w', encoding='utf-8').write(build_contact_thanks_page())
@@ -2944,7 +3006,7 @@ if __name__ == '__main__':
         + [f'{DOMAIN}/alternatives/{slugs[i]}' for i in alt_idx] \
         + [f'{DOMAIN}/dupes/{base_slug(b)}' for b in DUPE_TARGETS] \
         + [f'{DOMAIN}{POPULAR_PATH}'] \
-        + [f'{DOMAIN}/how-it-works/', f'{DOMAIN}/about/', f'{DOMAIN}/contact/', f'{DOMAIN}/paint-match-index/',
+        + [f'{DOMAIN}/how-it-works/', f'{DOMAIN}/about/', f'{DOMAIN}/contact/', f'{DOMAIN}/privacy/', f'{DOMAIN}/paint-match-index/',
            f'{DOMAIN}/paint-choice-index/', f'{DOMAIN}/research/', f'{DOMAIN}/match-paint-from-a-photo/',
            f'{DOMAIN}{VIS_PATH}']
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'

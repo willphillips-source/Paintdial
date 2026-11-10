@@ -360,7 +360,7 @@
 "brand": "Farrow & Ball",
 "code": "No.30",
 "name": "Hague Blue",
-"hex": "#3D4E57",
+"hex": "#3F4D57",
 "url": "https://www.farrow-ball.com/paint/hague-blue"
 },
 {
@@ -13203,13 +13203,6 @@
 },
 {
 "brand": "Dulux",
-"code": "2967040",
-"name": "Sapphire Splendor",
-"hex": "#3B424C",
-"url": "https://www.dulux.co.uk/en/colour-details/sapphire-splendour"
-},
-{
-"brand": "Dulux",
 "code": "1186461",
 "name": "Atlantic Surf 1",
 "hex": "#004E76",
@@ -18161,7 +18154,7 @@
 },
 {
 "brand": "Johnstone's",
-"code": "COAST OF MAINE",
+"code": "NIGHTCAP",
 "name": "Nightcap",
 "hex": "#5D7076"
 },
@@ -30671,7 +30664,7 @@
 },
 {
 "brand": "Johnstone's",
-"code": "CLEAR",
+"code": "BRILLIANT WHITE",
 "name": "Brilliant White",
 "hex": "#FFFFFF"
 },
@@ -31199,7 +31192,7 @@
 },
 {
 "brand": "Johnstone's",
-"code": "ROSE GOLD",
+"code": "PINK STARBURST",
 "name": "Pink Starburst",
 "hex": "#D5B0B4"
 },
@@ -31229,7 +31222,7 @@
 },
 {
 "brand": "Johnstone's",
-"code": "RED MAHOGANY",
+"code": "SIGNAL RED",
 "name": "Signal Red",
 "hex": "#A12F2A"
 },
@@ -31361,7 +31354,7 @@
 },
 {
 "brand": "Johnstone's",
-"code": "COPPER",
+"code": "PINE",
 "name": "Pine",
 "hex": "#A16D34"
 },
@@ -31439,7 +31432,7 @@
 },
 {
 "brand": "Johnstone's",
-"code": "TEAK",
+"code": "AUBURN TREES",
 "name": "Auburn Trees",
 "hex": "#A66E49"
 },

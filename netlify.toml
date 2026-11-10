@@ -116,3 +116,10 @@
   from = "/alternatives/coat-grace-andamp-favoured"
   to = "/alternatives/coat-grace-and-favoured"
   status = 301
+
+# Dulux "Sapphire Splendor" was a duplicate row of "Sapphire Splendour" (same value, Dulux has
+# one page); removed 10 Nov 2026.
+[[redirects]]
+  from = "/colours/dulux-sapphire-splendor"
+  to = "/colours/dulux-sapphire-splendour"
+  status = 301
