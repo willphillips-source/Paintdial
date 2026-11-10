@@ -127,7 +127,9 @@ CROWN_MID = "122260"
 # (link audit, 10 Nov 2026). The button says "Order a tester", so these go to farrow-ball.com,
 # whose colour pages are sample-pot pages, and give up the commission.
 DCO_NO_SAMPLE = {'Farrow & Ball': {'No.13', 'No.15', 'No.2009', 'No.253', 'No.290', 'No.44', 'No.49', 'No.60', 'No.95',
-                                   'No.CC8', 'No.W101', 'No.W40', 'No.W5', 'No.W53', 'No.W55', 'No.W7', 'No.W92', 'No.W93'}}
+                                   'No.CC8', 'No.W101', 'No.W40', 'No.W5', 'No.W53', 'No.W55', 'No.W7', 'No.W92', 'No.W93'},
+                 # These two open on a 2.5L tin and a 250ml pot there; the brands' own pages sell a sample.
+                 'Dulux Heritage': {'True White'}, 'Paint & Paper Library': {'New Black'}}
 BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints',
                'Earthborn', 'Fired Earth', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany', 'Mylands', 'Sanderson',
                'Benjamin Moore', 'Tikkurila']
