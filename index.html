@@ -318,7 +318,6 @@
 
 
   .search-row{position:relative; margin:0 0 4px;}
-  .search-lab{display:block; margin:0 0 7px; font-family:var(--sans); font-size:13px; font-weight:600; color:var(--ink);}
   .search-box{position:relative;}
   .search-box svg{position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none;}
   /* 16px so iOS Safari doesn't zoom the page when the field is focused */
@@ -329,8 +328,8 @@
   .search-row input::-webkit-search-cancel-button{-webkit-appearance:none;}
   .search-row input:focus-visible{outline:2px solid var(--pick); outline-offset:2px;}
   .search-hint{margin:7px 0 0; font-size:12px; color:var(--muted);}
-  .action-row{display:flex; flex-wrap:wrap; gap:8px; align-items:stretch; margin:12px 0 22px;}
-  .action-row .photo-btn{flex:1 1 100%;}
+  .action-row{display:flex; gap:8px; align-items:stretch; margin:12px 0 22px;}
+  .action-row .photo-btn{flex:1 1 0;}
   .action-row a.photo-btn{text-decoration:none;}
   .search-results{position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:40;
     background:var(--card); border:1px solid var(--hairline); border-radius:8px; overflow:hidden;
@@ -557,7 +556,7 @@
     .hex-row{margin-top:8px;}
     .action-row{margin:10px 0 18px; gap:8px;}
     .search-hint{display:none;}
-    .photo-btn{padding:11px 12px;}
+    .photo-btn{padding:11px 8px; gap:7px;}
     .pick-panel{height:56px; margin-top:12px; flex-direction:row; align-items:center; justify-content:space-between; padding:0 14px;}
     .results{padding:20px 16px 0; display:flex; flex-direction:column;}
     .allmatches{padding:0 16px 90px;}
@@ -621,7 +620,7 @@
 .prop-sub{font-size:14.5px;color:var(--muted);margin:0 0 13px;max-width:600px;line-height:1.55}
 .prop-brands{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0;opacity:.9}.prop-brands a{color:var(--muted);text-decoration:none;transition:color .12s}.prop-brands a:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 @media(max-width:900px){.prop{padding:24px 22px 20px}.prop h1{font-size:24px}}
-@media(max-width:560px){.prop h1{font-size:21px}.prop-brands{display:none}.lib-link{font-size:11px;gap:6px;padding:5px 9px 5px 7px;border-radius:8px}}
+@media(max-width:560px){.prop h1{font-size:21px;margin-bottom:0}.prop-sub,.prop-brands{display:none}.lib-link{font-size:11px;gap:6px;padding:5px 9px 5px 7px;border-radius:8px}}
 
 /* ---- shortlist CSS (gen_pages.py reads this block between the markers; keep it self-contained) ---- */
 .pd-heart{position:absolute;top:8px;right:8px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8C8578;transition:transform .12s,color .12s;z-index:2;padding:0}
@@ -743,7 +742,6 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
   <aside class="picker">
     <div class="picker-inner">
       <div class="search-row" id="searchRow">
-        <label class="search-lab" for="nameSearch">Already have a paint in mind?</label>
         <div class="search-box">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
           <input id="nameSearch" type="search" placeholder="Search a paint, e.g. Hague Blue" spellcheck="false"
@@ -753,8 +751,8 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
         <p class="search-hint">Name, RAL, BS or Dulux Trade code.</p>
       </div>
       <div class="action-row">
-        <button class="photo-btn" id="photoBtn">&#128247; Match from a photo</button>
-        <a class="photo-btn" id="wallBtn" href="/paint-visualiser/">&#127912; See it on your wall</a>
+        <button class="photo-btn" id="photoBtn">&#128247; Match a photo</button>
+        <a class="photo-btn" id="wallBtn" href="/paint-visualiser/">&#127912; Try it on a wall</a>
       </div>
       <div class="pick-row">
       <div class="wheel-wrap">
