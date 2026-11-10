@@ -1597,6 +1597,115 @@ function dtItem(label, hex){
   const same=LIB.find(p=>p.brand==='Dulux'&&p.hex===hex);
   return {__hex:true, hex:hex, name:'Dulux Trade '+label, brand:same?'Same colour as Dulux '+same.name:'Dulux Trade \u00b7 sets the wheel to this colour'};
 }
+const COH_D=0.12, COH_F=0.6;
+/* ---------- forgiving paint search ----------
+   Finds paints by name the way people type them: without the apostrophe ("elephants breath"),
+   with words in any order or the brand added ("dulux sage", "hague blue farrow"), with a typo
+   ("elephants breth") or the American spelling ("pavilion grey" finds Pavilion Gray).
+   A describing search ("sage green", "warm white") also offers one "Colours like" row, which
+   sets the wheel to the middle paint of all the paints carrying those words in their names,
+   so the value is always a real paint's and is measured, not chosen by hand. */
+const sKey=s=>s.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/&/g,' and ')
+  .replace(/['’`.]/g,'').replace(/[^a-z0-9]+/g,' ').replace(/\bgray/g,'grey').replace(/\bcolor/g,'colour').trim();
+let SIDX=null, SWORDS=null, SNAMEW=null; const SFUZZ=new Map();
+function sIndex(){
+  if(SIDX) return;
+  const ws=new Set(); SNAMEW=new Set();
+  SIDX=LIB.map(p=>{const n=sKey(p.name), b=sKey(p.brand), nw=n.split(' '), bw=b.split(' '); nw.forEach(x=>{ws.add(x);SNAMEW.add(x);}); bw.forEach(x=>ws.add(x)); return {p,n,full:b+' '+n,nw,bw};});
+  SWORDS=[...ws];
+}
+/* Edit distance (with swapped neighbours counting as one), abandoned once it passes max. */
+function sDist(a,b,max){
+  if(Math.abs(a.length-b.length)>max) return max+1;
+  let pp=null, prev=Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++){
+    const cur=[i]; let low=i;
+    for(let j=1;j<=b.length;j++){
+      const c=a[i-1]===b[j-1]?0:1;
+      let v=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+c);
+      if(pp&&i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1]) v=Math.min(v,pp[j-2]+1);
+      cur[j]=v; if(v<low) low=v;
+    }
+    if(low>max) return max+1;
+    pp=prev; prev=cur;
+  }
+  return prev[b.length];
+}
+/* Words in the library a mistyped word could be. Short words get no slack: "red" is not "bed". */
+function sNear(t){
+  if(SFUZZ.has(t)) return SFUZZ.get(t);
+  const max=t.length>=8?2:t.length>=4?1:0, out=new Set();
+  if(max) for(const w of SWORDS){ if(w[0]===t[0] && sDist(t,w,max)<=max) out.add(w); }
+  SFUZZ.set(t,out); return out;
+}
+const S_SKIP=new Set(['by','the','paint','paints','colour','colours','from','in','a']);
+const S_PLAIN=['white','cream','grey','black','red','pink','orange','yellow','green','blue','purple','brown','beige'];
+let SPLAIN=null;
+const S_MOD={warm:[2,1],cool:[2,-1],cold:[2,-1],pale:[0,1],light:[0,1],dark:[0,-1],deep:[0,-1]};
+function sTokens(q){ const all=sKey(q).split(' ').filter(Boolean); const t=all.filter(x=>!S_SKIP.has(x)); return t.length?t:all; }
+function paintSearch(q,limit){
+  sIndex();
+  const qk=sKey(q), T=sTokens(q); if(qk.length<2||!T.length) return [];
+  const hits=[];
+  /* A word matches the start of a word in the name. It matches a brand word only in full, unless it
+     is not a name word at all ("farr", "dulu"): otherwise "green" would bring up all of Little Greene. */
+  const has=(e,t,near)=>e.nw.some(w=>w.startsWith(t)||(near&&near.has(w)))||e.bw.some(w=>w===t||(!SNAMEW.has(t)&&w.startsWith(t))||(near&&near.has(w)));
+  for(const e of SIDX){
+    let tier=9;
+    if(e.n===qk) tier=0;
+    else if(e.n.startsWith(qk)) tier=1;
+    else if((' '+e.full).includes(' '+qk)) tier=2;
+    else if(T.every(t=>has(e,t))) tier=3;
+    else if(e.full.includes(qk)) tier=4;
+    if(tier<9) hits.push([tier,e]);
+  }
+  /* Nothing found as typed: allow for a slip of the keys. */
+  if(!hits.length && T.some(t=>t.length>=4)){
+    const near=T.map(sNear);
+    for(const e of SIDX){ if(T.every((t,i)=>has(e,t,near[i]))) hits.push([5,e]); }
+  }
+  hits.sort((a,b)=>a[0]-b[0]||a[1].n.length-b[1].n.length);
+  return hits.slice(0,limit).map(h=>h[1].p);
+}
+/* "Colours like sage green": the paint in the middle of every paint with those words in its name.
+   A describing word in front (warm, cool, pale, dark, soft, bright) keeps the third of them that
+   are most that way, measured in OKLab, when too few paints carry the whole phrase. */
+function colourLike(q){
+  sIndex();
+  const T=sTokens(q); if(!T.length||T.length>3||sKey(q).length<3) return null;
+  const named=ts=>SIDX.filter(e=>ts.every(t=>e.nw.includes(t)||e.nw.includes(t+'s')));
+  let set=named(T);
+  if(set.length<5 && T.length>=2 && S_MOD[T[0]]){
+    const [ax,dir]=S_MOD[T[0]], base=named(T.slice(1));
+    if(base.length>=15){
+      const val=e=>ax===3?Math.hypot(e.p.ok[1],e.p.ok[2]):e.p.ok[ax];
+      set=base.slice().sort((a,b)=>dir*(val(b)-val(a))).slice(0,Math.ceil(base.length/3));
+    }
+  }
+  const med0=(S,k)=>{const v=S.map(e=>e.p.ok[k]).sort((a,b)=>a-b); return v[v.length>>1];};
+  const dOK=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
+  /* Too few paints carry the whole phrase ("sage green" is on two). If it ends in a plain colour word,
+     take the paints named with the words before it ("sage") and keep those whose nearest plainly
+     named paint is that colour: a sage whose nearest neighbour is a "green", not a "purple" or a "grey". */
+  if(set.length<5 && T.length>=2 && S_PLAIN.includes(T[T.length-1])){
+    const head=T[T.length-1], kind=named(T.slice(0,-1));
+    if(kind.length>=5){
+      if(!SPLAIN){ SPLAIN=[]; S_PLAIN.forEach(c=>named([c]).forEach(e=>SPLAIN.push([e.p.ok,c]))); }
+      set=kind.filter(e=>{let bd=9,bc=''; for(const [ok,c] of SPLAIN){const d=dOK(e.p.ok,ok); if(d<bd){bd=d;bc=c;}} return bc===head;});
+    }
+  }
+  if(set.length<5) return null;
+  /* Only offer it when those paints agree with each other: "forest green" names run from near-black
+     to mint, and their middle would mean nothing. */
+  const m0=[med0(set,0),med0(set,1),med0(set,2)];
+  const agree=set.filter(e=>dOK(e.p.ok,m0)<COH_D).length/set.length;
+  if(agree<COH_F) return null;
+  const med=k=>{const v=set.map(e=>e.p.ok[k]).sort((a,b)=>a-b); return v[v.length>>1];};
+  const m=[med(0),med(1),med(2)];
+  let best=null, bd=1e9;
+  for(const e of set){ const d=Math.hypot(e.p.ok[0]-m[0],e.p.ok[1]-m[1],e.p.ok[2]-m[2]); if(d<bd){bd=d;best=e.p;} }
+  return {__hex:true, hex:best.hex, name:'Colours like “'+T.join(' ')+'”', brand:'Typical of '+set.length+' paints \u00b7 sets the wheel to '+best.brand+' '+best.name};
+}
 const nameSearch=document.getElementById('nameSearch'), searchResults=document.getElementById('searchResults');
 let srActive=-1, srItems=[];
 function normHex(s){
@@ -1635,7 +1744,11 @@ function runSearch(){
   const dq=q.replace(/^dulux\s*(trade)?\s*/,''), dkey=dq.replace(/[\s\/\-\.]/g,'').toUpperCase();
   if(/^\d{2}[A-Z]{2}\d{0,5}$/.test(dkey)) srItems=srItems.concat(dtList().filter(r=>r.k.startsWith(dkey)).slice(0,8).map(r=>dtItem(r.c,r.h)));
   else if(dq.length>=2) srItems=srItems.concat(DTN.filter(([n])=>n.toLowerCase().includes(dq)).map(([n,h])=>dtItem(n,h)));
-  if(q.length>=2) srItems=srItems.concat(LIB.filter(p=>p.name.toLowerCase().includes(q)||(p.brand+' '+p.name).toLowerCase().includes(q)).slice(0,8));
+  if(q.length>=2 && !srItems.length){
+    const like=colourLike(raw);
+    srItems=srItems.concat(paintSearch(raw, like?7:8));
+    if(like) srItems.push(like);
+  } else if(q.length>=2) srItems=srItems.concat(paintSearch(raw,8));
   if(!srItems.length){searchResults.classList.remove('show');searchResults.innerHTML='';srActive=-1;return;}
   searchResults.innerHTML=srItems.map((p,i)=>`
     <button class="sr-item" data-i="${i}">
