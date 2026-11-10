@@ -688,7 +688,7 @@ def chip(j, home_lab=None, show_tier=False, home_i=None):
             if home_i is not None:
                 _hd = abs(OH[j]-OH[home_i]) % 360
                 _hd = min(_hd, 360-_hd)
-                if OC[j] < 0.04 or OC[home_i] < 0.04:
+                if IS_NEUTRAL[j] or IS_NEUTRAL[home_i]:
                     word = 'similar tone'
                 else:
                     _minc = min(OC[j], OC[home_i])
@@ -752,13 +752,22 @@ def build_colour_page(i):
     d = dmatch(i)
 
     # cross-brand: closest from each OTHER brand, ranked by dE
-    xmatch = []
+    xmatch = []; no_match = []
+    g = mdist(i)
     for b in BRAND_ORDER:
         if b == p['brand']: continue
-        mask = BRANDS == b
-        j = int(np.argmin(np.where(mask, d, 1e9)))
-        xmatch.append((j, d[j]))
+        j = brand_match(i, b, d, g)
+        if j is None:
+            no_match.append(b)
+        else:
+            xmatch.append((j, d[j]))
     xmatch.sort(key=lambda t: t[1])
+    assert len(xmatch) >= 3, f'{p["brand"]} {p["name"]}: fewer than 3 brands have a match'
+    mx_sub = 'One from each brand. The badge shows its price bracket.'
+    if no_match:
+        mx_sub = (f'One from each brand that has something near it. The badge shows its price bracket. '
+                  f'{_and([H.escape(b) for b in no_match])} {"has" if len(no_match) == 1 else "have"} '
+                  f'nothing close enough to show.')
     # SEO: name the closest cross-brand match in title/meta (answers the dupe query in the SERP)
     _x0, _x0d = xmatch[0]
     seo_top = f"{H.escape(paints[_x0]['name'])} by {H.escape(paints[_x0]['brand'])}"
@@ -827,7 +836,7 @@ def build_colour_page(i):
 </div></div>
 <p class="colour-summary">{name} is a {_depth} {_fam} from {brand}. Its closest match from another brand is <a href="/colours/{slugs[_x0]}">{seo_top}</a> ({seo_word}).</p>
 <h2>Closest matches from other brands</h2>
-<p class="sub">One from each brand. The badge shows its price bracket.</p>
+<p class="sub">{mx_sub}</p>
 <div class="grid mx"><div class="gpart">{''.join(_chips[:4])}</div>
 <section class="ladder-sec"><h2>Lighter &amp; darker</h2>
 <p class="sub">This colour, stepped evenly from dark to light.</p>
@@ -955,6 +964,45 @@ FAM_ORDER = ["Reds", "Pinks", "Oranges", "Browns", "Yellows", "Greens",
 # axis (F&B's "Tones" filter), which is the lightness dimension a single hue label can't carry.
 HUE_FACETS = ["Reds", "Pinks", "Oranges", "Browns", "Yellows", "Greens", "Teals", "Blues", "Purples"]
 _NEUTRAL_FAMS = {"Whites & neutrals", "Greys", "Blacks"}
+
+# ---------- match gate: a colour is never matched to a grey, black or white ----------
+# dmatch() alone lets a neutral win when a brand has nothing near a colour: a neutral has no
+# hue, so it pays no hue penalty, while a real relative pays for being lighter. Little
+# Greene's Dark Brunswick Green (#082F14) was being "matched" to Dulux Black, Smelt Black and
+# twelve other blacks (reported by a reader, Nov 2026). So for a source that family() files
+# under a colour, a neutral candidate is dropped when BOTH hold:
+#   - it is not a close match anyway (d >= 10, past the site's "close" wording), and
+#   - it has lost more than half the source's chroma.
+# Close matches are never touched, so a muted colour keeps its slightly greyer twins.
+# Mirrored in index.html (matchOK) for the homepage tool. The research pages use dmatch()
+# directly and are deliberately left alone: their figures are distances, not offers.
+IS_NEUTRAL = np.array([family(q['hex']) in _NEUTRAL_FAMS for q in paints])
+GATE_D, GATE_CFRAC = 10.0, 0.5
+# A brand whose best remaining colour is this far off AND in a different hue gets no card.
+DROP_D, DROP_HUE = 20.0, 45.0
+
+def mdist(i):
+    """dmatch(i) with the paints that must not be offered as a match for i pushed out of
+    reach (1e9). Use this wherever a match is SHOWN; dmatch() for raw distances."""
+    d = dmatch(i)
+    if IS_NEUTRAL[i]:
+        return d
+    return np.where(IS_NEUTRAL & (d >= GATE_D) & (OC < GATE_CFRAC*OC[i]), 1e9, d)
+
+def brand_match(i, b, d=None, g=None):
+    """The one colour from brand b to show against paint i, or None when the brand has
+    nothing fit to show. Only a brand whose nearest colour was a gated neutral can lose its
+    card, so pages the gate does not touch are unchanged."""
+    d = dmatch(i) if d is None else d
+    g = mdist(i) if g is None else g
+    mask = BRANDS == b
+    j0 = int(np.argmin(np.where(mask, d, 1e9)))
+    j = int(np.argmin(np.where(mask, g, 1e9)))
+    if g[j] >= 1e9:
+        return None
+    if j != j0 and g[j] >= DROP_D and float(hdv(OH[j], OH[i])) > DROP_HUE:
+        return None
+    return j
 
 def colour_facets(hx):
     """Return (tone, [tags]). Tags are multi-membership: a hue family plus optional
@@ -1535,7 +1583,7 @@ def build_dupes_page(brand):
     idxs = [i for i in range(N) if paints[i]['brand'] == brand]
     rows = []
     for i in idxs:
-        d = dmatch(i)
+        d = mdist(i)
         best_j, best_d = None, None
         for k in range(N):
             if TIER[paints[k]['brand']] >= 3:
@@ -1617,7 +1665,7 @@ def popular_match(i):
     """Closest match from a brand in a lower tier: value or mid-range for a premium colour,
     value for a mid-range one. A value colour (none at present) gets the closest from any
     other brand."""
-    d = dmatch(i)
+    d = mdist(i)
     t = TIER[paints[i]['brand']]
     best_j, best_d = None, None
     for k in range(N):
@@ -2434,6 +2482,8 @@ def build_contact_page():
 <p>PaintDial is run by one person, so messages come to me directly and I read all of them. Corrections are the most useful thing you can send: if a colour looks wrong, a match seems off, or a brand link goes somewhere odd, tell me and I will check the source data.</p>
 <p>Journalists and researchers using the <a href="/paint-match-index/">Match Index</a> or <a href="/paint-choice-index/">Choice Index</a> are welcome to ask about method or request the underlying figures. If you’re a brand or retailer, you’re welcome to get in touch about your colour data or links. The rankings are worked out from the colour values alone.</p>
 
+<p>You can use the form below, or email me at <a href="mailto:hello@paintdial.co.uk">hello@paintdial.co.uk</a>.</p>
+
 <!--sec-->
 <form class="cf" name="contact" method="POST" action="/contact/thanks/" data-netlify="true" netlify-honeypot="website">
   <input type="hidden" name="form-name" value="contact">
@@ -2665,17 +2715,17 @@ EDITORIAL_INTRO = {
 
 def build_alternatives_page(i):
     p = paints[i]; lab = LAB[i]; name = H.escape(p['name']); brand = H.escape(p['brand'])
-    d = dmatch(i)
+    d = mdist(i)                       # gated: a colour's alternatives never include a neutral
     best = {}
     for k in range(N):
         b = paints[k]['brand']
-        if b == p['brand']:
+        if b == p['brand'] or d[k] >= 1e9:
             continue
         if b not in best or d[k] < d[best[b]]:
             best[b] = k
     # exhaustive ranked list: EVERY genuinely close match from other brands,
     # multiple per brand allowed (the colour page shows the one-per-brand view)
-    others = sorted((k for k in range(N) if paints[k]['brand'] != p['brand']), key=lambda k: d[k])
+    others = sorted((k for k in range(N) if paints[k]['brand'] != p['brand'] and d[k] < 1e9), key=lambda k: d[k])
     alts = [k for k in others if d[k] < 10][:20]
     if len(alts) < 8:
         alts = others[:8]
