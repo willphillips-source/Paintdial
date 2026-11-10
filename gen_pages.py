@@ -710,8 +710,16 @@ def a_an(w):
     lw = w.lower()
     if lw[:1].isdigit():
         return 'an' if lw.startswith(('8', '11', '18')) else 'a'
-    if lw.startswith(('uni', 'use', 'usu', 'uti', 'eu', 'one')):
+    first = re.split(r'[\s\-]', w, 1)[0]
+    # Initials are said letter by letter: an HMS, an LLB, an R and R, an XOXOXO.
+    if (len(first) == 1 or (first.isupper() and first in ('HMS', 'LLB', 'XOXOXO'))) and first.isalpha() and first != 'A':
+        return 'an' if first[0].upper() in 'AEFHILMNORSX' else 'a'
+    # Vowel letter, consonant sound: a Unicorn, a Utopia, a Utah, a UFO, a Once, a Euro.
+    if lw.startswith(('uni', 'use', 'usu', 'uti', 'uto', 'uta', 'ufo', 'eu', 'one', 'once')):
         return 'a'
+    # Silent h: an Heirloom, an Honest, an Hour, an Honour.
+    if lw.startswith(('heir', 'honest', 'hour', 'honour')):
+        return 'an'
     return 'an' if lw[:1] in 'aeiou' else 'a'
 
 def buy_cta(p):
@@ -737,6 +745,13 @@ def buy_cta(p):
     if 'lakelandpaints.co.uk/testers/' in url:  # Lakeland has one tester page for every colour
         return url, f'Order {a} {name} tester →', f'Opens Lakeland’s tester page: choose {name} from its colour list.'
     if 'decoratingcentreonline' in url:
+        # DCO sells some colours as a painted card, not a pot: Craig & Rose "colour patch",
+        # Farrow & Ball Carte Blanche "paint sample swatch". Say so, the button must not
+        # promise a tester pot the page doesn't have.
+        if 'colour-patch' in url:
+            return url, f'Order {a} {name} colour patch →', 'Opens Decorating Centre Online, which sells this colour as a painted colour patch, not a tester pot.'
+        if 'sample-swatch' in url:
+            return url, f'Order {a} {name} swatch →', 'Opens Decorating Centre Online, which sells this colour as a painted sample swatch, not a tester pot.'
         return url, f'Order {a} {name} tester →', 'Opens Decorating Centre Online, where you can order a tester or a full tin.'
     if 'crownpaints' in url:
         return url, f'Order {a} {name} tester →', 'Opens Crown Paints, where you can order a tester or a full tin.'
@@ -1298,6 +1313,7 @@ def build_brand_page(b):
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{be} colours \u2014 the full range | PaintDial</title>
+<link rel="canonical" href="{DOMAIN}/colours/{base_slug(b)}">
 <meta name="description" content="All {len(idxs)} {be} paint colours. Filter by colour, neutral or tone, and see each one\u2019s matches from other brands, lighter and darker versions, and where to buy.">
 {FAVICON}
 {FONTS}<style>{LIB_CSS}</style></head><body><div class="wrap">
@@ -1365,6 +1381,7 @@ def build_colours_index():
     return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The colour library: every colour from {NBRANDS} brands sold in the UK | PaintDial</title>
+<link rel="canonical" href="{DOMAIN}/colours/">
 <meta name="description" content="Browse {N:,} paint colours from {brand_list()}. Each one has matches from other brands and lighter and darker versions.">
 {FAVICON}
 {FONTS}<style>{LIB_CSS}</style></head><body><div class="wrap">
