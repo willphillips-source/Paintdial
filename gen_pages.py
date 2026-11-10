@@ -217,6 +217,16 @@ OTHERS_WORD = numword(NBRANDS - 1)      # e.g. "eight" -> "the other {OTHERS_WOR
 assert {p['brand'] for p in paints} == set(BRAND_ORDER), \
     f"paints.json brands {sorted({p['brand'] for p in paints})} != BRAND_ORDER {sorted(BRAND_ORDER)}"
 assert set(TIER) == set(BRAND_ORDER), "every brand in BRAND_ORDER needs a TIER"
+# Buy and retailer links are looked up by colour code, so two colours sharing a code within a
+# brand would send one colour's "Order a tester" to the other's page. That happened once:
+# Stone Blue was coded No.85 (Oval Room Blue's number; Stone Blue is No.86) and its tester
+# button went to Oval Room Blue at Decorating Centre Online, Nov 2026.
+_codes = {}
+for _p in paints:
+    if _p.get('code'):
+        _k = (_p['brand'], _p['code'])
+        assert _k not in _codes, f"{_p['brand']} code {_p['code']} is on both {_codes[_k]} and {_p['name']}"
+        _codes[_k] = _p['name']
 
 # Price bands (£ / ££ / £££) come from the homepage's PRICING map and PRICE_BANDS, so the
 # colour pages and the tool can never show a brand in two different bands. A band is the
