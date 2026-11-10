@@ -331,6 +331,7 @@
   .search-hint{margin:7px 0 0; font-size:12px; color:var(--muted);}
   .action-row{display:flex; flex-wrap:wrap; gap:8px; align-items:stretch; margin:12px 0 22px;}
   .action-row .photo-btn{flex:1 1 100%;}
+  .action-row a.photo-btn{text-decoration:none;}
   .search-results{position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:40;
     background:var(--card); border:1px solid var(--hairline); border-radius:8px; overflow:hidden;
     box-shadow:0 8px 24px rgba(33,31,27,.12); display:none; max-height:280px; overflow-y:auto;}
@@ -753,6 +754,7 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
       </div>
       <div class="action-row">
         <button class="photo-btn" id="photoBtn">&#128247; Match from a photo</button>
+        <a class="photo-btn" id="wallBtn" href="/paint-visualiser/">&#127912; See it on your wall</a>
       </div>
       <div class="pick-row">
       <div class="wheel-wrap">
@@ -842,7 +844,7 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
 
 <footer>
   Browse the full <a href="/colours/" style="color:inherit">colour library</a>. No screen shows paint exactly, so get a tester before you buy.
-  Colour values are each brand's own published digital swatches, except Zoffany, Sanderson and Fired Earth, which publish no values, so they are read from the swatch images on their own sites (<a href="https://www.zoffany.design/paint" rel="nofollow noopener" target="_blank" style="color:inherit">Zoffany</a>, <a href="https://www.sanderson.design/paint" rel="nofollow noopener" target="_blank" style="color:inherit">Sanderson</a>, <a href="https://www.firedearth.com/paint" rel="nofollow noopener" target="_blank" style="color:inherit">Fired Earth</a>). Colour names are the property of their respective brands. Every colour page links straight to that colour: the brand's own page for each colour for most brands; Valspar to the colour's tester pot at B&amp;Q, or Valspar's own page for the few B&amp;Q doesn't list; Lick to the colour with its sample selected; Lakeland Paints to its tester page, where you pick the colour, as the brand has no page per colour.<br><br><span style="opacity:.85">Brand, partnership or data enquiry? <a href="/about/" style="color:var(--pick); font-weight:600; text-decoration:none;">About</a> &middot; <a href="/how-it-works/" style="color:var(--pick); font-weight:600; text-decoration:none;">How matching works</a> &middot; <a href="/match-paint-from-a-photo/" style="color:var(--pick); font-weight:600; text-decoration:none;">Match from a photo</a> &middot; <a href="/research/" style="color:var(--pick); font-weight:600; text-decoration:none;">Research</a> &middot; <a href="/contact/" style="color:var(--pick); font-weight:600; text-decoration:none;">Contact us &rarr;</a></span><br><br><span style="opacity:.85">PaintDial is free to use. If it saved you a tester pot, you can <a href="https://ko-fi.com/paintdial" target="_blank" rel="noopener" style="color:var(--pick); font-weight:600; text-decoration:none;">buy Will a coffee</a>.</span><br><br><span style="opacity:.75">&copy; 2026 PaintDial. All rights reserved.</span><br><span style="opacity:.55;font-size:10px">impact-site-verification: de769778-07a1-40a8-9d86-567b34ade3f2</span>
+  Colour values are each brand's own published digital swatches, except Zoffany, Sanderson and Fired Earth, which publish no values, so they are read from the swatch images on their own sites (<a href="https://www.zoffany.design/paint" rel="nofollow noopener" target="_blank" style="color:inherit">Zoffany</a>, <a href="https://www.sanderson.design/paint" rel="nofollow noopener" target="_blank" style="color:inherit">Sanderson</a>, <a href="https://www.firedearth.com/paint" rel="nofollow noopener" target="_blank" style="color:inherit">Fired Earth</a>). Colour names are the property of their respective brands. Every colour page links straight to that colour: the brand's own page for each colour for most brands; Valspar to the colour's tester pot at B&amp;Q, or Valspar's own page for the few B&amp;Q doesn't list; Lick to the colour with its sample selected; Lakeland Paints to its tester page, where you pick the colour, as the brand has no page per colour.<br><br><span style="opacity:.85">Brand, partnership or data enquiry? <a href="/about/" style="color:var(--pick); font-weight:600; text-decoration:none;">About</a> &middot; <a href="/how-it-works/" style="color:var(--pick); font-weight:600; text-decoration:none;">How matching works</a> &middot; <a href="/match-paint-from-a-photo/" style="color:var(--pick); font-weight:600; text-decoration:none;">Match from a photo</a> &middot; <a href="/paint-visualiser/" style="color:var(--pick); font-weight:600; text-decoration:none;">Paint visualiser</a> &middot; <a href="/research/" style="color:var(--pick); font-weight:600; text-decoration:none;">Research</a> &middot; <a href="/contact/" style="color:var(--pick); font-weight:600; text-decoration:none;">Contact us &rarr;</a></span><br><br><span style="opacity:.85">PaintDial is free to use. If it saved you a tester pot, you can <a href="https://ko-fi.com/paintdial" target="_blank" rel="noopener" style="color:var(--pick); font-weight:600; text-decoration:none;">buy Will a coffee</a>.</span><br><br><span style="opacity:.75">&copy; 2026 PaintDial. All rights reserved.</span><br><span style="opacity:.55;font-size:10px">impact-site-verification: de769778-07a1-40a8-9d86-567b34ade3f2</span>
 </footer>
 
 <script>
@@ -1653,6 +1655,8 @@ const photoBtn=document.getElementById('photoBtn'), photoFile=document.getElemen
       pctx=photoCanvas.getContext('2d',{willReadFrequently:true}), photoMarker=document.getElementById('photoMarker');
 
 photoBtn.addEventListener('click',()=>photoFile.click());
+/* The paint visualiser opens on the nearest paint to the wheel's current colour. */
+document.getElementById('wallBtn').addEventListener('click',e=>{e.currentTarget.href='/paint-visualiser/?hex='+currentHex().slice(1);});
 photoFile.addEventListener('change',()=>{
   const f=photoFile.files[0]; if(!f)return;
   const img=new Image();

@@ -39,7 +39,10 @@
     '.pd-cmp-word:empty{display:none}' +
     '.pd-cmp-diff{font-size:13px;color:#211F1B;line-height:1.4;flex-basis:100%}' +
     '.pd-cmp-diff:empty{display:none}' +
-    '.pd-cmp-note{font-size:12px;color:#665F54;line-height:1.4}';
+    '.pd-cmp-note{font-size:12px;color:#665F54;line-height:1.4}' +
+    '.pd-cmp-wall{font-size:12.5px;font-weight:600;color:#211F1B;text-decoration:none;border:1px solid #E3DFD5;border-radius:99px;padding:5px 12px;background:#fff;white-space:nowrap}' +
+    '.pd-cmp-wall:hover{border-color:#665F54}.pd-cmp-wall:focus-visible{outline:2px solid #5E7E8B;outline-offset:2px}' +
+    '.pd-cmp-wall[hidden]{display:none}';
 
   /* How the right-hand colour differs from the left, in the same measured words as the
      alternatives pages (diff_bits() in gen_pages.py, which this mirrors): lighter or darker
@@ -115,7 +118,8 @@
       '<button class="pd-cmp-x" type="button" aria-label="Close the comparison" title="Close">' +
         '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
       '<div class="pd-cmp-s"><span class="pd-cmp-word"></span>' +
-        '<span class="pd-cmp-diff"></span><span class="pd-cmp-note"></span></div>';
+        '<span class="pd-cmp-diff"></span><span class="pd-cmp-note"></span>' +
+        '<a class="pd-cmp-wall" hidden></a></div>';
     document.body.appendChild(ov);
     handle = ov.querySelector('.pd-cmp-h');
     wordEl = ov.querySelector('.pd-cmp-word');
@@ -175,8 +179,35 @@
   /* Open any two colours. d has ahex/aname/abrand and bhex/bname/bbrand, and optionally
      word (the closeness label the card already showed); returnEl gets focus back on close.
      The shortlist uses this to compare two saved colours. */
+  /* A link to the paint visualiser with these colours on the wall: the left one on the
+     wall, the right one on the other side of the line. Slugs follow base_slug() in
+     gen_pages.py; the hex picks between two colours that share a slug. Only real paints
+     go in the link (the homepage's "Your colour" is a point on the wheel, not a paint). */
+  function slugOf(brand, name) {
+    function b(s) {
+      return String(s || '').normalize('NFKD').replace(/[^\x00-\x7f]/g, '').toLowerCase()
+        .replace(/&/g, 'and').replace(/'/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
+    return b(brand) + '-' + b(name);
+  }
+  function wallLink(d) {
+    function paint(n, b) { return !!(n && b && n !== 'Your colour'); }
+    function hx(h) { return String(h || '').replace('#', ''); }
+    var q = [];
+    if (paint(d.aname, d.abrand)) {
+      q.push('c=' + encodeURIComponent(slugOf(d.abrand, d.aname)), 'ch=' + hx(d.ahex));
+      if (paint(d.bname, d.bbrand)) q.push('vs=' + encodeURIComponent(slugOf(d.bbrand, d.bname)), 'vh=' + hx(d.bhex));
+    } else if (paint(d.bname, d.bbrand)) {
+      q.push('c=' + encodeURIComponent(slugOf(d.bbrand, d.bname)), 'ch=' + hx(d.bhex));
+    }
+    return q.length ? { href: '/paint-visualiser/?' + q.join('&'), two: q.length > 2 } : null;
+  }
+
   function openPair(d, returnEl) {
     if (!ov) build();
+    var wl = wallLink(d), wallEl = ov.querySelector('.pd-cmp-wall');
+    wallEl.hidden = !wl;
+    if (wl) { wallEl.href = wl.href; wallEl.textContent = wl.two ? 'See them on your wall' : 'See it on your wall'; }
     var aName = d.aname || 'Your colour', bName = d.bname || 'Match';
     ov.querySelector('.pd-cmp-a').style.background = d.ahex;
     ov.querySelector('.pd-cmp-b').style.background = d.bhex;

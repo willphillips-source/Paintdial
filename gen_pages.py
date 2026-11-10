@@ -488,6 +488,7 @@ FOOT = ("<span class=\"foot-links\">"
         "<a href=\"/how-it-works/\">How matching works</a> \u00b7 "
         "<a href=\"/research/\">Research</a> \u00b7 "
         "<a href=\"/match-paint-from-a-photo/\">Match from a photo</a> \u00b7 "
+        "<a href=\"/paint-visualiser/\">Paint visualiser</a> \u00b7 "
         "<a href=\"/contact/\">Contact</a> \u00b7 "
         "<a href=\"/colours/\">Colour library</a> \u00b7 "
         "<a href=\"/\">Colour tool</a>"
@@ -523,6 +524,8 @@ header nav a.nav-cta:hover{box-shadow:0 4px 12px rgba(33,31,27,.10);transform:tr
 .eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 h1{font-family:var(--serif);font-size:34px;font-weight:600;letter-spacing:-.01em;line-height:1.1;margin:6px 0 2px}
 .facts{display:flex;gap:18px;margin:16px 0 20px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;flex-wrap:wrap}
+.hero-acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.hero-acts .btn{border:1px solid transparent}
+.btn.btn-wall{background:#fff;color:var(--ink);border-color:var(--hairline);box-shadow:0 1px 2px rgba(33,31,27,.05)}.btn.btn-wall:hover{border-color:var(--muted)}
 .facts b{color:var(--ink)}
 .btn{display:inline-block;font-size:14px;font-weight:600;text-decoration:none;padding:11px 20px;border-radius:8px;background:var(--ink);color:var(--paper)}
 h2{font-family:var(--serif);font-size:21px;font-weight:600;margin:34px 0 4px}
@@ -819,7 +822,7 @@ def build_colour_page(i):
 <div class="hero"><div class="hero-swatch">{heart(p['name'], p['brand'], p['hex'])}</div><div class="hero-body">
 <span class="eyebrow">{brand}</span><h1>{name}</h1>
 <div class="facts"><span>Hex <b>{p['hex']}</b></span><span>LRV <b>\u2248\u2009{lrv(L0):.0f}</b></span><span>Lightness <b>{L0:.0f}/100</b></span></div>{source_line(p['brand'])}
-{f'<a class="btn" href="{buy_url}" target="_blank" rel="{buy_rel}">{buy_label}</a>' if buy_url else ''}
+<div class="hero-acts">{f'<a class="btn" href="{buy_url}" target="_blank" rel="{buy_rel}">{buy_label}</a>' if buy_url else ''}<a class="btn btn-wall" href="{VIS_PATH}?c={slug}">See it on your wall</a></div>
 {f'<p class="afftext">{buy_note}</p>' if buy_note else ''}
 </div></div>
 <p class="colour-summary">{name} is a {_depth} {_fam} from {brand}. Its closest match from another brand is <a href="/colours/{slugs[_x0]}">{seo_top}</a> ({seo_word}).</p>
@@ -2551,6 +2554,96 @@ def build_photo_match_page():
         "/match-paint-from-a-photo/", body)
 
 
+# ---------- paint visualiser (/paint-visualiser/) ----------
+# Paint a wall in your own photo with any paint in the library, next to its closest match
+# from another brand. The tool is visualiser/tool.html (styles scoped under #pv) plus
+# vis-core.js, vis-wheel.js and sam-worker.js; everything runs in the browser and the photo
+# is never uploaded. The wall finder (SlimSAM, via Transformers.js) downloads once from
+# Hugging Face. Tried on a separate test site first (paintdial-visualiser.netlify.app);
+# Will put it live on 10 Nov 2026. Colour pages link here with ?c=<slug>, the compare view
+# with ?c=&vs=, and the homepage with ?hex= (the nearest paint to the wheel's colour).
+VIS_PATH = '/paint-visualiser/'
+VIS_FILES = ['vis-core.js', 'vis-wheel.js', 'sam-worker.js', 'example-room.jpg', 'example-room-wall.png']
+
+def visualiser_data():
+    """The library for the visualiser, in paints.json order. The page works out each colour's
+    slug itself with the same rules as base_slug() and the de-duplication above, so links
+    to /colours/ line up (checked for every colour when it was built)."""
+    bi = {b: i for i, b in enumerate(BRAND_ORDER)}
+    rows = []
+    for p in paints:
+        hx = p['hex'].strip()
+        assert re.fullmatch(r'#[0-9A-Fa-f]{6}', hx), f"bad hex for the visualiser: {p}"
+        rows.append([bi[p['brand']], p['name'], hx[1:].upper(), p.get('code') or ''])
+    return {'brands': BRAND_ORDER,
+            'sourced': {b: s for b, (s, _u) in SOURCE_NOTE.items()},
+            'swatched': [b for b in BRAND_ORDER if b in SWATCH_SAMPLED],
+            'c': rows}
+
+def build_visualiser_page():
+    # The heading and intro sit inside the tool's grid (right-hand column on a computer, above
+    # the photo on a phone), so the photo can start right under the site header.
+    lead = ('<span class="eyebrow">Paint visualiser</span>'
+            '<h1>See a paint colour on your own wall</h1>'
+            f'<p>Take a photo of your room, tap the wall and try any of {N:,} paints from {BRANDS_WORD} brands '
+            'sold in the UK on it. The closest match from another brand goes on the other half of the wall, '
+            'so you can see the two side by side.</p>')
+    tool = open('visualiser/tool.html', encoding='utf-8').read()
+    assert tool.count('<!--PV-LEAD-->') == 1, 'visualiser/tool.html has lost its <!--PV-LEAD--> placeholder'
+    tool = tool.replace('<!--PV-LEAD-->', lead)
+    faqs = [
+        ("Is my photo uploaded?",
+         "No. Everything happens in your browser, on your phone or computer. The photo isn’t sent anywhere."),
+        ("How accurate is the colour?",
+         "The wall is painted so that it averages out at the paint’s published colour, with the light and shade from your photo on top. Screens vary and paint changes with the light in your room, so use it to narrow things down and get a tester before you buy."),
+        ("Which paints can I try?",
+         f"Any of the {N:,} paints in the library, from {BRANDS_WORD} brands sold in the UK. Search by name or code, or use the colour wheel, and the closest match from another brand goes on the other half of the wall."),
+        ("Why has it missed part of my wall, or painted something it shouldn’t?",
+         "It works out where the wall ends from your tap. Tap any part of the wall that’s been missed and it’s added. To take something out, like a picture or a radiator, switch to Remove and tap it."),
+        ("Is it free?",
+         "Yes. There’s no app to install and no account to make."),
+    ]
+    faq_html = "".join(f'<details><summary>{q}</summary><p>{a}</p></details>' for q, a in faqs)
+    faq_ld = {"@context": "https://schema.org", "@type": "FAQPage",
+              "mainEntity": [{"@type": "Question", "name": q,
+                              "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faqs]}
+    app_ld = {"@context": "https://schema.org", "@type": "WebApplication",
+              "name": "PaintDial paint visualiser",
+              "url": f"{DOMAIN}{VIS_PATH}",
+              "applicationCategory": "DesignApplication", "operatingSystem": "Web",
+              "offers": {"@type": "Offer", "price": "0", "priceCurrency": "GBP"},
+              "description": f"See any of {N:,} paints from {BRANDS_WORD} brands sold in the UK on a wall in your own photo, next to its closest match from another brand."}
+    text = f"""<h2>How it works</h2>
+<p>Take or choose a photo and tap the wall. The visualiser works out where the wall is from your tap, then paints it, keeping the light and shade from your photo, so a corner in shadow stays in shadow. It runs in your browser and the photo isn’t uploaded anywhere.</p>
+<p>The first time you tap a wall, your browser downloads the part that finds walls. After that it’s kept, so next time it starts straight away.</p>
+<h2>Getting a good result</h2>
+<ul>
+<li>Stand back so the whole wall is in the photo, and take it in daylight if you can.</li>
+<li>Tap each wall you want painted. Switch to Remove to take out pictures, radiators and anything else that shouldn’t be painted.</li>
+<li>If you know the colour that’s on the wall now, pick it under Lighting. The new colour is then lit the way your photo is, so a dim room stays dim.</li>
+<li>Phone cameras shift colour and screens vary. Narrow it down here, then order testers.</li>
+</ul>
+<h2>Common questions</h2>
+<div class="faq">{faq_html}</div>"""
+    secs = _sectionise(text, 'grid').replace('<div class="lead"></div>\n', '', 1)
+    title = f"Paint Visualiser: {NBRANDS} Brands on Your Own Wall"
+    desc = (f"Take a photo, tap the wall and try {N:,} paints from {BRANDS_WORD} brands sold in the UK, "
+            "next to the closest match from another brand. Free, no app.")
+    return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{title} | PaintDial</title>
+<meta name="description" content="{desc}">
+<link rel="canonical" href="{DOMAIN}{VIS_PATH}">
+{FAVICON}
+{FONTS}<style>{PAGES_CSS}</style></head><body><div class="wrap">
+{HDR}
+{tool}
+{secs}
+{_ldjson(app_ld, faq_ld)}
+<footer>{FOOT}</footer>
+</div></body></html>"""
+
+
 # Hand-written, evergreen openings for the most-searched hero colours. The opening is
 # editorial (no LRV/hex/price claims); the closest-match sentence that follows is ALWAYS
 # generated from the data, so match names can never go stale. Any slug not listed gets a
@@ -2768,6 +2861,14 @@ if __name__ == '__main__':
     os.makedirs('site/match-paint-from-a-photo', exist_ok=True)
     open('site/match-paint-from-a-photo/index.html', 'w', encoding='utf-8').write(build_photo_match_page())
     print('photo-match page written')
+    import shutil as _shv
+    os.makedirs('site' + VIS_PATH, exist_ok=True)
+    open('site' + VIS_PATH + 'index.html', 'w', encoding='utf-8').write(build_visualiser_page())
+    json.dump(visualiser_data(), open('site' + VIS_PATH + 'colours.json', 'w', encoding='utf-8'),
+              ensure_ascii=False, separators=(',', ':'))
+    for _f in VIS_FILES:
+        _shv.copyfile('visualiser/' + _f, 'site' + VIS_PATH + _f)
+    print('paint visualiser written')
     print('trust pages: 3 (+ contact thanks)')
 
     urls = [f'{DOMAIN}/', f'{DOMAIN}/colours/'] \
@@ -2777,7 +2878,8 @@ if __name__ == '__main__':
         + [f'{DOMAIN}/dupes/{base_slug(b)}' for b in DUPE_TARGETS] \
         + [f'{DOMAIN}{POPULAR_PATH}'] \
         + [f'{DOMAIN}/how-it-works/', f'{DOMAIN}/about/', f'{DOMAIN}/contact/', f'{DOMAIN}/paint-match-index/',
-           f'{DOMAIN}/paint-choice-index/', f'{DOMAIN}/research/', f'{DOMAIN}/match-paint-from-a-photo/']
+           f'{DOMAIN}/paint-choice-index/', f'{DOMAIN}/research/', f'{DOMAIN}/match-paint-from-a-photo/',
+           f'{DOMAIN}{VIS_PATH}']
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += ''.join(f'<url><loc>{u}</loc></url>\n' for u in urls)+'</urlset>'
     open('site/sitemap.xml', 'w').write(sm)
