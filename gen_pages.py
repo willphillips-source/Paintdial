@@ -1620,6 +1620,15 @@ def popular_match(i):
             best_j, best_d = k, float(d[k])
     return best_j, best_d
 
+# Labels that say which side is the match: a "Closest match" line on every match, and column
+# heads over the list on wider screens (on phones the rows stack, so the per-row label does it).
+POPULAR_CSS = """
+.half .lab{display:block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--pc);margin-bottom:3px}
+.dupe-heads{display:grid;grid-template-columns:34px 1fr auto 1fr;margin:0 0 8px;padding:0 1px;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.dupe-heads span{padding:0 14px}.dupe-heads span:nth-child(3){width:112px;padding:0}
+@media(max-width:760px){.dupe-heads{display:none}}
+"""
+
 def build_popular_page():
     rows = []
     for rank, i in enumerate(POPULAR_IDX, 1):
@@ -1635,7 +1644,7 @@ def build_popular_page():
             f'<span class="br">{H.escape(p["brand"])}</span></span></span>'
             f'<span class="arrow">{cmp_btn(p, q, w)}</span>'
             f'<span class="half"><span class="sw" style="background:{q["hex"]}"></span>'
-            f'<span class="tx"><span class="nm">{H.escape(q["name"])}</span>'
+            f'<span class="tx"><span class="lab">Closest match</span><span class="nm">{H.escape(q["name"])}</span>'
             f'<span class="br">{H.escape(q["brand"])} · {TIER_WORD[TIER[q["brand"]]]}</span></span>'
             f'<span class="badge{" good" if dd < 5 else ""}">{w}</span></span></div>')
     n = len(rows)
@@ -1652,12 +1661,13 @@ def build_popular_page():
   _breadcrumb([("Home","/"),("Most searched colours",POPULAR_PATH)]),
   _itemlist([(f"{paints[i0]['name']} by {paints[i0]['brand']}", f"/colours/{slugs[i0]}") for i0 in POPULAR_IDX[:30]])
 )}
-{FONTS}<style>{DUPES_CSS}{COMPARE_BTN_CSS}</style></head><body><div class="wrap">
+{FONTS}<style>{DUPES_CSS}{COMPARE_BTN_CSS}{POPULAR_CSS}</style></head><body><div class="wrap">
 {HDR}
 <span class="eyebrow">Most searched</span>
 <h1>The UK’s most searched-for paint colours</h1>
 <p class="sub">The {n} paint colours searched for most by name in the UK, each next to its closest match from a value or mid-range brand. Tap a row to see every brand’s closest match.</p>
 
+<div class="dupe-heads" aria-hidden="true"><span></span><span>Most searched</span><span></span><span>Closest match from a value or mid-range brand</span></div>
 <div class="dupe-list">{''.join(rows)}</div>
 <p class="method" style="margin-top:22px">Ranked by average monthly Google searches for each colour’s name, {POPULAR['_period']}, from <a href="{src}" rel="nofollow noopener" target="_blank">PaintDB</a>’s UK figures. PaintDB measures a handful of brands in the UK, mostly Farrow &amp; Ball and Dulux, so colours from other brands can’t appear in the ranking. Matches are computed from each brand’s published digital swatches{source_short()} using perceptual colour distance. No screen shows paint exactly, so get testers of both before you buy.</p>
 <footer>{FOOT}</footer>
