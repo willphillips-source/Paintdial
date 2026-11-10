@@ -130,6 +130,16 @@ DCO_NO_SAMPLE = {'Farrow & Ball': {'No.13', 'No.15', 'No.2009', 'No.253', 'No.29
                                    'No.CC8', 'No.W101', 'No.W40', 'No.W5', 'No.W53', 'No.W55', 'No.W7', 'No.W92', 'No.W93'},
                  # These two open on a 2.5L tin and a 250ml pot there; the brands' own pages sell a sample.
                  'Dulux Heritage': {'True White'}, 'Paint & Paper Library': {'New Black'}}
+# dco-stock.json: colours whose tester was out of stock at Decorating Centre Online at the last
+# check (its _checked date). An out-of-stock tester is a dead end for the visitor and earns
+# nothing, so these go to the brand's own page until a later check finds them back in stock.
+try:
+    _dst = json.load(open('dco-stock.json', encoding='utf-8'))
+    for _b, _v in _dst.items():
+        if not _b.startswith('_'):
+            DCO_NO_SAMPLE.setdefault(_b, set()).update(_v)
+except FileNotFoundError:
+    pass
 BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints',
                'Earthborn', 'Fired Earth', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany', 'Mylands', 'Sanderson',
                'Benjamin Moore', 'Tikkurila']
