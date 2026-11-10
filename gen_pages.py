@@ -764,6 +764,11 @@ def build_colour_page(i):
                 f"and {H.escape(paints[xmatch[2][0]]['name'])} by {H.escape(paints[xmatch[2][0]]['brand'])}")
     _depth, _fam = describe(i)
     buy_url, buy_label, buy_note = buy_cta(p)
+    # Only tag a link rel="sponsored" when it's a real affiliate link that earns
+    # commission (everything monetised routes through awin1.com: DCO, Crown, Freshlick).
+    # Plain brand/retailer links (Fired Earth, B&Q, Lick, Lakeland, etc.) get nofollow,
+    # matching the stockist links elsewhere, and must never claim to be sponsored.
+    buy_rel = 'noopener sponsored' if (buy_url and 'awin1.com' in buy_url) else 'nofollow noopener'
 
     # "Open in the colour tool" opens the homepage tool on this colour (/#5B7E8F, read there)
     tool_url = '/#' + p['hex'][1:]
@@ -814,7 +819,7 @@ def build_colour_page(i):
 <div class="hero"><div class="hero-swatch">{heart(p['name'], p['brand'], p['hex'])}</div><div class="hero-body">
 <span class="eyebrow">{brand}</span><h1>{name}</h1>
 <div class="facts"><span>Hex <b>{p['hex']}</b></span><span>LRV <b>\u2248\u2009{lrv(L0):.0f}</b></span><span>Lightness <b>{L0:.0f}/100</b></span></div>{source_line(p['brand'])}
-{f'<a class="btn" href="{buy_url}" target="_blank" rel="noopener sponsored">{buy_label}</a>' if buy_url else ''}
+{f'<a class="btn" href="{buy_url}" target="_blank" rel="{buy_rel}">{buy_label}</a>' if buy_url else ''}
 {f'<p class="afftext">{buy_note}</p>' if buy_note else ''}
 </div></div>
 <p class="colour-summary">{name} is a {_depth} {_fam} from {brand}. Its closest match from another brand is <a href="/colours/{slugs[_x0]}">{seo_top}</a> ({seo_word}).</p>
