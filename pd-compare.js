@@ -91,7 +91,7 @@
   var SOURCED = {};
   /* Brands whose values are read from the swatch images on their own site, as they publish
      no values. Must match SWATCH_SAMPLED in gen_pages.py, which asserts it on every build. */
-  var SWATCHED = ["Zoffany", "Sanderson"];
+  var SWATCHED = ["Zoffany", "Sanderson", "Fired Earth"];
   var BASE_NOTE = 'Screens vary. Compare these two to each other, then order testers before you buy.';
 
   var ov = null, handle = null, wordEl = null, diffEl = null, noteEl = null, lastBtn = null, x = 50, dragging = false;

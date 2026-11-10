@@ -28,7 +28,7 @@ def dmatch(i):
     return 190*np.sqrt(((OL-OL[i])/1.3)**2 + (OC-OC[i])**2 + 4*(2*np.sqrt(np.maximum(OC*OC[i],0))*np.sin(dh/2))**2)
 # Brand line is built from the data, so a new brand in paints.json shows up here without a hand edit.
 _ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT',
-          'Lakeland Paints', 'Earthborn', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany',
+          'Lakeland Paints', 'Earthborn', 'Fired Earth', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany',
           'Mylands', 'Sanderson', 'Benjamin Moore', 'Tikkurila']
 _present = {p['brand'] for p in paints}
 _BRANDS = [b.upper() for b in _ORDER if b in _present] + [b.upper() for b in sorted(_present - set(_ORDER))]

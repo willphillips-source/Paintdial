@@ -120,8 +120,11 @@ try:
     DCO_LINKS = {b: v for b, v in _dco.items() if not b.startswith('_')}
 except FileNotFoundError:
     DCO_LINKS = {}
+# Crown Paints (Awin advertiser 122260, approved 10 Nov 2026): brand-direct programme. Its own
+# crownpaints.com colour URLs are wrapped with Awin to earn commission; dormant if None.
+CROWN_MID = "122260"
 BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johnstone's", 'Valspar', 'Lick', 'Crown', 'COAT', 'Lakeland Paints',
-               'Earthborn', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany', 'Mylands', 'Sanderson',
+               'Earthborn', 'Fired Earth', 'Paint & Paper Library', 'Edward Bulmer', 'Dulux Heritage', 'Zoffany', 'Mylands', 'Sanderson',
                'Benjamin Moore', 'Tikkurila']
 # NOT A PUBLISHED VALUE. Every other brand's values are its own published swatches, and anything
 # that says "each brand's own published swatch" must say where these differ, so the claim is built
@@ -147,6 +150,11 @@ BRAND_ORDER = ['Farrow & Ball', 'Little Greene', 'Craig & Rose', 'Dulux', "Johns
 SWATCH_SAMPLED = {
     'Zoffany': 'https://www.zoffany.design/paint',
     'Sanderson': 'https://www.sanderson.design/paint',
+    # Fired Earth (132, added 10 Nov 2026): no published values; firedearth.com shows each colour
+    # as a flat swatch image (the uniform <name>.png product image, not the lifestyle photo),
+    # sampled at 7 points, all identical. QA'd against Brewers (median dE00 ~1.2). Matt Emulsion
+    # 2.5L £54.95. Names and links are Fired Earth's own.
+    'Fired Earth': 'https://www.firedearth.com/paint',
 }
 # SOURCED FROM A STOCKIST, NOT THE BRAND: none at present. Kept so a brand can be added here with
 # (stockist, url) and every source sentence picks it up. Brewers mirrors brand values exactly where
@@ -196,7 +204,7 @@ SOURCE_NOTE = {}
 # lakelandpaints.co.uk), like Lick and COAT. No per-colour pages exist, so every Lakeland
 # colour links to the matchpot page, where the picker lives.
 TIER = {'Farrow & Ball': 3, 'Little Greene': 3, 'Craig & Rose': 3, 'Lick': 3, 'COAT': 3,
-        'Earthborn': 3, 'Paint & Paper Library': 3, 'Edward Bulmer': 3, 'Dulux Heritage': 3, 'Zoffany': 3,
+        'Earthborn': 3, 'Fired Earth': 3, 'Paint & Paper Library': 3, 'Edward Bulmer': 3, 'Dulux Heritage': 3, 'Zoffany': 3,
         'Mylands': 3, 'Sanderson': 3, 'Benjamin Moore': 3, 'Tikkurila': 3,
         'Dulux': 2, 'Crown': 2, 'Lakeland Paints': 2, "Johnstone's": 1, 'Valspar': 1}
 TIER_WORD = {3: 'Premium', 2: 'Mid-range', 1: 'Value'}
@@ -419,6 +427,9 @@ def buy_link(p):
         _dco_url = DCO_LINKS[p['brand']].get(p.get('code') or p['name'])
         if _dco_url:
             return _awin_wrap(DCO_MID, _dco_url)
+    # Brand-direct Awin route (Crown Paints): wrap its own colour URL to earn commission.
+    if CROWN_MID and p['brand'] == 'Crown':
+        return _awin_wrap(CROWN_MID, p.get('url') or f"https://www.crownpaints.com/{base_slug(p['name'])}")
     if p.get('url'): return p['url']
     _bl = BUY_LINKS.get(p['brand'], {}).get(p.get('code') or p['name'])
     if _bl: return _bl
@@ -714,6 +725,8 @@ def buy_cta(p):
         return url, f'Order {a} {name} tester →', f'Opens Lakeland’s tester page: choose {name} from its colour list.'
     if 'decoratingcentreonline' in url:
         return url, f'Order {a} {name} tester →', 'Opens Decorating Centre Online, where you can order a tester or a full tin.'
+    if 'crownpaints' in url:
+        return url, f'Order {a} {name} tester →', 'Opens Crown Paints, where you can order a tester or a full tin.'
     if 'freshlick' in url or 'awin1.com' in url:
         return url, f'Order {a} {name} tester →', 'Opens Freshlick, where you can order a tester or a full tin.'
     return (url, f'Order {a} {name} tester →',
