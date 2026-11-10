@@ -255,6 +255,22 @@ PRICING = {(m.group(1) or m.group(2)): [float(x) for x in m.group(3).split(',')]
 PRICE_BANDS = [float(x) for x in re.search(r'const PRICE_BANDS=\[([\d.,\s]+)\];', _IDX).group(1).split(',')]
 PRICE_TIN_L = float(re.search(r'const PRICE_TIN_L=([\d.]+);', _IDX).group(1))
 assert set(PRICING) == set(BRAND_ORDER), f"PRICING in index.html {sorted(PRICING)} != BRAND_ORDER"
+PRICE_CHECKED = re.search(r"const PRICE_CHECKED='([^']+)';", _IDX).group(1)
+PRICE_TIN_WHY = dict(re.findall(r"^\s*'([^']+)':'([^']+)',\s*$", re.search(r'const PRICE_TIN_WHY=\{(.*?)\n\};', _IDX, re.S).group(1), re.M))
+def price_line(brand):
+    """One sentence giving the brand's typical price per litre, from the homepage's PRICING map
+    and worded like the homepage's price note: the tin size behind the figure and the date are
+    always stated, and nothing is compared with anything (no saving, no "cheaper")."""
+    lo, hi, *tin = PRICING[brand]
+    tin_l = tin[0] if tin else PRICE_TIN_L
+    a, b = lo / tin_l, hi / tin_l
+    fig = f'\u00a3{a:.2f}' if a == b else f'\u00a3{a:.2f} to \u00a3{b:.2f}'
+    basis = f'a {tin_l:g}L tin mixed to your colour'
+    if tin:
+        basis += f' ({PRICE_TIN_WHY[brand]})'
+    one_size = tin and 'only size' in PRICE_TIN_WHY[brand]
+    return (f'{H.escape(brand)} is typically {fig} a litre, based on {basis}, checked {PRICE_CHECKED}. '
+            + ('Retailers vary.' if one_size else 'Retailers vary, and bigger tins work out less per litre.'))
 def price_band(brand):
     lo, hi, *tin = PRICING[brand]
     mid = (lo + hi) / 2 / (tin[0] if tin else PRICE_TIN_L)
@@ -889,6 +905,7 @@ def build_colour_page(i):
 <div class="facts"><span>Hex <b>{p['hex']}</b></span><span>LRV <b>\u2248\u2009{lrv(L0):.0f}</b></span><span>Lightness <b>{L0:.0f}/100</b></span></div>{source_line(p['brand'])}
 <div class="hero-acts">{f'<a class="btn" href="{buy_url}" target="_blank" rel="{buy_rel}">{buy_label}</a>' if buy_url else ''}<a class="btn btn-wall" href="{VIS_PATH}?c={slug}">See it on your wall</a></div>
 {f'<p class="afftext">{buy_note}</p>' if buy_note else ''}
+<p class="afftext">{price_line(p['brand'])}</p>
 </div></div>
 <p class="colour-summary">{name} is a {_depth} {_fam} from {brand}. Its closest match from another brand is <a href="/colours/{slugs[_x0]}">{seo_top}</a> ({seo_word}).</p>
 <h2>Closest matches from other brands</h2>
