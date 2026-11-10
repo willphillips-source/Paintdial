@@ -1506,6 +1506,24 @@ DESC_WORD = {'Reds': 'red', 'Oranges': 'orange', 'Yellows': 'yellow', 'Greens': 
              'Browns': 'brown', 'Whites & neutrals': 'off-white', 'Greys': 'grey',
              'Blacks': 'near-black'}
 
+_TINT = {'Reds': 'pink', 'Oranges': 'pink', 'Yellows': 'green', 'Greens': 'green',
+         'Teals': 'blue-green', 'Blues': 'blue', 'Purples': 'lilac'}
+def neutral_word(hx, l):
+    """What to call a colour family() files under 'Whites & neutrals'. That family runs from true
+    off-whites to pale greys, beiges and creams, and "off-white" was being used for all 3,000 of
+    them. l is CIELab lightness. Only the wording: family(), the library filters and the research
+    figures are untouched."""
+    _, c, h = _ok_lch(hx)
+    white = l >= 88
+    if 50.0 <= h < 105.0:                      # the warm window of the neutral gate
+        if c < 0.008: return 'off-white' if white else 'grey'
+        if c < 0.020: return 'warm off-white' if white else 'warm grey'
+        if c < 0.040: return 'warm off-white' if white else 'beige'
+        if h >= 75:   return 'cream' if l >= 86 else 'sandy beige'
+        return 'peach' if l >= 86 else 'pinkish beige'
+    if c < 0.008: return 'off-white' if white else 'grey'
+    return ('off-white' if white else 'grey') + ' with a hint of ' + _TINT[_hue_band(h)]
+
 def describe(i):
     """Human-facing shade wording for the alternatives pages.
     Uses family() -- the same OKLab-calibrated classifier as the library -- so the two can
@@ -1515,7 +1533,7 @@ def describe(i):
     depth = 'pale' if l > 78 else 'light' if l > 60 else 'mid-toned' if l > 38 else 'deep' if l > 18 else 'very dark'
     fam = DESC_WORD[family(paints[i]['hex'])]
     if fam == 'off-white':
-        fam = 'off-white' if l > 80 else 'neutral'
+        fam = neutral_word(paints[i]['hex'], l)
     return depth, fam
 
 def diff_bits(i, k):
