@@ -1584,6 +1584,85 @@ def build_dupes_page(brand):
 
 
 
+
+# ---------- the UK's most searched-for colours, each with its closest lower-tier match ----------
+# The list is popular-colours.json, copied in order from one published ranking (see its _source
+# and _method), top 100, nothing added or removed: the page claims "most searched", so it must
+# not be topped up or trimmed by hand. Refresh by replacing the file with a newer copy of the
+# same ranking (or Will's own Keyword Planner figures, which would also let it cover brands the
+# current source doesn't measure).
+POPULAR = json.load(open('popular-colours.json', encoding='utf-8'))
+POPULAR_PATH = '/most-popular-paint-colours/'
+
+def _pkey(brand, name):
+    import unicodedata as _ud
+    n = _ud.normalize('NFKD', name.replace('’', "'"))
+    return brand, re.sub(r'[^a-z0-9]', '', n.lower())
+
+_PIDX = {_pkey(p['brand'], p['name']): i for i, p in enumerate(paints)}
+POPULAR_IDX = []
+for _b, _n in POPULAR['colours']:
+    assert _pkey(_b, _n) in _PIDX, f'popular-colours.json: {_b} {_n} is not in the library'
+    POPULAR_IDX.append(_PIDX[_pkey(_b, _n)])
+
+def popular_match(i):
+    """Closest match from a brand in a lower tier: value or mid-range for a premium colour,
+    value for a mid-range one. A value colour (none at present) gets the closest from any
+    other brand."""
+    d = dmatch(i)
+    t = TIER[paints[i]['brand']]
+    best_j, best_d = None, None
+    for k in range(N):
+        tk = TIER[paints[k]['brand']]
+        if paints[k]['brand'] == paints[i]['brand'] or (t > 1 and tk >= t):
+            continue
+        if best_d is None or d[k] < best_d:
+            best_j, best_d = k, float(d[k])
+    return best_j, best_d
+
+def build_popular_page():
+    rows = []
+    for rank, i in enumerate(POPULAR_IDX, 1):
+        j, dd = popular_match(i)
+        p, q = paints[i], paints[j]
+        w = matchword(dd)
+        href = f'/alternatives/{slugs[i]}' if p['brand'] in ALT_BRANDS else f'/colours/{slugs[i]}'
+        rows.append(
+            f'<div class="row">'
+            f'<span class="rank">{rank}</span>'
+            f'<span class="half"><span class="sw" style="background:{p["hex"]}"></span>'
+            f'<span class="tx"><a class="nm" href="{href}">{H.escape(p["name"])}</a>'
+            f'<span class="br">{H.escape(p["brand"])}</span></span></span>'
+            f'<span class="arrow">{cmp_btn(p, q, w)}</span>'
+            f'<span class="half"><span class="sw" style="background:{q["hex"]}"></span>'
+            f'<span class="tx"><span class="nm">{H.escape(q["name"])}</span>'
+            f'<span class="br">{H.escape(q["brand"])} · {TIER_WORD[TIER[q["brand"]]]}</span></span>'
+            f'<span class="badge{" good" if dd < 5 else ""}">{w}</span></span></div>')
+    n = len(rows)
+    src = 'https://paintdb.com/popular/country/uk'
+    title = 'The UK’s most popular paint colours by search, and their closest matches'
+    desc = (f'The {n} paint colours searched for most by name in the UK, from Farrow &amp; Ball’s '
+            f'Skimming Stone down, each next to its closest match from a value or mid-range brand.')
+    return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{title} | PaintDial</title>
+<meta name="description" content="{desc}">
+<link rel="canonical" href="{DOMAIN}{POPULAR_PATH}">
+{_ldjson(
+  _breadcrumb([("Home","/"),("Most searched colours",POPULAR_PATH)]),
+  _itemlist([(f"{paints[i0]['name']} by {paints[i0]['brand']}", f"/colours/{slugs[i0]}") for i0 in POPULAR_IDX[:30]])
+)}
+{FONTS}<style>{DUPES_CSS}{COMPARE_BTN_CSS}</style></head><body><div class="wrap">
+{HDR}
+<span class="eyebrow">Most searched</span>
+<h1>The UK’s most searched-for paint colours</h1>
+<p class="sub">The {n} paint colours searched for most by name in the UK, each next to its closest match from a value or mid-range brand. Tap a row to see every brand’s closest match.</p>
+
+<div class="dupe-list">{''.join(rows)}</div>
+<p class="method" style="margin-top:22px">Ranked by average monthly Google searches for each colour’s name, {POPULAR['_period']}, from <a href="{src}" rel="nofollow noopener" target="_blank">PaintDB</a>’s UK figures. PaintDB measures a handful of brands in the UK, mostly Farrow &amp; Ball and Dulux, so colours from other brands can’t appear in the ranking. Matches are computed from each brand’s published digital swatches{source_short()} using perceptual colour distance. No screen shows paint exactly, so get testers of both before you buy.</p>
+<footer>{FOOT}</footer>
+</div>{COMPARE_SCRIPT}</body></html>"""
+
 # ---------- static trust pages: how it works + about ----------
 PAGES_CSS = """
 .faq{margin:6px 0 24px}.faq details{border-top:1px solid var(--hairline);padding:12px 0}.faq details:last-child{border-bottom:1px solid var(--hairline)}.faq summary{font-family:var(--serif);font-size:17px;font-weight:600;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:16px;align-items:baseline}.faq summary::-webkit-details-marker{display:none}.faq summary::after{content:"+";color:var(--muted);font-family:var(--sans);font-weight:400;flex:none}.faq details[open] summary::after{content:"\\2013"}.faq p{margin:8px 0 2px;max-width:66ch}
@@ -2651,6 +2730,10 @@ if __name__ == '__main__':
         open(f'site/dupes/{base_slug(b)}.html', 'w', encoding='utf-8').write(build_dupes_page(b))
     print('dupes pages:', len(DUPE_TARGETS))
 
+    os.makedirs('site' + POPULAR_PATH, exist_ok=True)
+    open('site' + POPULAR_PATH + 'index.html', 'w', encoding='utf-8').write(build_popular_page())
+    print('most searched colours page written:', len(POPULAR_IDX))
+
     os.makedirs('site/how-it-works', exist_ok=True)
     open('site/how-it-works/index.html', 'w', encoding='utf-8').write(build_method_page())
     os.makedirs('site/about', exist_ok=True)
@@ -2677,6 +2760,7 @@ if __name__ == '__main__':
         + [f'{DOMAIN}/colours/{slugs[i]}' for i in range(N)] \
         + [f'{DOMAIN}/alternatives/{slugs[i]}' for i in alt_idx] \
         + [f'{DOMAIN}/dupes/{base_slug(b)}' for b in DUPE_TARGETS] \
+        + [f'{DOMAIN}{POPULAR_PATH}'] \
         + [f'{DOMAIN}/how-it-works/', f'{DOMAIN}/about/', f'{DOMAIN}/contact/', f'{DOMAIN}/paint-match-index/',
            f'{DOMAIN}/paint-choice-index/', f'{DOMAIN}/research/', f'{DOMAIN}/match-paint-from-a-photo/']
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
