@@ -35,6 +35,12 @@
 #pv .status .bar i{display:block;height:100%;width:0;background:#fff;transition:width .2s}
 #pv .before{position:absolute;right:10px;bottom:10px;border:none;border-radius:9px;padding:8px 11px;background:rgba(255,255,255,.92);
     box-shadow:0 1px 3px rgba(0,0,0,.18);font-size:12.5px;font-weight:600;cursor:pointer;touch-action:none;line-height:1.2}
+#pv .share{position:absolute;right:10px;bottom:52px;border:none;border-radius:9px;padding:8px 11px;background:var(--ink);color:#fff;
+    box-shadow:0 1px 3px rgba(0,0,0,.25);font:600 12.5px/1.2 var(--sans);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+#pv .share[hidden]{display:none}
+#pv .share svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#pv .share:disabled{opacity:.6;cursor:progress}
+#pv .frame.showing-before .share{visibility:hidden}
 #pv .frame.showing-before .lbl,#pv .frame.showing-before .seam,#pv .frame.showing-before .handle,#pv .frame.showing-before .dot{visibility:hidden}
 #pv .ptools{width:100%;display:flex;flex-direction:column;gap:10px}
 #pv .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -146,6 +152,7 @@
 #pv .lbl b{font-size:13px}
 #pv .lbl{padding:5px 8px}
 #pv .before{padding:7px 9px;font-size:12px}
+#pv .share{padding:7px 9px;font-size:12px;bottom:48px}
 #pv .ptools{gap:8px}
 #pv .ptools .row{gap:6px}
 #pv .ptools .btn{padding:7px 11px;font-size:13.5px;min-height:38px}
@@ -177,6 +184,7 @@
         </div>
         <div id="dots"></div>
         <div class="status" id="status" role="status" aria-live="polite"></div>
+        <button class="share" id="share" type="button" hidden><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4M5 13v6h14v-6"/></svg><span id="shareTxt">Share picture</span></button>
         <button class="before" id="before" type="button">Hold for before</button>
       </div>
     </div>
@@ -484,6 +492,7 @@
     const set = (el, c) => { el.hidden = !c; if (c) { el.querySelector('b').textContent = c.name; el.querySelector('small').textContent = c.brand; } };
     set($('lblA'), S.stats ? S.A : null); set($('lblB'), split ? S.B : null);
     $('seam').hidden = !split; $('handle').hidden = !split;
+    $('share').hidden = !(S.stats && S.A);
     frame.style.setProperty('--x', (S.seam * 100) + '%');
     $('handle').setAttribute('aria-valuenow', String(Math.round(S.seam * 100)));
   }
@@ -567,6 +576,59 @@
   bef.addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); showBefore(true); } });
   bef.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') showBefore(false); });
   bef.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  // ---------- share the painted picture ----------
+  // The picture is made here, in the browser, and handed to the phone's own share sheet (or saved,
+  // on a computer). Nothing is uploaded: the photo only leaves the device if the person sends it.
+  // The colours' names are drawn onto it so it still makes sense once it has left the page.
+  const CAN_SHARE_FILES = (() => { try { return !!(navigator.canShare && navigator.canShare({ files: [new File([''], 'a.jpg', { type: 'image/jpeg' })] })); } catch (e) { return false; } })();
+  $('shareTxt').textContent = CAN_SHARE_FILES ? 'Share picture' : 'Save picture';
+  function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  function fitText(c, t, max) { if (c.measureText(t).width <= max) return t; while (t.length > 1 && c.measureText(t + '…').width > max) t = t.slice(0, -1); return t + '…'; }
+  async function sharePicture() {
+    if (!S.stats || !S.A) return;
+    const split = !!S.B, w = S.w, h = S.h, u = Math.max(w, 700) / 100;       // u: 1% of the picture's width
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    const c = cv.getContext('2d');
+    c.drawImage(offA, 0, 0);
+    const x = Math.round(S.seam * w);
+    if (split) {
+      c.save(); c.beginPath(); c.rect(x, 0, w - x, h); c.clip(); c.drawImage(offB, 0, 0); c.restore();
+      c.fillStyle = 'rgba(255,255,255,.85)'; c.fillRect(x - Math.max(1, u * .12), 0, Math.max(2, u * .24), h);
+    }
+    try { await Promise.all([document.fonts.load('600 20px Fraunces'), document.fonts.load('600 12px Archivo')]); } catch (e) {}
+    const cs = getComputedStyle($('pv')), serif = cs.getPropertyValue('--serif') || 'Georgia,serif', sans = cs.getPropertyValue('--sans') || 'sans-serif';
+    const pad = u * 1.5, m = u * 2;
+    const chip = (col, right, maxW) => {
+      const f1 = '600 ' + (u * 3) + 'px ' + serif, f2 = '600 ' + (u * 1.7) + 'px ' + sans;
+      c.font = f1; const name = fitText(c, col.name, maxW - pad * 2); const w1 = c.measureText(name).width;
+      c.font = f2; const brand = fitText(c, col.brand.toUpperCase(), maxW - pad * 2); const w2 = c.measureText(brand).width;
+      const bw = Math.max(w1, w2) + pad * 2, bh = u * 3 + u * 1.7 + pad * 2 + u * .7, bx = right ? w - m - bw : m;
+      c.fillStyle = 'rgba(255,255,255,.93)'; rr(c, bx, m, bw, bh, u * 1.2); c.fill();
+      c.textBaseline = 'top'; c.textAlign = right ? 'right' : 'left'; const tx = right ? bx + bw - pad : bx + pad;
+      c.fillStyle = '#211F1B'; c.font = f1; c.fillText(name, tx, m + pad);
+      c.fillStyle = '#665F54'; c.font = f2; c.fillText(brand, tx, m + pad + u * 3 + u * .7);
+    };
+    if (split) { chip(S.A, false, Math.max(u * 20, x - m * 1.5)); chip(S.B, true, Math.max(u * 20, w - x - m * 1.5)); }
+    else chip(S.A, false, w - m * 2);
+    // where it was made, small, bottom left
+    c.font = '600 ' + (u * 1.9) + 'px ' + sans; const site = 'paintdial.co.uk', sw = c.measureText(site).width;
+    c.fillStyle = 'rgba(33,31,27,.78)'; rr(c, m, h - m - u * 3.6, sw + pad * 2, u * 3.6, u); c.fill();
+    c.fillStyle = '#fff'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText(site, m + pad, h - m - u * 1.75);
+    const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.9));
+    if (!blob) return;
+    const fname = S.A.slug + (split ? '-and-' + S.B.slug : '') + '.jpg';
+    const link = location.origin + BASE + '?c=' + S.A.slug + '&ch=' + S.A.hex.slice(1).toLowerCase() + (split ? '&vs=' + S.B.slug + '&vh=' + S.B.hex.slice(1).toLowerCase() : '');
+    const say = split ? S.A.brand + ' ' + S.A.name + ' on the left, ' + S.B.brand + ' ' + S.B.name + ' on the right.' : S.A.brand + ' ' + S.A.name + ' on the wall.';
+    const file = new File([blob], fname, { type: 'image/jpeg' });
+    if (CAN_SHARE_FILES) {
+      try { await navigator.share({ files: [file], title: S.A.name + (split ? ' and ' + S.B.name : ''), text: say + ' ' + link }); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; }                 // closed the share sheet: do nothing
+    }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fname;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
+  $('share').addEventListener('click', async () => { const b = $('share'); b.disabled = true; try { await sharePicture(); } finally { b.disabled = false; } });
 
   // ---------- colours ----------
   function find(pair) { return lib.list.find(c => c.brand === pair[0] && c.name === pair[1]) || null; }
