@@ -1,0 +1,34 @@
+# Weekly stock check of the Decorating Centre Online tester links.
+# Rewrites dco-stock.json and commits it only when a colour has gone out of stock or come
+# back, so a no-change week causes no Netlify deploy. Can also be run by hand from the
+# Actions tab (Run workflow).
+name: DCO stock check
+on:
+  schedule:
+    - cron: '17 4 * * 1'   # Mondays, 04:17 UTC
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: dco-stock
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check stock
+        run: python3 check_dco_stock.py
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- dco-stock.json; then
+            echo "No change."
+            exit 0
+          fi
+          git config user.name "PaintDial stock check"
+          git config user.email "actions@users.noreply.github.com"
+          git add dco-stock.json
+          git commit -m "DCO stock check: update out-of-stock tester list"
+          git push
