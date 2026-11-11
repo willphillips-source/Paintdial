@@ -36,6 +36,14 @@ from collections import defaultdict
 UA = 'PaintDialLinkCheck/1.0 (+https://www.paintdial.co.uk/contact/)'
 PAUSE = 0.45                 # seconds between requests to one site
 GIVE_UP_AFTER = 12           # refusals in a row before a site is left alone
+# Names the brand's own page gives that differ from ours on purpose, so they are not reported
+# every month. (brand, code): the name on the brand's page.
+#  - Benjamin Moore OC-69 and OC-88 are sold in the US as White Opulence and Indian White; its UK
+#    pages head them "Opulence" and "Sparkling Wine", the names of 879 and 949, which have the
+#    same values. Kept under their own names so people searching for them find them.
+#  - Valspar X1R1F: its page is headed "Midnight Dusk" but titled "Black Currant", our name.
+KNOWN_NAMES = {('Benjamin Moore', 'OC-69'): 'Opulence', ('Benjamin Moore', 'OC-88'): 'Sparkling Wine',
+               ('Valspar', 'X1R1F'): 'Midnight Dusk'}
 ARGS = sys.argv[1:]
 SAMPLE = int(ARGS[ARGS.index('--sample') + 1]) if '--sample' in ARGS else 0
 ONLY = ARGS[ARGS.index('--brand') + 1] if '--brand' in ARGS else None
@@ -163,7 +171,7 @@ def check_benjamin_moore(paints):
             name = m.group(1)
         if m.group(2) != code:
             return f'page is number {m.group(2)}'
-        if norm(name) != norm(p['name']):
+        if norm(name) != norm(p['name']) and norm(name) != norm(KNOWN_NAMES.get(('Benjamin Moore', code), '')):
             return f'Benjamin Moore now calls it "{name}" (we have "{p["name"]}")'
         if ('#' + m.group(3)).upper() != p['hex'].upper():
             return f'value on the page is #{m.group(3).upper()} (we have {p["hex"]})'
@@ -202,7 +210,7 @@ def check_valspar(paints, links):
         _, h1 = title_and_h1(text)
         tester = re.search(r'https?://www\.diy\.com/departments/[^"\'\s<]*tester[^"\'\s<]*', text, re.I)
         mine = links.get(code, '')
-        if norm(h1) != norm(p['name']):
+        if norm(h1) != norm(p['name']) and norm(h1) != norm(KNOWN_NAMES.get(('Valspar', code), '')):
             res.wrong.append(f'{p["name"]} ({code}): Valspar now calls it "{html.unescape(h1)}"  {url}')
         elif 'diy.com' in mine and not tester:
             res.wrong.append(f'{p["name"]} ({code}): Valspar no longer links to a B&Q tester  {url}')
