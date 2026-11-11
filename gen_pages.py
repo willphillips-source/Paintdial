@@ -271,6 +271,79 @@ def price_line(brand):
     one_size = tin and 'only size' in PRICE_TIN_WHY[brand]
     return (f'{H.escape(brand)} is typically {fig} a litre, based on {basis}, checked {PRICE_CHECKED}. '
             + ('Retailers vary.' if one_size else 'Retailers vary, and bigger tins work out less per litre.'))
+# ---------- "The paint": what each brand says about its own wall matt ----------
+# One product per brand: its main matt for interior walls, the same product PRICING prices.
+# Every figure is as the brand's own product page or data sheet states it (read Nov 2026; notes
+# and sources in the Project doc paintdial-paint-details-research-nov26.md). A field the brand
+# does not state is left out, never estimated: Johnstone's gives "32m2" with no tin size,
+# Crown and Zoffany give no coverage, and Lick's only figure is on a retailer's listing.
+# Nothing here compares one brand with another. Re-check with the prices.
+PAINT_CHECKED = 'Nov 2026'
+PAINT_INFO = {
+ 'Farrow & Ball': dict(product='Estate Emulsion', finish='Very flat matt, 2% sheen', coverage='Up to 14 m² a litre', coats='2',
+    recoat='2 hours', tins='2.5L and 5L', note='Wipeable, not washable.', src='product advice sheet',
+    url='https://cdn.shopify.com/s/files/1/0824/3627/files/Estate_Emulsion_Product_Advice_Sheet.pdf'),
+ 'Little Greene': dict(product='Absolute Matt Emulsion', finish='Matt, under 5% sheen', coverage='14 m² a litre', coats='2',
+    recoat='4 hours', tins='250ml, 1L, 2.5L, 5L and 10L', src='data sheet', url=None),
+ 'Paint & Paper Library': dict(product='Pure Flat Emulsion', finish='Matt, under 5% sheen', coverage='15 m² a litre', coats='2',
+    recoat='4 hours', tins='250ml, 750ml, 2.5L and 5L', src='data sheet', url=None),
+ 'Craig & Rose': dict(product='1829 Chalky Emulsion', finish='Matt', coverage='About 14 m² a litre', coats='2',
+    recoat='4 hours', tins='750ml, 2.5L and 5L', src='data sheet', url=None),
+ 'Dulux': dict(product='Easycare Washable & Tough Matt', finish='Matt', coverage='Up to 13 m² a litre', coats='2',
+    recoat='2 to 4 hours', tins='2.5L, 5L and 10L', src='product page',
+    url='https://www.dulux.co.uk/en/products/dulux-easycare-washable-and-tough-matt'),
+ 'Dulux Heritage': dict(product='Velvet Matt', finish='Matt', coverage='13 m² a litre', coats='2',
+    recoat='2 to 4 hours', tins='1L, 2.5L, 5L and 10L', note='Washable.', src='product page',
+    url='https://www.duluxheritage.co.uk/en/products/details/dulux-heritage-velvet-matt'),
+ "Johnstone's": dict(product='Wall and Ceiling Matt', finish='Matt', recoat='2 to 4 hours', tins='2.5L and 5L',
+    note='Wipeable.', src='product page', url='https://www.johnstonespaint.com/wall-and-ceiling-matt-paint'),
+ 'Valspar': dict(product='Premium Walls & Ceilings', finish='Matt, mid-sheen or silk', coverage='10 m² a litre',
+    recoat='2 to 4 hours', tins='1L, 2.5L and 5L', src='product page',
+    url='https://www.valsparpaint.co.uk/paint-products/walls-ceilings/premium-walls-ceilings'),
+ 'Crown': dict(product='Walls & Ceilings Matt Emulsion', finish='Matt', recoat='4 hours', tins='2.5L and 5L',
+    src='product page', url='https://www.crownpaints.com/paint/walls-ceilings-matt-emulsion'),
+ 'COAT': dict(product='Flat Matt', finish='Very flat matt, 2% sheen', coverage='About 10 m² a litre', coats='2',
+    recoat='2 to 4 hours', tins='1L, 2.5L and 5L', src='product page and data sheet', url='https://coatpaints.com/pages/flat-matt-paint'),
+ 'Lick': dict(product='Matt', finish='Matt, low sheen', tins='2.5L', src='product pages', url='https://lick.com/'),
+ 'Earthborn': dict(product='Claypaint', finish='Very flat matt, about 2% sheen', coverage='About 10 m² a litre',
+    recoat='6 to 12 hours', tins='2.5L and 5L', note='Highly breathable, and listed by Earthborn for lime plaster.', src='data sheet',
+    url='https://earthbornpaints.co.uk/cdn/shop/files/Claypaint_Data_Sheet_2026_V1.pdf'),
+ 'Edward Bulmer': dict(product='Emulsion', finish='Dead matt, 2% sheen', coverage='12 m² a litre', coats='2',
+    recoat='4 to 6 hours', tins='2.5L and 5L', note='Highly breathable, and suitable for new lime and gypsum plaster.', src='data sheet',
+    url='https://www.edwardbulmerpaint.co.uk/app/uploads/2022/07/Emulsion-June-2022.pdf'),
+ 'Mylands': dict(product='Marble Matt Emulsion', finish='Very flat matt, 3% sheen', coverage='About 15 m² a litre',
+    recoat='1 to 2 hours', note='Washable.', src='product page', url='https://mylands.com/marble-matt-emulsion'),
+ 'Sanderson': dict(product='Active Emulsion', finish='Matt, under 5% sheen', coverage='About 12 m² a litre', coats='2',
+    recoat='2 to 4 hours', tins='2.5L and 5L', note='Wipeable and washable.', src='data sheet',
+    url='https://www.sanderson.design/static/media/akeneo_connector/reference_entities/records/S/a/Sanderson_Active_Emulsion_Data_Sheet_April_2026_5ea7.pdf'),
+ 'Zoffany': dict(product='Elite Emulsion', what='emulsion', finish='Matt', tins='1L and 2.5L', src='product pages', url='https://www.zoffany.design/paint'),
+ 'Fired Earth': dict(product='Matt Emulsion', finish='Matt', coverage='14 m² a litre', coats='2',
+    recoat='4 hours', tins='2.5L and 5L', note='Wipeable, not washable.', src='advice sheet', url=None),
+ 'Tikkurila': dict(product='Optiva Matt 5', finish='Matt', coverage='8 to 16 m² a litre', src='product page',
+    url='https://www.tikkurila.co.uk/optiva-matt-5'),
+ 'Benjamin Moore': dict(product='Regal Select Matte', finish='Matt', coverage='37 to 42 m² from a 3.79L tin (a US gallon)',
+    coats='2 on bare walls, 1 or 2 over paint', recoat='1 to 2 hours', src='data sheet',
+    url='https://benjaminmoorepaint.co.uk/products/datasheet/technical/1010'),
+ 'Lakeland Paints': dict(product='Matt wall paint', finish='Flat matt', coverage='About 65 m² a coat from a 5L tin, on hard, non-porous walls',
+    coats='2', recoat='2 hours', tins='5L', note='Washable.', src='tech help page', url='https://www.lakelandpaints.co.uk/tech-help'),
+}
+assert set(PAINT_INFO) == set(BRAND_ORDER), f"PAINT_INFO brands {sorted(set(PAINT_INFO) ^ set(BRAND_ORDER))} don't match BRAND_ORDER"
+def paint_block(brand):
+    d = PAINT_INFO[brand]
+    b = H.escape(brand)
+    poss = b if b.endswith(('’s', '&#x27;s')) else b + '’' if b.endswith('s') else b + '’s'
+    rows = [('Finish', d.get('finish')), ('Coverage', d.get('coverage')), ('Coats', d.get('coats')),
+            ('Second coat after', d.get('recoat')), ('Tins', d.get('tins'))]
+    dl = ''.join(f'<div><dt>{k}</dt><dd>{H.escape(v)}</dd></div>' for k, v in rows if v)
+    note = f' {H.escape(d["note"])}' if d.get('note') else ''
+    src = (f'<a href="{d["url"]}" rel="nofollow noopener" target="_blank" style="color:inherit">{d["src"]}</a>'
+           if d.get('url') else d['src'])
+    tail = ' Coverage depends on the wall.' if d.get('coverage') else ''
+    return (f'<h2>The paint</h2>'
+            f'<p class="sub">These figures are for {H.escape(d["product"])}, {poss} {d.get("what", "matt")} for walls and ceilings. Its other finishes have their own.{note}</p>'
+            f'<dl class="pinfo">{dl}</dl>'
+            f'<p class="afftext">From {poss} own {src}, checked {PAINT_CHECKED}.{tail}</p>')
+
 def price_band(brand):
     lo, hi, *tin = PRICING[brand]
     mid = (lo + hi) / 2 / (tin[0] if tin else PRICE_TIN_L)
@@ -593,6 +666,7 @@ h2::after{content:'';display:block;width:34px;height:4px;border-radius:2px;backg
 .c-body{padding:9px 11px 11px}
 .c-name{display:block;font-family:var(--serif);font-size:14.5px;font-weight:600;line-height:1.2;text-wrap:pretty}
 .c-brand{display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.pinfo{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0 4px}.pinfo div{background:var(--card,#fff);border:1px solid var(--hairline);border-radius:10px;padding:11px 14px}.pinfo dt{font-family:var(--sans);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.pinfo dd{font-size:14.5px;font-weight:600;margin:3px 0 0;line-height:1.3}
 .c-de{display:block;font-size:11px;color:var(--muted);margin-top:5px;font-variant-numeric:tabular-nums}.pband{display:inline-block;background:#EEEAE2;border-radius:999px;padding:2px 8px;margin-right:6px;font-weight:600;letter-spacing:.04em;color:var(--ink)}.pband i{font-style:normal;opacity:.25}
 .ladder{display:flex;border:1px solid var(--hairline);border-radius:14px;overflow-x:auto;background:var(--card)}
 /* Matches and the lighter/darker scale share one block (.mx). Wider than a phone it is
@@ -919,6 +993,7 @@ def build_colour_page(i):
 <h2>Pairs well with</h2>
 <p class="sub">Neutrals for woodwork and ceilings, and one colour that contrasts.</p>
 <div class="grid">{''.join(chip(j) for j in neutrals+accents)}</div>
+{paint_block(p['brand'])}
 <div class="cta"><h2 style="margin-top:0">Not quite right?</h2>
 <p>Use the colour tool to find a lighter, darker, warmer or cooler version of this colour across all {N:,} paints.</p>
 <a class="btn" href="{tool_url}">Open {name} in the colour tool \u2192</a></div>
