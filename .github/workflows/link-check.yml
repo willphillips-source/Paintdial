@@ -1,0 +1,34 @@
+# Monthly check that every "Order a tester" link still lands on the right colour.
+# Reads the retailers' pages and changes nothing. The run fails (and GitHub emails you) if a
+# link is wrong or gone; the report is on the run's summary page. Sites that refuse the request
+# are listed as "could not be checked" and do not fail the run. Can also be run by hand from the
+# Actions tab (Run workflow), with a sample size for a quick look.
+name: Tester link check
+on:
+  schedule:
+    - cron: '23 5 3 * *'   # the 3rd of each month, 05:23 UTC
+  workflow_dispatch:
+    inputs:
+      sample:
+        description: 'Colours to check per brand (blank for every link)'
+        required: false
+        default: ''
+permissions:
+  contents: read
+concurrency: link-check
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check links
+        run: |
+          if [ -n "${{ github.event.inputs.sample }}" ]; then
+            python3 check_links.py --sample "${{ github.event.inputs.sample }}"
+          else
+            python3 check_links.py
+          fi
