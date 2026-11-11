@@ -279,7 +279,9 @@
   const V = window.VisCore, $ = (s) => document.getElementById(s);
   const MAXDIM = 1400;
   const BASE = '/paint-visualiser/';
-  const EXAMPLE = { photo: BASE + 'example-room.jpg', matte: BASE + 'example-room-wall.png', current: ['Farrow & Ball', 'Skimming Stone'] };
+  // current: [brand, name] of the paint on the example's walls, if it is known; it adds a "use that" button
+  // under Lighting. Left empty for this photo: nobody knows what paint it is, and guessing one would be made up.
+  const EXAMPLE = { photo: BASE + 'example-room.jpg', matte: BASE + 'example-room-wall.png', current: null };
   const START = ['Farrow & Ball', 'Hague Blue'];
   const BASE_NOTE = 'Screens vary and phone cameras shift colour. Use this to narrow it down, then order testers before you buy.';
 
@@ -738,7 +740,7 @@
       ? 'Lit like the photo. The light falling on ' + S.cur.name + ' in this photo is measured and the new colour gets the same light, so a dim room stays dim.'
       : 'Right now the wall averages out at the paint’s published colour, with your photo’s light and shade on top. If you know what’s on the wall now, pick it and the new colour is lit the way your photo is instead.';
     const sug = $('curSuggest'); sug.innerHTML = '';
-    if (S.isExample && !has) {
+    if (S.isExample && !has && EXAMPLE.current) {
       const c = find(EXAMPLE.current);
       const b = document.createElement('button'); b.type = 'button'; b.className = 'btn';
       b.textContent = 'The example walls are ' + c.name + '. Use that';
