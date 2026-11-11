@@ -271,7 +271,7 @@ def price_line(brand):
     one_size = tin and 'only size' in PRICE_TIN_WHY[brand]
     return (f'{H.escape(brand)} is typically {fig} a litre, based on {basis}, checked {PRICE_CHECKED}. '
             + ('Retailers vary.' if one_size else 'Retailers vary, and bigger tins work out less per litre.'))
-# ---------- "The paint": what each brand says about its own wall matt ----------
+# ---------- Paint details: what each brand says about its own wall matt ----------
 # One product per brand: its main matt for interior walls, the same product PRICING prices.
 # Every figure is as the brand's own product page or data sheet states it (read Nov 2026; notes
 # and sources in the Project doc paintdial-paint-details-research-nov26.md). A field the brand
@@ -297,7 +297,7 @@ PAINT_INFO = {
     url='https://www.duluxheritage.co.uk/en/products/details/dulux-heritage-velvet-matt'),
  "Johnstone's": dict(product='Wall and Ceiling Matt', finish='Matt', recoat='2 to 4 hours', tins='2.5L and 5L',
     note='Wipeable.', src='product page', url='https://www.johnstonespaint.com/wall-and-ceiling-matt-paint'),
- 'Valspar': dict(product='Premium Walls & Ceilings', finish='Matt, mid-sheen or silk', coverage='10 m² a litre',
+ 'Valspar': dict(product='Premium Walls & Ceilings', what='paint', finish='Matt, mid-sheen or silk', coverage='10 m² a litre',
     recoat='2 to 4 hours', tins='1L, 2.5L and 5L', src='product page',
     url='https://www.valsparpaint.co.uk/paint-products/walls-ceilings/premium-walls-ceilings'),
  'Crown': dict(product='Walls & Ceilings Matt Emulsion', finish='Matt', recoat='4 hours', tins='2.5L and 5L',
@@ -324,7 +324,7 @@ PAINT_INFO = {
  'Benjamin Moore': dict(product='Regal Select Matte', finish='Matt', coverage='37 to 42 m² from a 3.79L tin (a US gallon)',
     coats='2 on bare walls, 1 or 2 over paint', recoat='1 to 2 hours', src='data sheet',
     url='https://benjaminmoorepaint.co.uk/products/datasheet/technical/1010'),
- 'Lakeland Paints': dict(product='Matt wall paint', finish='Flat matt', coverage='About 65 m² a coat from a 5L tin, on hard, non-porous walls',
+ 'Lakeland Paints': dict(product='Matt Wall Paint', finish='Flat matt', coverage='About 65 m² a coat from a 5L tin, on hard, non-porous walls',
     coats='2', recoat='2 hours', tins='5L', note='Washable.', src='tech help page', url='https://www.lakelandpaints.co.uk/tech-help'),
 }
 assert set(PAINT_INFO) == set(BRAND_ORDER), f"PAINT_INFO brands {sorted(set(PAINT_INFO) ^ set(BRAND_ORDER))} don't match BRAND_ORDER"
@@ -339,8 +339,10 @@ def paint_block(brand):
     src = (f'<a href="{d["url"]}" rel="nofollow noopener" target="_blank" style="color:inherit">{d["src"]}</a>'
            if d.get('url') else d['src'])
     tail = ' Coverage depends on the wall.' if d.get('coverage') else ''
-    return (f'<h2>The paint</h2>'
-            f'<p class="sub">These figures are for {H.escape(d["product"])}, {poss} {d.get("what", "matt")} for walls and ceilings. Its other finishes have their own.{note}</p>'
+    # Headed with the tin's own name ("Farrow & Ball Estate Emulsion"), like the page's other
+    # headings, which say what is in the section. "The paint" read as a label, not a description.
+    return (f'<h2>{b} {H.escape(d["product"])}</h2>'
+            f'<p class="sub">{poss[0].upper() + poss[1:]} {d.get("what", "matt")} for walls and ceilings.{note}</p>'
             f'<dl class="pinfo">{dl}</dl>'
             f'<p class="afftext">From {poss} own {src}, checked {PAINT_CHECKED}.{tail}</p>')
 
