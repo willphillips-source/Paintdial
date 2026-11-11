@@ -396,3 +396,33 @@
   to = "/alternatives/benjamin-moore-citronnee"
   status = 301
 
+[[redirects]]
+  from = "/colours/benjamin-moore-oil-cloth"
+  to = "/colours/benjamin-moore-oilcloth"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-oil-cloth"
+  to = "/alternatives/benjamin-moore-oilcloth"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-all-a-blaze"
+  to = "/colours/benjamin-moore-all-ablaze"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-all-a-blaze"
+  to = "/alternatives/benjamin-moore-all-ablaze"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-new-borns-eyes"
+  to = "/colours/benjamin-moore-newborns-eyes"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-new-borns-eyes"
+  to = "/alternatives/benjamin-moore-newborns-eyes"
+  status = 301
+

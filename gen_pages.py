@@ -281,8 +281,8 @@ def price_line(brand):
 PAINT_CHECKED = 'Nov 2026'
 PAINT_INFO = {
  'Farrow & Ball': dict(product='Estate Emulsion', finish='Very flat matt, 2% sheen', coverage='Up to 14 m² a litre', coats='2',
-    recoat='2 hours', tins='2.5L and 5L', note='Wipeable, not washable.', src='product advice sheet',
-    url='https://cdn.shopify.com/s/files/1/0824/3627/files/Estate_Emulsion_Product_Advice_Sheet.pdf'),
+    recoat='2 hours', tins='2.5L and 5L', note='Wipeable, not washable.', src='product page',
+    url='https://www.farrow-ball.com/paint-finishes/estate-emulsion'),
  'Little Greene': dict(product='Absolute Matt Emulsion', finish='Matt, under 5% sheen', coverage='14 m² a litre', coats='2',
     recoat='4 hours', tins='250ml, 1L, 2.5L, 5L and 10L', src='data sheet', url=None),
  'Paint & Paper Library': dict(product='Pure Flat Emulsion', finish='Matt, under 5% sheen', coverage='15 m² a litre', coats='2',
@@ -304,7 +304,8 @@ PAINT_INFO = {
     src='product page', url='https://www.crownpaints.com/paint/walls-ceilings-matt-emulsion'),
  'COAT': dict(product='Flat Matt', finish='Very flat matt, 2% sheen', coverage='About 10 m² a litre', coats='2',
     recoat='2 to 4 hours', tins='1L, 2.5L and 5L', src='product page and data sheet', url='https://coatpaints.com/pages/flat-matt-paint'),
- 'Lick': dict(product='Matt', finish='Matt, low sheen', tins='2.5L', src='product pages', url='https://lick.com/'),
+ 'Lick': dict(product='Matt', finish='Matt, low sheen', coverage='10 to 12 m² a litre', coats='2', tins='2.5L',
+    src='product pages', url='https://lick.com/'),
  'Earthborn': dict(product='Claypaint', finish='Very flat matt, about 2% sheen', coverage='About 10 m² a litre',
     recoat='6 to 12 hours', tins='2.5L and 5L', note='Highly breathable, and listed by Earthborn for lime plaster.', src='data sheet',
     url='https://earthbornpaints.co.uk/cdn/shop/files/Claypaint_Data_Sheet_2026_V1.pdf'),
