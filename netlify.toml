@@ -123,3 +123,276 @@
   from = "/colours/dulux-sapphire-splendor"
   to = "/colours/dulux-sapphire-splendour"
   status = 301
+
+# Benjamin Moore renamed these colours (same number, same value). Checked against every colour
+# page on benjaminmoorepaint.co.uk on 11 Nov 2026; names updated to match, old pages redirect.
+[[redirects]]
+  from = "/colours/benjamin-moore-face-powder"
+  to = "/colours/benjamin-moore-empty-quarter"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-face-powder"
+  to = "/alternatives/benjamin-moore-empty-quarter"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-lancaster-white"
+  to = "/colours/benjamin-moore-cream-agate"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-lancaster-white"
+  to = "/alternatives/benjamin-moore-cream-agate"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-pink-cadillac"
+  to = "/colours/benjamin-moore-sutton-pink"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-pink-cadillac"
+  to = "/alternatives/benjamin-moore-sutton-pink"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-pink-starburst"
+  to = "/colours/benjamin-moore-flower-crown"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-pink-starburst"
+  to = "/alternatives/benjamin-moore-flower-crown"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-starburst-orange"
+  to = "/colours/benjamin-moore-craft-room"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-starburst-orange"
+  to = "/alternatives/benjamin-moore-craft-room"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-moonlight"
+  to = "/colours/benjamin-moore-sicilian-lemon"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-moonlight"
+  to = "/alternatives/benjamin-moore-sicilian-lemon"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-ice-blue"
+  to = "/colours/benjamin-moore-quiet-pond"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-ice-blue"
+  to = "/alternatives/benjamin-moore-quiet-pond"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-polo-blue"
+  to = "/colours/benjamin-moore-three-piece-suit"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-polo-blue"
+  to = "/alternatives/benjamin-moore-three-piece-suit"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-old-navy"
+  to = "/colours/benjamin-moore-winding-waterway"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-old-navy"
+  to = "/alternatives/benjamin-moore-winding-waterway"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-patriot-blue"
+  to = "/colours/benjamin-moore-laura-bay"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-patriot-blue"
+  to = "/alternatives/benjamin-moore-laura-bay"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-gypsy-pink"
+  to = "/colours/benjamin-moore-foxglove-bloom"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-gypsy-pink"
+  to = "/alternatives/benjamin-moore-foxglove-bloom"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-patriot-red"
+  to = "/colours/benjamin-moore-cosmic-crisp"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-patriot-red"
+  to = "/alternatives/benjamin-moore-cosmic-crisp"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-gypsy-love"
+  to = "/colours/benjamin-moore-fascinator-rose"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-gypsy-love"
+  to = "/alternatives/benjamin-moore-fascinator-rose"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-cafe-ole"
+  to = "/colours/benjamin-moore-weathered-bark"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-cafe-ole"
+  to = "/alternatives/benjamin-moore-weathered-bark"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-american-white"
+  to = "/colours/benjamin-moore-garlic-bulb"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-american-white"
+  to = "/alternatives/benjamin-moore-garlic-bulb"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-iced-cube-silver"
+  to = "/colours/benjamin-moore-ice-cube-silver"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-iced-cube-silver"
+  to = "/alternatives/benjamin-moore-ice-cube-silver"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-silver-half-dollar"
+  to = "/colours/benjamin-moore-porringer-gray"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-silver-half-dollar"
+  to = "/alternatives/benjamin-moore-porringer-gray"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-nimbus-gray"
+  to = "/colours/benjamin-moore-beneath-the-clouds"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-nimbus-gray"
+  to = "/alternatives/benjamin-moore-beneath-the-clouds"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-ebony-king"
+  to = "/colours/benjamin-moore-wire-frame-glasses"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-ebony-king"
+  to = "/alternatives/benjamin-moore-wire-frame-glasses"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-whale-gray"
+  to = "/colours/benjamin-moore-shark-gray"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-whale-gray"
+  to = "/alternatives/benjamin-moore-shark-gray"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-patriotic-white"
+  to = "/colours/benjamin-moore-tulle-skirt"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-patriotic-white"
+  to = "/alternatives/benjamin-moore-tulle-skirt"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-white-cloud"
+  to = "/colours/benjamin-moore-satin-shoes"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-white-cloud"
+  to = "/alternatives/benjamin-moore-satin-shoes"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-saddle-brown"
+  to = "/colours/benjamin-moore-cordwainer"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-saddle-brown"
+  to = "/alternatives/benjamin-moore-cordwainer"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-navajo-red"
+  to = "/colours/benjamin-moore-tomato-galette"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-navajo-red"
+  to = "/alternatives/benjamin-moore-tomato-galette"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-mexicana"
+  to = "/colours/benjamin-moore-vintage-redware"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-mexicana"
+  to = "/alternatives/benjamin-moore-vintage-redware"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-champion-cobalt"
+  to = "/colours/benjamin-moore-cefalu-beach"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-champion-cobalt"
+  to = "/alternatives/benjamin-moore-cefalu-beach"
+  status = 301
+
+[[redirects]]
+  from = "/colours/benjamin-moore-citronee"
+  to = "/colours/benjamin-moore-citronnee"
+  status = 301
+
+[[redirects]]
+  from = "/alternatives/benjamin-moore-citronee"
+  to = "/alternatives/benjamin-moore-citronnee"
+  status = 301
+
