@@ -568,6 +568,13 @@ def buy_link(p):
     # Brand-direct Awin route (Crown Paints): wrap its own colour URL to earn commission.
     if CROWN_MID and p['brand'] == 'Crown':
         return _awin_wrap(CROWN_MID, p.get('url') or f"https://www.crownpaints.com/{base_slug(p['name'])}")
+    # COAT: every colour has its own sample page, <name>-sample, offering a stick-on sample
+    # (the default) or a tester pot. The data holds the paint page, <name>-flat-matt, where the
+    # sample is a click away, so the tester button goes to the sample page instead. All 142
+    # were matched against coatpaints.com/products.json on 12 Nov 2026. A COAT colour whose
+    # link does not end -flat-matt is left alone: check its sample page by hand.
+    if p['brand'] == 'COAT' and (p.get('url') or '').endswith('-flat-matt'):
+        return p['url'][:-len('-flat-matt')] + '-sample'
     if p.get('url'): return p['url']
     _bl = BUY_LINKS.get(p['brand'], {}).get(p.get('code') or p['name'])
     if _bl: return _bl
@@ -902,7 +909,10 @@ def buy_cta(p):
     if 'valsparpaint.co.uk' in url:            # Valspar colours with no tester online
         return url, f'See {name} at Valspar →', 'Opens Valspar’s page for it, with where to buy.'
     if 'lick.com' in url and 'variant=' in url:
-        return url, f'Order {a} {name} sample →', 'Opens Lick’s page for it with the sample selected.'
+        # Lick's sample is a Peel & Stick one, not a pot (checked on lick.com, 12 Nov 2026).
+        return url, f'Order {a} {name} sample →', 'Opens Lick’s page for it with the stick-on sample selected.'
+    if 'coatpaints.com' in url and url.endswith('-sample'):
+        return url, f'Order {a} {name} tester →', 'Opens COAT’s sample page for it: a stick-on sample or a tester pot.'
     if 'lakelandpaints.co.uk/testers/' in url:  # Lakeland has one tester page for every colour
         return url, f'Order {a} {name} tester →', f'Opens Lakeland’s tester page: choose {name} from its colour list.'
     if 'decoratingcentreonline' in url:
