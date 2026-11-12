@@ -281,8 +281,8 @@
   const BASE = '/paint-visualiser/';
   // current: [brand, name] of the paint on the example's walls, if it is known; it adds a "use that" button
   // under Lighting. Left empty for this photo: nobody knows what paint it is, and guessing one would be made up.
-  const EXAMPLE = { photo: BASE + 'example-room.jpg', matte: BASE + 'example-room-wall.png', current: null };
-  const START = ['Farrow & Ball', 'Hague Blue'];
+  const EXAMPLE = { photo: BASE + 'example-room.jpg', matte: BASE + 'example-room-wall.png', current: ['Farrow & Ball', 'Setting Plaster'] };
+  const START = ['Farrow & Ball', 'Setting Plaster'];
   const BASE_NOTE = 'Screens vary and phone cameras shift colour. Use this to narrow it down, then order testers before you buy.';
 
   // "Tap" on phones and tablets, "click" with a mouse
@@ -414,7 +414,9 @@
     const rgba = octx.getImageData(0, 0, w, h).data;
     S.photoId++; S.isExample = isExample; S.w = w; S.h = h;
     S.regions = []; S.history = []; S.inFlight = null;
-    S.embedded = false; S.embedding = false; S.err = ''; S.preset = null; S.cur = null;
+    S.embedded = false; S.embedding = false; S.err = ''; S.preset = null;
+    // The example room's real paint is known, so it starts lit the way the photo is.
+    S.cur = isExample && EXAMPLE.current ? find(EXAMPLE.current) : null;
     const t0 = performance.now();
     S.prep = V.prepare(rgba, w, h);
     S.tech = { 'Working size': w + ' × ' + h + ' px', 'Preparing the photo': Math.round(performance.now() - t0) + ' ms' };
