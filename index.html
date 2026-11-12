@@ -1219,7 +1219,7 @@ const PRICE_TIN_WHY={
   if(el) el.textContent='Prices are per litre, based on a '+PRICE_TIN_L
     +'L tin mixed to your colour and checked '+PRICE_CHECKED
     +(odd.length?' ('+odd.map(b=>b+': '+PRICING[b][2]+'L, '+(PRICE_TIN_WHY[b]||'its nearest size to 2.5L')).join('; ')+')':'')
-    +'. Retailers vary, and bigger tins work out cheaper. £ is under £'+PRICE_BANDS[0]+' a litre, ££ £'+PRICE_BANDS[0]+' to £'+PRICE_BANDS[1]+', £££ £'+PRICE_BANDS[1]+' or more.';
+    +'. Retailers vary, and bigger tins work out less per litre. £ is under £'+PRICE_BANDS[0]+' a litre, ££ £'+PRICE_BANDS[0]+' to £'+PRICE_BANDS[1]+', £££ £'+PRICE_BANDS[1]+' or more.';
 })();
 const money = v => '£'+v.toFixed(2);
 function priceBand(brand){

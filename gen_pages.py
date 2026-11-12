@@ -672,14 +672,19 @@ header nav a.nav-cta:hover{box-shadow:0 4px 12px rgba(33,31,27,.10);transform:tr
 .hero-body{padding:26px 28px}
 .eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 h1{font-family:var(--serif);font-size:34px;font-weight:600;letter-spacing:-.01em;line-height:1.1;margin:6px 0 2px}
-.facts{display:flex;gap:18px;margin:16px 0 20px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;flex-wrap:wrap}
+/* The brand sits inside the colour page's h1, so the heading reads "Dulux Fallen Burr"
+   to a search engine or screen reader, while looking exactly as it did when the brand
+   was a separate label above the name. */
+.hero-body h1{margin-top:0}
+h1 .eyebrow{display:block;font-family:var(--sans);line-height:1.5;margin-bottom:8px}
+.facts{display:flex;gap:6px 18px;margin:16px 0 20px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;flex-wrap:wrap}
 .hero-acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.hero-acts .btn{border:1px solid transparent}
 .btn.btn-wall{background:#fff;color:var(--ink);border-color:var(--hairline);box-shadow:0 1px 2px rgba(33,31,27,.05)}.btn.btn-wall:hover{border-color:var(--muted)}
 .facts b{color:var(--ink)}
 .btn{display:inline-block;font-size:14px;font-weight:600;text-decoration:none;padding:11px 20px;border-radius:8px;background:var(--ink);color:var(--paper)}
 h2{font-family:var(--serif);font-size:21px;font-weight:600;margin:34px 0 4px}
 h2::after{content:'';display:block;width:34px;height:4px;border-radius:2px;background:var(--pc);margin-top:7px}
-.sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:14px}.sub a{color:inherit;text-underline-offset:2px}.c-wn{white-space:nowrap}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
 .chip{border:1px solid var(--hairline);border-radius:14px;overflow:hidden;background:var(--card);box-shadow:0 1px 2px rgba(33,31,27,.06);text-decoration:none;color:var(--ink);transition:transform .12s,box-shadow .12s;display:flex;flex-direction:column}
 .chip:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(33,31,27,.1)}.chip{cursor:pointer}.chip:focus-within{outline:2px solid var(--pc);outline-offset:2px}.chip .c-name{text-decoration:none;color:inherit;outline:none}.chip .c-name::after{content:"";position:absolute;inset:0}
@@ -847,7 +852,12 @@ def chip(j, home_lab=None, show_tier=False, home_i=None):
                     if _hd <= _tol:
                         word = 'same family'
         tierlab = band_html(q["brand"]) if show_tier else ''   # the pill's own margin separates it from the word
-        de = f'<span class="c-de">{tierlab}{word}</span>'
+        # The number is the site's own match distance (dmatch), shown beside the word so the
+        # word stays the headline. Explained on /how-it-works/#difference. Not called Delta E:
+        # it is on that scale but weights hue and lightness its own way.
+        num = f' \u00b7 <span class="c-num" title="Difference score: lower is closer">{d:.1f}</span>' if home_i is not None else ''
+        # word and number stay together, so a narrow card wraps them as one piece
+        de = f'<span class="c-de">{tierlab}<span class="c-wn">{word}{num}</span></span>'
     # Compare button only where there is a colour to compare against (the page's own
     # colour); the "pairs well with" chips are companions, not matches, so they get none.
     cmp = cmp_btn(paints[home_i], q, word) if home_i is not None else ''
@@ -929,11 +939,13 @@ def build_colour_page(i):
             xmatch.append((j, d[j]))
     xmatch.sort(key=lambda t: t[1])
     assert len(xmatch) >= 3, f'{p["brand"]} {p["name"]}: fewer than 3 brands have a match'
-    mx_sub = 'One from each brand. The badge shows its price bracket.'
+    _num_note = (' The number is how far apart the two colours are: under 2 is near-identical. '
+                 '<a href="/how-it-works/#difference">How it\u2019s worked out</a>.')
+    mx_sub = 'One from each brand. The badge shows its price bracket.' + _num_note
     if no_match:
         mx_sub = (f'One from each brand that has something near it. The badge shows its price bracket. '
                   f'{_and([H.escape(b) for b in no_match])} {"has" if len(no_match) == 1 else "have"} '
-                  f'nothing close enough to show.')
+                  f'nothing close enough to show.' + _num_note)
     # SEO: name the closest cross-brand match in title/meta (answers the dupe query in the SERP)
     _x0, _x0d = xmatch[0]
     seo_top = f"{H.escape(paints[_x0]['name'])} by {H.escape(paints[_x0]['brand'])}"
@@ -997,8 +1009,8 @@ def build_colour_page(i):
 {FONTS}<style>{CSS}.hero-swatch{{background:{p['hex']}}}{SHORTLIST_CSS}{COMPARE_BTN_CSS}{KOFI_STRIP_CSS}</style></head><body style="--pc:{p['hex']}"><div class="top-band"></div><div class="wrap">
 {hdr_tool}
 <div class="hero"><div class="hero-swatch">{solo_btn(p)}{heart(p['name'], p['brand'], p['hex'])}</div><div class="hero-body">
-<span class="eyebrow">{brand}</span><h1>{name}</h1>
-<div class="facts"><span>Hex <b>{p['hex']}</b></span><span>LRV <b>\u2248\u2009{lrv(L0):.0f}</b></span><span>Lightness <b>{L0:.0f}/100</b></span></div>{source_line(p['brand'])}
+<h1><span class="eyebrow">{brand}</span> {name}</h1>
+<div class="facts"><span>Hex <b>{p['hex']}</b></span><span>RGB <b>{int(p['hex'][1:3],16)}, {int(p['hex'][3:5],16)}, {int(p['hex'][5:7],16)}</b></span><span>LRV <b>\u2248\u2009{lrv(L0):.0f}</b></span><span>Lightness <b>{L0:.0f}/100</b></span></div>{source_line(p['brand'])}
 <div class="hero-acts">{f'<a class="btn" href="{buy_url}" target="_blank" rel="{buy_rel}">{buy_label}</a>' if buy_url else ''}<a class="btn btn-wall" href="{VIS_PATH}?c={slug}">See it on your wall</a></div>
 {f'<p class="afftext">{buy_note}</p>' if buy_note else ''}
 <p class="afftext">{price_line(p['brand'])}</p>
@@ -2214,14 +2226,16 @@ def build_method_page():
 <h2>How matches are calculated</h2>
 <p>Matches are ranked by perceptual colour difference, a measure of how different two colours look to the eye. It\u2019s computed in the OKLab colour space, which handles hue more faithfully than older formulas: blues stay blue as they lighten, and purples don\u2019t get mistaken for blues. The ranking also weights hue more heavily than lightness. A paint a touch lighter or darker still reads as the same colour, but one that has drifted in hue doesn\u2019t, so matches keep the colour\u2019s character and the lighter and darker row on each colour page covers depth.</p>
 
-<h2>What the match labels mean</h2>
+<h2 id="difference">What the match labels and numbers mean</h2>
+<p>Every match has a label and a number. The number is the difference between the two colours\u2019 published values: 0 means they are the same value, and the bigger it gets the further apart they are. The label is set by the number.</p>
 <ul>
-<li><span class="label">Near-identical</span>: a difference most people can\u2019t see on a wall. On screen the swatches look the same.</li>
-<li><span class="label">Very close</span>: a difference you\u2019d struggle to spot unless the two were side by side.</li>
-<li><span class="label">Close</span>: visibly similar, a little off in tone or depth.</li>
+<li><span class="label">Near-identical</span> (under 2): a difference most people can\u2019t see on a wall. On screen the swatches look the same.</li>
+<li><span class="label">Very close</span> (2 to 5): a difference you\u2019d struggle to spot unless the two were side by side.</li>
+<li><span class="label">Close</span> (5 to 10): visibly similar, a little off in tone or depth.</li>
 <li><span class="label">Same family</span>: further apart, but still the same hue family, checked in OKLab rather than by position in the list.</li>
 <li><span class="label">Related / similar tone</span>: close in overall feel, but a different colour family.</li>
 </ul>
+<p>The number is on roughly the same scale as Delta E, the measure paint and print people use, but it isn\u2019t a Delta E figure and won\u2019t equal one from another site. It is the OKLab difference described above, with hue counted double and lightness counted a little less. It compares published digital values, so treat it as a guide to which testers to order.</p>
 
 <h2>RAL Classic, BS 4800 and Dulux Trade codes</h2>
 <p>Trade and specification colours are covered too: type a RAL Classic code (say, \u201cRAL 7016\u201d), a British Standard BS 4800 code (say, \u201c08 B 15\u201d, Magnolia) or a colour name into the tool\u2019s search and PaintDial shows every brand\u2019s nearest paints to it. The RAL values come from the standard\u2019s published CIELAB coordinates, and the BS 4800 values from measured colour data (averaged spectrophotometer readings, standardised to D65 / CIE 1964). Both are physical colour standards, so on-screen values are approximate conversions. For anything binding, use an official RAL or British Standard fan deck.</p>
@@ -3004,7 +3018,7 @@ def build_alternatives_page(i):
         # Computed, per-match difference from the target colour \u2014 same machinery as the
         # verdict (diff_bits/joinbits), so it's factual and can never contradict the swatch.
         _db = diff_bits(i, k)
-        diff_html = (f'<span class="a-diff">{joinbits(_db).capitalize()} than {name}.</span>'
+        diff_html = (f'<span class="a-diff">{joinbits(_db)[:1].upper()+joinbits(_db)[1:]} than {name}.</span>'
                      if _db else '')
         # The card is a div with the name as a stretched link (the ::after covers the
         # card), so the compare button can sit beside the link rather than inside it.
@@ -3012,7 +3026,7 @@ def build_alternatives_page(i):
                 f'<span class="a-rank">{rank}</span>'
                 f'<span class="a-sw" style="background:{q["hex"]}"></span>'
                 f'<span class="a-body"><a class="a-nm" href="/colours/{s}">{H.escape(q["name"])}</a>'
-                f'<span class="a-br">{H.escape(q["brand"])} \u00b7 {TIER_WORD[TIER[q["brand"]]]} \u00b7 {matchword(d[k])}</span>'
+                f'<span class="a-br">{H.escape(q["brand"])} \u00b7 {TIER_WORD[TIER[q["brand"]]]} \u00b7 {matchword(d[k])} \u00b7 <span title="Difference score: lower is closer">{float(d[k]):.1f}</span></span>'
                 f'{diff_html}{note_html}{cmp_btn(p, q, matchword(d[k]))}</span>'
                 f'<span class="a-hex">{q["hex"]}</span></div>')
 
@@ -3056,6 +3070,7 @@ def build_alternatives_page(i):
 {verdict}
 <p class="intro">One brand can appear several times if it has more than one close match. For the single best match <em>per brand</em>, see the <a href="/colours/{slugs[i]}">{name} colour page</a>.</p>
 <h2>All {len(alts)} close matches, ranked</h2>
+<p class="intro">The number on each is how far apart the two colours are: under 2 is near-identical, under 5 very close. <a href="/how-it-works/#difference">How it\u2019s worked out</a>.</p>
 <div class="alts">{cards}</div>
 <div class="faq"><h2>Common questions</h2>
 {dulux_q}
