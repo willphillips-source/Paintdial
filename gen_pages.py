@@ -80,9 +80,27 @@ COMPARE_BTN_CSS = ('.pd-cmp-btn{position:absolute;top:8px;left:8px;display:inlin
                    '.pd-cmp-btn:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(33,31,27,.14)}'
                    '.pd-cmp-btn:focus-visible{outline:2px solid #5E7E8B;outline-offset:1px}'
                    '.pd-cmp-btn svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}'
-                   '@media(max-width:560px){.pd-cmp-btn{height:27px;font-size:11px;padding:0 10px 0 8px}}')
+                   '@media(max-width:560px){.pd-cmp-btn{height:27px;font-size:11px;padding:0 10px 0 8px}}'
+                   # The big swatch at the top of a colour or alternatives page is itself a button
+                   # that opens the colour full screen (openSolo in pd-compare.js). It covers the
+                   # swatch and sits under the shortlist heart, as a sibling, never around it.
+                   '.hero-sw{position:relative}'
+                   '.pd-solo{position:absolute;inset:0;width:100%;height:100%;border:0;padding:0;margin:0;background:none;cursor:zoom-in;z-index:1;font:inherit;-webkit-tap-highlight-color:transparent}'
+                   '.pd-solo:focus-visible{outline:2px solid #5E7E8B;outline-offset:-5px}'
+                   '.pd-solo i{position:absolute;top:8px;left:8px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.82);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;color:#8C8578;transition:transform .12s,color .12s}'
+                   '.pd-solo:hover i{transform:scale(1.12);color:#5E7E8B}'
+                   '.pd-solo svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}'
+                   '@media(max-width:560px){.pd-solo i{width:27px;height:27px}}')
 COMPARE_SCRIPT = '<script src="/pd-compare.js" defer></script>'
 _CMP_SVG = '<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'
+
+def solo_btn(p, chip=True):
+    """Covers a hero swatch and opens that colour full screen. chip = show the small
+       expand icon in the corner (left off on the narrow alternatives-page swatch)."""
+    nm=H.escape(p['name'], quote=True); br=H.escape(p['brand'], quote=True)
+    icon = f'<i aria-hidden="true">{_CMP_SVG}</i>' if chip else ''
+    return (f'<button class="pd-solo" type="button" data-hex="{p["hex"]}" data-name="{nm}" data-brand="{br}" '
+            f'aria-label="See {nm} full screen" title="See it full screen">{icon}</button>')
 
 def cmp_btn(a, b, word):
     """Trigger for the full-screen compare view. a = the colour being matched (shown on
@@ -746,7 +764,7 @@ h1{font-size:46px}h2{font-size:26px;margin-top:46px}.sub{font-size:15px;margin-b
 .logo{font-size:34px}
 .rung .r-s{height:80px}.rung .r-b{padding:9px 10px 11px}.rung .r-n{font-size:14px;height:34px}.rung .r-br{font-size:10.5px}
 .cta p{font-size:16px}footer{font-size:13.5px}.colour-summary{font-size:17px}
-.c-swatch .pd-cmp-btn{height:34px;font-size:13px;padding:0 13px 0 10px}.c-swatch .pd-heart,.hero-swatch .pd-heart{width:34px;height:34px}
+.c-swatch .pd-cmp-btn{height:34px;font-size:13px;padding:0 13px 0 10px}.c-swatch .pd-heart,.hero-swatch .pd-heart,.hero-swatch .pd-solo i{width:34px;height:34px}
 }
 @media(min-width:2400px){
 .wrap{max-width:2320px}
@@ -757,7 +775,7 @@ h1{font-size:54px}h2{font-size:30px;margin-top:52px}.sub{font-size:16.5px;margin
 .hero-swatch{min-height:500px}.hero-body{padding:40px 44px}.btn{font-size:17px;padding:13px 24px}.afftext{font-size:13.5px}
 .rung .r-s{height:96px}.rung .r-b{padding:10px 12px 12px}.rung .r-n{font-size:15.5px;height:38px}.rung .r-br{font-size:11.5px}
 .cta p{font-size:17px}footer{font-size:14.5px}.colour-summary{font-size:18.5px}
-.c-swatch .pd-cmp-btn{height:38px;font-size:14px;padding:0 15px 0 12px;top:10px;left:10px}.c-swatch .pd-heart,.hero-swatch .pd-heart{width:38px;height:38px;top:10px;right:10px}
+.c-swatch .pd-cmp-btn{height:38px;font-size:14px;padding:0 15px 0 12px;top:10px;left:10px}.c-swatch .pd-heart,.hero-swatch .pd-heart{width:38px;height:38px;top:10px;right:10px}.hero-swatch .pd-solo i{width:38px;height:38px;top:10px;left:10px}
 .hero-swatch{min-height:460px}
 }
 """
@@ -978,7 +996,7 @@ def build_colour_page(i):
 {FAVICON}
 {FONTS}<style>{CSS}.hero-swatch{{background:{p['hex']}}}{SHORTLIST_CSS}{COMPARE_BTN_CSS}{KOFI_STRIP_CSS}</style></head><body style="--pc:{p['hex']}"><div class="top-band"></div><div class="wrap">
 {hdr_tool}
-<div class="hero"><div class="hero-swatch">{heart(p['name'], p['brand'], p['hex'])}</div><div class="hero-body">
+<div class="hero"><div class="hero-swatch">{solo_btn(p)}{heart(p['name'], p['brand'], p['hex'])}</div><div class="hero-body">
 <span class="eyebrow">{brand}</span><h1>{name}</h1>
 <div class="facts"><span>Hex <b>{p['hex']}</b></span><span>LRV <b>\u2248\u2009{lrv(L0):.0f}</b></span><span>Lightness <b>{L0:.0f}/100</b></span></div>{source_line(p['brand'])}
 <div class="hero-acts">{f'<a class="btn" href="{buy_url}" target="_blank" rel="{buy_rel}">{buy_label}</a>' if buy_url else ''}<a class="btn btn-wall" href="{VIS_PATH}?c={slug}">See it on your wall</a></div>
@@ -3030,7 +3048,7 @@ def build_alternatives_page(i):
 {FONTS}<style>{ALT_CSS}{COMPARE_BTN_CSS}{KOFI_STRIP_CSS}</style></head><body style="--pc:{p['hex']}"><div class="top-band"></div><div class="wrap">
 <header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a><a href="/">Colour tool</a></div>
 <h1>{brand} <span class="pn"><i></i>{name}</span> alternatives</h1>
-<div class="hero-card"><div class="hero-sw" style="background:{p['hex']}"></div>
+<div class="hero-card"><div class="hero-sw" style="background:{p['hex']}">{solo_btn(p, chip=False)}</div>
 <div class="hero-info"><div class="hero-label">The colour you\u2019re matching</div>
 <div class="hero-name">{brand} <span class="pn"><i></i>{name}</span></div>
 <div class="hero-stats"><span><i>Hex</i>{p['hex']}</span><span><i>LRV</i>\u2248 {lrv(L[i]):.0f}</span><span><i>Shade</i>{depth.capitalize()} {fam}</span></div></div></div>

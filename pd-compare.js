@@ -8,7 +8,10 @@
    swatches on the cards (alternating light and dark dashes so it shows on any
    colour). A solid line would exaggerate a tiny difference; with no line at all,
    near-identical pairs looked like one flat colour and people couldn't tell
-   where one paint ended. */
+   where one paint ended.
+   The big swatch at the top of a colour or alternatives page opens the same view
+   with that one colour on its own (openSolo): people were clicking the swatch
+   expecting to see it bigger. */
 (function () {
   'use strict';
   var CSS =
@@ -42,7 +45,14 @@
     '.pd-cmp-note{font-size:12px;color:#665F54;line-height:1.4}' +
     '.pd-cmp-wall{font-size:12.5px;font-weight:600;color:#211F1B;text-decoration:none;border:1px solid #E3DFD5;border-radius:99px;padding:5px 12px;background:#fff;white-space:nowrap}' +
     '.pd-cmp-wall:hover{border-color:#665F54}.pd-cmp-wall:focus-visible{outline:2px solid #5E7E8B;outline-offset:2px}' +
-    '.pd-cmp-wall[hidden]{display:none}';
+    '.pd-cmp-wall[hidden]{display:none}' +
+    /* One colour on its own: the left pane fills the screen, the seam and handle go,
+       and the label moves to the left so it clears the close button. */
+    '.pd-cmp-solo{cursor:zoom-out}' +
+    '.pd-cmp-solo .pd-cmp-a{right:0}' +
+    '.pd-cmp-solo .pd-cmp-b,.pd-cmp-solo .pd-cmp-seam,.pd-cmp-solo .pd-cmp-h{display:none}' +
+    '.pd-cmp-solo .pd-cmp-a .pd-cmp-lbl{display:block;left:10px;right:auto;text-align:left;max-width:min(calc(100% - 66px),260px)}' +
+    '.pd-cmp-solo .pd-cmp-s{cursor:auto}';
 
   /* How the right-hand colour differs from the left, in the same measured words as the
      alternatives pages (diff_bits() in gen_pages.py, which this mirrors): lighter or darker
@@ -96,6 +106,7 @@
      no values. Must match SWATCH_SAMPLED in gen_pages.py, which asserts it on every build. */
   var SWATCHED = ["Zoffany", "Sanderson", "Fired Earth"];
   var BASE_NOTE = 'Screens vary. Compare these two to each other, then order testers before you buy.';
+  var SOLO_NOTE = 'Screens vary, so order a tester before you buy.';
 
   var ov = null, handle = null, wordEl = null, diffEl = null, noteEl = null, lastBtn = null, x = 50, dragging = false;
 
@@ -131,6 +142,7 @@
     // even if the finger leaves the window.
     ov.addEventListener('pointerdown', function (e) {
       if (e.target.closest('.pd-cmp-x, .pd-cmp-s')) return;
+      if (ov.classList.contains('pd-cmp-solo')) return;
       if (e.button !== undefined && e.button !== 0) return;
       dragging = true;
       try { ov.setPointerCapture(e.pointerId); } catch (err) {}
@@ -153,6 +165,10 @@
     });
 
     ov.querySelector('.pd-cmp-x').addEventListener('click', close);
+    // With one colour there is no seam to move, so a tap on the colour closes the view.
+    ov.addEventListener('click', function (e) {
+      if (ov.classList.contains('pd-cmp-solo') && !e.target.closest('.pd-cmp-x, .pd-cmp-s')) close();
+    });
   }
 
   function setX(clientX) {
@@ -215,18 +231,43 @@
     fill('.pd-cmp-b', bName, d.bbrand || d.bhex || '');
     var w = (d.word || closeness(d.ahex, d.bhex) || '').trim();
     wordEl.textContent = w ? w.charAt(0).toUpperCase() + w.slice(1) : '';
+    diffEl.textContent = diffSentence(d.ahex, d.bhex, aName, bName);
+    noteEl.textContent = BASE_NOTE + sourceNote([d.abrand, d.bbrand]);
+    ov.setAttribute('aria-label', 'Comparing ' + aName + ' with ' + bName + ' full screen');
+    setPct(50);
+    ov.classList.remove('pd-cmp-solo');
+    show(returnEl);
+  }
+
+  /* One colour full screen. d has hex, name and brand. */
+  function openSolo(d, returnEl) {
+    if (!ov) build();
+    var wl = wallLink({ aname: d.name, abrand: d.brand, ahex: d.hex }), wallEl = ov.querySelector('.pd-cmp-wall');
+    wallEl.hidden = !wl;
+    if (wl) { wallEl.href = wl.href; wallEl.textContent = 'See it on your wall'; }
+    ov.querySelector('.pd-cmp-a').style.background = d.hex;
+    fill('.pd-cmp-a', d.name || d.hex || '', d.brand || '');
+    wordEl.textContent = '';
+    diffEl.textContent = '';
+    noteEl.textContent = SOLO_NOTE + sourceNote([d.brand]);
+    ov.setAttribute('aria-label', (d.name || 'This colour') + ' full screen');
+    ov.classList.add('pd-cmp-solo');
+    show(returnEl);
+  }
+
+  function sourceNote(brands) {
     var src = [];
-    [d.abrand, d.bbrand].forEach(function (b) {
+    brands.forEach(function (b) {
       if (b && (SOURCED.hasOwnProperty(b) || SWATCHED.indexOf(b) >= 0) && src.indexOf(b) < 0) src.push(b);
     });
-    diffEl.textContent = diffSentence(d.ahex, d.bhex, aName, bName);
-    noteEl.textContent = BASE_NOTE + src.map(function (b) {
+    return src.map(function (b) {
       if (SWATCHED.indexOf(b) >= 0)
         return ' ' + b + '’s values are read from the swatch images on its own site, as ' + b + ' publishes none.';
       return ' ' + b + '’s values come from its stockist ' + SOURCED[b] + ', as ' + b + ' publishes none.';
     }).join('');
-    ov.setAttribute('aria-label', 'Comparing ' + aName + ' with ' + bName + ' full screen');
-    setPct(50);
+  }
+
+  function show(returnEl) {
     lastBtn = returnEl || null;
     ov.hidden = false;
     document.documentElement.style.overflow = 'hidden';
@@ -250,15 +291,15 @@
   // Event delegation: cards are rendered and re-rendered by other code, so the
   // trigger is found at click time rather than bound when it appears.
   document.addEventListener('click', function (e) {
-    var b = e.target.closest ? e.target.closest('.pd-cmp-btn') : null;
+    var b = e.target.closest ? e.target.closest('.pd-cmp-btn, .pd-solo') : null;
     if (!b) return;
     e.preventDefault();
     e.stopPropagation();
-    open(b);
+    if (b.classList.contains('pd-solo')) openSolo(b.dataset, b); else open(b);
   });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && ov && !ov.hidden) { e.preventDefault(); close(); }
   });
 
-  window.PDCompare = { open: open, openPair: openPair, close: close, diffSentence: diffSentence };
+  window.PDCompare = { open: open, openPair: openPair, openSolo: openSolo, close: close, diffSentence: diffSentence };
 })();
