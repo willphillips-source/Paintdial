@@ -2944,6 +2944,71 @@ def build_visualiser_page():
 </div></body></html>"""
 
 
+# ---------- colour scheme planner ----------
+# Rooms, each with a colour for walls, woodwork, ceiling and an accent, picked from the
+# shortlist or by search. Runs in the browser like the visualiser and borrows its library
+# (colours.json) and colour maths (vis-core.js), so slugs and match distances are the site's
+# own. The scheme is kept in the browser and, when shared, in the link (?s=...), so there is
+# no account and nothing stored on a server. Shared links all canonicalise to the bare page.
+# First built 12 Nov 2026 from the growth roadmap (item 3); the tool itself is scheme/tool.html.
+SCHEME_PATH = '/colour-scheme-planner/'
+
+def build_scheme_page():
+    lead = ('<span class="eyebrow">Colour scheme planner</span>'
+            '<h1>Plan your colours, room by room</h1>'
+            '<p>Add your rooms and give each one a colour for the walls, woodwork and ceiling. '
+            f'Pick from your shortlist or search {N:,} paints from {BRANDS_WORD} brands sold in the UK. '
+            'Then share the scheme as a link, or print it as a colour schedule.</p>')
+    tool = open('scheme/tool.html', encoding='utf-8').read()
+    assert tool.count('<!--SP-LEAD-->') == 1, 'scheme/tool.html has lost its <!--SP-LEAD--> placeholder'
+    tool = tool.replace('<!--SP-LEAD-->', lead)
+    assert f"PATH='{SCHEME_PATH}'" in tool, 'scheme/tool.html and SCHEME_PATH disagree about the page address'
+    faqs = [
+        ("Is my scheme saved?",
+         "Yes, in your browser, on the device you made it on. There’s no account. To move it to another device, or send it to someone, copy the link."),
+        ("What does the link share?",
+         "The room names and the colours you chose, and nothing else. Anyone who opens it sees the same scheme and can make their own copy to change."),
+        ("What is a colour schedule?",
+         "A list of every room and surface with its colour, brand and code. Decorators work from one. Print it, or save it as a PDF from your browser’s print window."),
+        ("Can I mix brands in one scheme?",
+         "Yes. Each colour shows its closest matches from other brands, and you can swap to one of them with a tap, so you can keep the whole house in one brand if that’s easier to buy."),
+        ("Is it free?",
+         "Yes. There’s no app to install and no account to make."),
+    ]
+    faq_html = "".join(f'<details><summary>{q}</summary><p>{a}</p></details>' for q, a in faqs)
+    faq_ld = {"@context": "https://schema.org", "@type": "FAQPage",
+              "mainEntity": [{"@type": "Question", "name": q,
+                              "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faqs]}
+    text = f"""<h2>How it works</h2>
+<p>Add a room, then tap a surface to choose its colour. Colours you’ve saved to your shortlist are offered first, and you can search the whole library by name or code. The strip at the top puts the wall colours side by side, so you can see how one room leads into the next.</p>
+<h2>Getting a scheme that hangs together</h2>
+<ul>
+<li>Choose the woodwork and ceiling colours once, then use them in every room. One white through the house is easier to live with than five.</li>
+<li>Look at the rooms that open onto each other. Colours you can see from one doorway should sit comfortably side by side.</li>
+<li>Open <b>Closest in other brands</b> under any colour to see what else is near it.</li>
+<li>Screens vary and paint changes with the light. Order testers of every colour and try them in the room they’re for.</li>
+</ul>
+<h2>Common questions</h2>
+<div class="faq">{faq_html}</div>"""
+    secs = _sectionise(text, 'grid').replace('<div class="lead"></div>\n', '', 1)
+    title = "Colour Scheme Planner: Paint Colours Room by Room"
+    desc = (f"Plan paint colours for every room from {N:,} paints across {BRANDS_WORD} UK brands. "
+            "Share the scheme as a link or print a colour schedule. Free, no account.")
+    return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{title} | PaintDial</title>
+<meta name="description" content="{desc}">
+<link rel="canonical" href="{DOMAIN}{SCHEME_PATH}">
+{FAVICON}
+{FONTS}<style>{PAGES_CSS}</style></head><body><div class="wrap">
+{HDR}
+{tool}
+{secs}
+{_ldjson(faq_ld)}
+<footer>{FOOT}</footer>
+</div></body></html>"""
+
+
 # Hand-written, evergreen openings for the most-searched hero colours. The opening is
 # editorial (no LRV/hex/price claims); the closest-match sentence that follows is ALWAYS
 # generated from the data, so match names can never go stale. Any slug not listed gets a
@@ -3172,6 +3237,9 @@ if __name__ == '__main__':
     for _f in VIS_FILES:
         _shv.copyfile('visualiser/' + _f, 'site' + VIS_PATH + _f)
     print('paint visualiser written')
+    os.makedirs('site' + SCHEME_PATH, exist_ok=True)
+    open('site' + SCHEME_PATH + 'index.html', 'w', encoding='utf-8').write(build_scheme_page())
+    print('colour scheme planner written')
     print('trust pages: 3 (+ contact thanks)')
 
     urls = [f'{DOMAIN}/', f'{DOMAIN}/colours/'] \
@@ -3182,7 +3250,7 @@ if __name__ == '__main__':
         + [f'{DOMAIN}{POPULAR_PATH}'] \
         + [f'{DOMAIN}/how-it-works/', f'{DOMAIN}/about/', f'{DOMAIN}/contact/', f'{DOMAIN}/privacy/', f'{DOMAIN}/paint-match-index/',
            f'{DOMAIN}/paint-choice-index/', f'{DOMAIN}/research/', f'{DOMAIN}/match-paint-from-a-photo/',
-           f'{DOMAIN}{VIS_PATH}']
+           f'{DOMAIN}{VIS_PATH}', f'{DOMAIN}{SCHEME_PATH}']
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += ''.join(f'<url><loc>{u}</loc></url>\n' for u in urls)+'</urlset>'
     open('site/sitemap.xml', 'w').write(sm)

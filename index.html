@@ -641,6 +641,7 @@
 .pd-tray-x{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border:none;padding:0;border-radius:50%;background:#211F1B;color:#fff;font-size:12px;line-height:18px;text-align:center;cursor:pointer;font-family:inherit}
 .pd-tray-mail{margin-top:10px;border-top:1px solid #EEEAE1;padding-top:9px}
 .pd-mail-toggle{border:none;background:none;color:#5E7E8B;font-size:12.5px;font-weight:600;cursor:pointer;padding:0}
+.pd-plan{color:#5E7E8B;font-size:12.5px;font-weight:600;text-decoration:none}.pd-plan:hover{text-decoration:underline}
 .pd-mail-toggle:hover{text-decoration:underline}.pd-tray-acts{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center}.pd-cmp-two{border:none;background:none;color:#5E7E8B;font-size:12.5px;font-weight:600;cursor:pointer;padding:0;font-family:inherit}.pd-cmp-two:hover{text-decoration:underline}#pd-tray.picking .pd-tray-note{color:#211F1B;font-weight:600}#pd-tray.picking .pd-tray-sw{cursor:pointer}.pd-tray-chip.sel .pd-tray-sw{outline:2.5px solid #211F1B;outline-offset:2px}.pd-tray-chip.sel .pd-tray-name{color:#211F1B;font-weight:600}
 .pd-mail-form{display:flex;gap:6px;margin-top:8px}.pd-mail-form[hidden]{display:none}
 .pd-mail-input{flex:1;min-width:0;border:1px solid #D9D4C8;border-radius:8px;padding:7px 9px;font-size:13px;font-family:inherit}
@@ -2115,6 +2116,7 @@ window.addEventListener('hashchange',()=>{ const hx=hexFromHash(); if(hx) setFro
         `<button class="pd-tray-x" type="button" data-id="${it.id}" aria-label="Remove ${it.name} from shortlist">\u00d7</button></div>`).join('')+`</div>`+
       `<div class="pd-tray-mail"><div class="pd-tray-acts">`+
         (items.length>=2?`<button class="pd-cmp-two" type="button">${picking?'Cancel':(items.length===2?'Compare these two':'Compare two')}</button>`:'')+
+        `<a class="pd-plan" href="/colour-scheme-planner/">Plan rooms with these</a>`+
         `<button class="pd-mail-toggle" type="button">\u2709 Email these to me</button></div>`+
         `<div class="pd-mail-form" hidden><input type="email" class="pd-mail-input" placeholder="you@email.com" aria-label="Your email address"><button class="pd-mail-send" type="button">Send</button></div>`+
       `</div>`;
