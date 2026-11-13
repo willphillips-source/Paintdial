@@ -399,7 +399,7 @@ def paint_block(brand):
             f'<p class="sub">{poss[0].upper() + poss[1:]} {d.get("what", "matt")} for walls and ceilings.{note}</p>'
             f'<dl class="pinfo">{dl}</dl>'
             f'<p class="afftext">From {poss} own {src}, checked {PAINT_CHECKED}.{tail} '
-            f'<a href="{CALC_PATH}?brand={base_slug(brand)}">Work out how much you need</a>.</p>')
+            f'Work out how much you need with the <a href="{CALC_PATH}?brand={base_slug(brand)}">calculator</a>.</p>')
 
 def price_band(brand):
     lo, hi, *tin = PRICING[brand]

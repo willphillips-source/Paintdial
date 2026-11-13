@@ -1534,12 +1534,12 @@ function renderExact(ranked){
   const best=ranked[0];
   let html='', own=null;
   if(best && best.d<EXACT_D){
-    /* The colour IS a paint (searched for, opened from its page, or landed on exactly).
+    /* The colour IS a paint (opened from its page with Open in the colour tool, or landed on exactly).
        It is shown as itself here and left out of the matches below: a paint listed as
        its own closest match read as a mistake. Paints from other brands that publish
        the same colour stay in the list, and are named here. */
     const ex=ranked.filter(p=>p.d<EXACT_D);
-    own=(pickedPaint && ex.find(p=>p.name===pickedPaint.name && p.brand===pickedPaint.brand)) || best;
+    own=best;
     const twins=ex.filter(p=>p!==own);
     el.innerHTML=`<span class="ex-sw ex-own" style="background:${own.hex}"></span><span class="ex-txt"><b class="ex-name">${esc(own.name)}</b><small>${esc(own.brand)}${twins.length?'. '+say(twins)+(twins.length>1?' publish':' publishes')+' the same colour.':''}</small></span><a class="ex-go" href="${colourPageUrl(own)}">Its page \u2192</a>`;
     el.hidden=false;
@@ -1554,7 +1554,6 @@ function renderExact(ranked){
   el.hidden=false;
   return null;
 }
-let pickedPaint=null; // the paint last chosen from search, so its own brand is the one named when two brands share a colour
 function renderMatches(){
   const hx=currentHex();
   const lab=rgbToLab(...hexToRgb(hx));
@@ -1778,9 +1777,11 @@ function runSearch(){
 }
 function chooseSearch(i){
   const p=srItems[i]; if(!p)return;
-  if(!p.__hex) nameSearch.value=p.name;
   searchResults.classList.remove('show');
-  pickedPaint=p.__hex?null:{name:p.name,brand:p.brand};
+  /* A named paint has its own page, which is the fuller answer (a match from each brand,
+     lighter and darker, pairings, the tester link), so search goes straight there. Codes
+     and typed colours (hex, RAL, BS, Dulux Trade) have no page and set the wheel. */
+  if(!p.__hex){ nameSearch.value=p.name; location.href=colourPageUrl(p); return; }
   setFromHex(p.hex);
 }
 nameSearch.addEventListener('input',runSearch);
