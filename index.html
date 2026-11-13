@@ -214,12 +214,29 @@
     font-family:var(--serif); font-weight:600; font-size:22px; letter-spacing:-0.01em;
   }
   .results .sub{font-size:13px; color:var(--muted); margin-top:2px;}
+  /* Brands hidden: said beside the heading, where it costs no height. The switches sit
+     below the first results on a phone, so a filter left on from an earlier visit was
+     invisible there and the matches just looked poor. */
+  .res-head{display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:2px 12px;}
+  .bf-jump{display:none;} /* the switches are right under the heading on a wide screen */
+  .brand-flag{font-size:12px; font-weight:600; color:var(--ink); white-space:nowrap;}
+  .brand-flag button,.reach-note button{font:inherit; font-weight:600; color:var(--ink); background:none; border:none; padding:0;
+    text-decoration:underline; text-underline-offset:2px; cursor:pointer;}
   /* One-line note: explains the split swatch and where the match comes from.
      Kept next to the results (not buried on /how-it-works/) because this is
      exactly where people decide whether to believe us. */
   .results-note{font-size:12px; line-height:1.45; color:var(--muted); margin-top:8px; max-width:70ch;}
   .results-note a{color:var(--ink); text-decoration:none; border-bottom:1px solid var(--hairline); white-space:nowrap;}
   .results-note a:hover{border-color:var(--ink);}
+  /* The price basis and tin-size small print sit behind a tap: seven lines of it on a
+     phone pushed the first match down the screen, and the cards carry the real range. */
+  .results-note summary{list-style:none; cursor:pointer;}
+  .results-note summary::-webkit-details-marker{display:none;}
+  .results-note .rn-more{color:var(--ink); border-bottom:1px solid var(--hairline); white-space:nowrap;}
+  .results-note .rn-more::after{content:" +";}
+  .results-note[open] .rn-more::after{content:" \2212";}
+  .results-note summary:focus-visible{outline:2px solid var(--pick); outline-offset:2px;}
+  .results-note p{margin-top:6px;}
   /* Typical price, always on its own line. Tabular numerals so ranges line up down
      a column of cards. Appended to the brand instead, "£24.00–29.20/L" overflowed
      both the 170px grid chip and the 2-up mobile card, where .alt-txt ellipsises and
@@ -235,7 +252,7 @@
     font-weight:600; letter-spacing:.04em; color:var(--ink);}
   .pband i{font-style:normal; opacity:.25;}
 
-  .filter-panel{margin:18px 0 22px; display:flex; flex-direction:column; gap:10px;}
+  .filter-panel{margin:18px 0 22px; display:flex; flex-direction:column; gap:10px; scroll-margin-top:14px;}
   .filter-group{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
   .f-label{font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase;
     color:var(--muted); width:44px; flex:none;}
@@ -560,7 +577,8 @@
     .pick-panel{height:56px; margin-top:12px; flex-direction:row; align-items:center; justify-content:space-between; padding:0 14px;}
     .results{padding:20px 16px 0; display:flex; flex-direction:column;}
     .allmatches{padding:0 16px 90px;}
-    .results h2{order:1;}
+    .res-head{order:1;}
+    .bf-jump{display:inline;}
     .results .sub{display:none;}
     .results-note{order:1; margin-top:6px; font-size:11.5px;}
     #bestWrap{order:2;}
@@ -796,12 +814,12 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
   </aside>
 
   <main class="results" id="results">
-    <h2>Closest matching paints</h2>
+    <div class="res-head"><h2>Closest matching paints</h2><span class="brand-flag" id="brandFlag"><span id="brandFlagN" hidden></span><span class="bf-jump"><span id="brandFlagSep" hidden> &middot; </span><button type="button" id="brandFlagJump">Brands &darr;</button></span><span id="brandFlagAllWrap" hidden> &middot; <button type="button" id="brandFlagAll">Show all</button></span></span></div>
     <p class="exact-note" id="exactNote" hidden></p>
     <p class="sub" id="subline">Closest first.</p>
-    <p class="results-note">Yours on the left, the match on the right. Matched on each brand&rsquo;s own published values. <span id="priceNote"></span> <a href="/how-it-works/">How matching works &rarr;</a></p>
+    <details class="results-note"><summary>Yours on the left, the match on the right. <span class="rn-more">About prices and matching</span></summary><p>Matched on each brand&rsquo;s own published values. <span id="priceNote"></span> <a href="/how-it-works/">How matching works &rarr;</a></p></details>
 
-    <div class="filter-panel" role="group" aria-label="Filters">
+    <div class="filter-panel" id="brandPanel" role="group" aria-label="Filters">
       <div class="filter-group"><span class="f-label">Brand</span><div class="f-chips" id="brandChips"></div>
         <span class="f-hint">Tap a brand to hide it.</span><button class="f-reset" id="filterAll" hidden>Show all</button><button class="f-reset" id="filterNone">Hide all</button></div>
     </div>
@@ -1273,10 +1291,22 @@ window.addEventListener('resize',()=>{
 const brandChips=document.getElementById('brandChips'),
       allBtn=document.getElementById('filterAll'), noneBtn=document.getElementById('filterNone');
 /* Every brand starts on; a tap hides one, another tap brings it back. Hide all, then a
-   tap or two, gives "just these brands". The hidden list is remembered on this device (a
-   viewer convenience, so someone who never wants Benjamin Moore doesn't re-hide it every
-   visit). It stores what's hidden, not what's shown, so a brand added later turns up. */
-const BRANDS_KEY='pd-hide';
+   tap or two, gives "just these brands". The hidden list lasts for the visit only (this
+   tab, and no longer than BRANDS_TTL), so a trip to a colour page and back keeps it but
+   the next visit starts with every brand on. It used to be remembered on the device, and
+   a filter left on from the day before made the matches look wrong with nothing on a
+   phone to say why. */
+const BRANDS_KEY='pd-hide', BRANDS_TTL=6*3600*1000;
+/* The link beside the heading. Normally "Brands", a jump to the switches (which sit below
+   the first results on a phone). With brands hidden it says how many are showing and
+   offers Change and Show all, unless the out-of-reach note is already saying so. */
+function brandFlag(quiet){
+  const on=hiddenBrands.size>0 && !quiet, n=document.getElementById('brandFlagN');
+  n.hidden=!on; n.textContent=(BRAND_NAMES.length-hiddenBrands.size)+' of '+BRAND_NAMES.length+' brands';
+  document.getElementById('brandFlagSep').hidden=!on;
+  document.getElementById('brandFlagJump').textContent = on?'Change':'Brands \u2193';
+  document.getElementById('brandFlagAllWrap').hidden=!on;
+}
 function refreshFilterUI(){
   brandChips.querySelectorAll('button').forEach(b=>{
     const off=hiddenBrands.has(b.dataset.brand);
@@ -1286,7 +1316,8 @@ function refreshFilterUI(){
   });
   allBtn.hidden = hiddenBrands.size===0;
   noneBtn.hidden = hiddenBrands.size===BRAND_NAMES.length;
-  try{ localStorage.setItem(BRANDS_KEY, JSON.stringify([...hiddenBrands])); localStorage.removeItem('pd-brands'); }catch(e){}
+  brandFlag(false);
+  try{ hiddenBrands.size ? sessionStorage.setItem(BRANDS_KEY, JSON.stringify({t:Date.now(),hid:[...hiddenBrands]})) : sessionStorage.removeItem(BRANDS_KEY); }catch(e){}
 }
 function addFilterBtn(parent,label,attrs,onClick){
   const btn=document.createElement('button');
@@ -1296,18 +1327,17 @@ function addFilterBtn(parent,label,attrs,onClick){
   parent.appendChild(btn);
 }
 BRAND_NAMES.forEach(b=>addFilterBtn(brandChips,b,{brand:b},()=>{hiddenBrands.has(b)?hiddenBrands.delete(b):hiddenBrands.add(b);}));
-allBtn.addEventListener('click',()=>{hiddenBrands.clear();shown=12;refreshFilterUI();renderMatches();});
+const showAllBrands=()=>{hiddenBrands.clear();shown=12;refreshFilterUI();renderMatches();};
+allBtn.addEventListener('click',showAllBrands);
+document.getElementById('brandFlagAll').addEventListener('click',showAllBrands);
+document.getElementById('brandFlagJump').addEventListener('click',()=>document.getElementById('brandPanel').scrollIntoView({behavior:'smooth',block:'start'}));
 noneBtn.addEventListener('click',()=>{BRAND_NAMES.forEach(b=>hiddenBrands.add(b));shown=12;refreshFilterUI();renderMatches();});
-/* pd-brands is the old "only these brands" list, from when a tap picked a brand instead of
-   hiding it. It's turned into the hidden list once, so anyone who had filtered sees the
-   same matches as before (brands added since then start hidden for them). */
+/* The lists once kept on the device (pd-hide, and before it pd-brands) are cleared, so
+   nobody carries an old filter into the new behaviour. */
+try{ localStorage.removeItem(BRANDS_KEY); localStorage.removeItem('pd-brands'); }catch(e){}
 try{
-  const hid=JSON.parse(localStorage.getItem(BRANDS_KEY)||'null');
-  if(Array.isArray(hid)) hid.forEach(b=>{ if(BRAND_NAMES.includes(b)) hiddenBrands.add(b); });
-  else{
-    const only=JSON.parse(localStorage.getItem('pd-brands')||'[]');
-    if(Array.isArray(only)&&only.some(b=>BRAND_NAMES.includes(b))) BRAND_NAMES.forEach(b=>{ if(!only.includes(b)) hiddenBrands.add(b); });
-  }
+  const st=JSON.parse(sessionStorage.getItem(BRANDS_KEY)||'null');
+  if(st&&Array.isArray(st.hid)&&Date.now()-st.t<BRANDS_TTL) st.hid.forEach(b=>{ if(BRAND_NAMES.includes(b)) hiddenBrands.add(b); });
 }catch(e){}
 refreshFilterUI();
 function currentPool(){
@@ -1499,7 +1529,7 @@ function renderExact(ranked){
   } else if(best && best.d<1){
     const twin=ranked.filter(p=>p.hex===best.hex), next=ranked.find(p=>p.hex!==best.hex);
     if(!next || next.d-best.d>=1)
-      html=`<b>Almost certainly</b> ${say(twin)}. Nothing else in the library is this close.`;
+      html=`<b>Almost certainly</b> ${say(twin)}. Nothing else in ${hiddenBrands.size?'the brands you have showing':'the library'} is this close.`;
   }
   if(!html){ el.hidden=true; el.innerHTML=''; return; }
   el.innerHTML=`<span class="ex-sw" style="background:${best.hex}"></span><span>${html}</span>`;
@@ -1565,11 +1595,20 @@ function renderMatches(){
   if(loose){
     const [,pC,pH]=okLch(PICK_OK);
     let maxC=0; pool.forEach(p=>{const [,c,h]=okLch(p.ok); if(hueDiff(h,pH)<=15 && c>maxC) maxC=c;});
-    reach.textContent = (pC>0.08 && pC>=maxC*0.9)
+    if(hiddenBrands.size){
+      /* With brands hidden the note can't speak for the UK ranges: it names the filter. */
+      const nOn=BRAND_NAMES.length-hiddenBrands.size;
+      reach.textContent = 'Nothing in the '+(nOn===1?'one brand':nOn+' brands')+' you have showing comes very close to this colour. ';
+      const b=document.createElement('button'); b.type='button';
+      b.textContent='Search all '+BRAND_NAMES.length+' brands';
+      b.addEventListener('click',showAllBrands); reach.appendChild(b);
+    } else reach.textContent = (pC>0.08 && pC>=maxC*0.9)
       ? 'Few UK paints are as vivid as this colour, so none of the matches is very close. These are the nearest there are.'
       : 'Nothing in the UK ranges comes very close to this colour. These are the nearest there are.';
     reach.hidden=false;
   } else reach.hidden=true;
+  /* The note above already names the filter, so the flag by the heading stands down. */
+  brandFlag(loose);
   const moreWrap=document.getElementById('moreWrap');
   if(rest.length < avail){
     moreWrap.innerHTML='<button class="more-btn" id="moreBtn">Show more matches</button>';
