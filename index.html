@@ -428,6 +428,11 @@
   .exact-note{display:flex; gap:10px; align-items:center; margin:2px 0 10px; padding:10px 12px;
     border:1px solid var(--hairline); border-radius:14px; background:#fff; font-size:14px; line-height:1.35;}
   .exact-note[hidden]{display:none;}
+  .ex-sw.ex-own{width:44px; height:44px; border-radius:8px;}
+  .ex-txt{display:flex; flex-direction:column; min-width:0; flex:1; line-height:1.3;}
+  .ex-name{font-family:var(--serif); font-size:19px; font-weight:600;}
+  .ex-txt small{font-size:12px; color:var(--muted);}
+  .exact-note a.ex-go{white-space:nowrap; font-size:13px;}
   .ex-sw{width:22px; height:22px; border-radius:4px; flex:none; border:1px solid rgba(0,0,0,.08);}
   .exact-note a{color:var(--ink); font-weight:600; text-decoration:none; border-bottom:1px solid var(--hairline);}
 
@@ -816,7 +821,7 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
   </aside>
 
   <main class="results" id="results">
-    <div class="res-head"><h2>Closest matching paints</h2><span class="brand-flag" id="brandFlag"><span id="brandFlagN" hidden></span><span class="bf-jump"><span id="brandFlagSep" hidden> &middot; </span><button type="button" id="brandFlagJump">Brands &darr;</button></span><span id="brandFlagAllWrap" hidden> &middot; <button type="button" id="brandFlagAll">Show all</button></span></span></div>
+    <div class="res-head"><h2 id="resH">Closest matching paints</h2><span class="brand-flag" id="brandFlag"><span id="brandFlagN" hidden></span><span class="bf-jump"><span id="brandFlagSep" hidden> &middot; </span><button type="button" id="brandFlagJump">Brands &darr;</button></span><span id="brandFlagAllWrap" hidden> &middot; <button type="button" id="brandFlagAll">Show all</button></span></span></div>
     <p class="exact-note" id="exactNote" hidden></p>
     <p class="sub" id="subline">Closest first.</p>
     <details class="results-note"><summary>Yours on the left, the match on the right. <span class="rn-more">About prices and matching</span></summary><p>Matched on each brand&rsquo;s own published values. <span id="priceNote"></span> <a href="/how-it-works/">How matching works &rarr;</a></p></details>
@@ -1527,29 +1532,41 @@ function renderExact(ranked){
     return names.length===1?names[0]:names.slice(0,-1).join(', ')+' and '+names[names.length-1];
   };
   const best=ranked[0];
-  let html='';
+  let html='', own=null;
   if(best && best.d<EXACT_D){
+    /* The colour IS a paint (searched for, opened from its page, or landed on exactly).
+       It is shown as itself here and left out of the matches below: a paint listed as
+       its own closest match read as a mistake. Paints from other brands that publish
+       the same colour stay in the list, and are named here. */
     const ex=ranked.filter(p=>p.d<EXACT_D);
-    html=`<b>Exact match:</b> ${say(ex)}${ex.length>1?', which share the same published colour':''}.`;
+    own=(pickedPaint && ex.find(p=>p.name===pickedPaint.name && p.brand===pickedPaint.brand)) || best;
+    const twins=ex.filter(p=>p!==own);
+    el.innerHTML=`<span class="ex-sw ex-own" style="background:${own.hex}"></span><span class="ex-txt"><b class="ex-name">${esc(own.name)}</b><small>${esc(own.brand)}${twins.length?'. '+say(twins)+(twins.length>1?' publish':' publishes')+' the same colour.':''}</small></span><a class="ex-go" href="${colourPageUrl(own)}">Its page \u2192</a>`;
+    el.hidden=false;
+    return own;
   } else if(best && best.d<1){
     const twin=ranked.filter(p=>p.hex===best.hex), next=ranked.find(p=>p.hex!==best.hex);
     if(!next || next.d-best.d>=1)
       html=`<b>Almost certainly</b> ${say(twin)}. Nothing else in ${hiddenBrands.size?'the brands you have showing':'the library'} is this close.`;
   }
-  if(!html){ el.hidden=true; el.innerHTML=''; return; }
+  if(!html){ el.hidden=true; el.innerHTML=''; return null; }
   el.innerHTML=`<span class="ex-sw" style="background:${best.hex}"></span><span>${html}</span>`;
   el.hidden=false;
+  return null;
 }
+let pickedPaint=null; // the paint last chosen from search, so its own brand is the one named when two brands share a colour
 function renderMatches(){
   const hx=currentHex();
   const lab=rgbToLab(...hexToRgb(hx));
   const pool=currentPool();
-  if(pool.length===0){renderExact([]);document.getElementById('bestWrap').innerHTML='';document.getElementById('grid').innerHTML='';document.getElementById('ladderSec').style.display='none';document.getElementById('subline').textContent='Every brand is hidden. Tap a brand to show it, or Show all.';return;}
+  if(pool.length===0){renderExact([]);document.getElementById('bestWrap').innerHTML='';document.getElementById('grid').innerHTML='';document.getElementById('resH').textContent='Closest matching paints';document.getElementById('ladderSec').style.display='none';document.getElementById('subline').textContent='Every brand is hidden. Tap a brand to show it, or Show all.';return;}
   const PICK_OK=rgbToOklab(...hexToRgb(hx));
   const all=pool.map(p=>({...p,d:okDistM(PICK_OK,p.ok)})).sort((a,b)=>a.d-b.d);
   const gated=all.filter(p=>matchOK(PICK_OK,p.ok,p.d));
-  const ranked=gated.length?gated:all;
-  renderExact(ranked);
+  const ranked0=gated.length?gated:all;
+  const own=renderExact(ranked0);
+  const ranked=own?ranked0.filter(p=>p!==own):ranked0;
+  document.getElementById('resH').textContent=own?'Closest matches to '+own.name:'Closest matching paints';
   renderLadder(lab, pool);
   const avail=Math.min(Math.max(ranked.length-4,0),48);
   shown=Math.min(fullRows(shown),avail);
@@ -1763,6 +1780,7 @@ function chooseSearch(i){
   const p=srItems[i]; if(!p)return;
   if(!p.__hex) nameSearch.value=p.name;
   searchResults.classList.remove('show');
+  pickedPaint=p.__hex?null:{name:p.name,brand:p.brand};
   setFromHex(p.hex);
 }
 nameSearch.addEventListener('input',runSearch);
