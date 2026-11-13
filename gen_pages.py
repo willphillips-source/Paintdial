@@ -759,6 +759,19 @@ h2::after{content:'';display:block;width:34px;height:4px;border-radius:2px;backg
    higher and no row is left with one or two cards in it. The rest are still in the page
    (links and all), a tap on "Show all" away. The counts below are 2 x the columns, less
    the four cards in the first .gpart: keep them in step with the column rules. */
+/* Price bracket buttons: beside the heading on a wide screen (no extra height), under it on
+   a phone. A tap hides that bracket's cards and the rows refill from what is left; the
+   script moves hidden cards to the end so the two-row rules above still count right.
+   The choice lasts for the visit, like the homepage brands. Hidden until the script runs. */
+.mx-head{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:2px 18px}
+.mx-bands{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:6px}.mx-bands[hidden]{display:none}
+.mx-bands span{margin-right:2px}
+.mx-bands button{font:inherit;font-weight:600;letter-spacing:.02em;color:var(--ink);background:var(--card);border:1px solid var(--hairline);border-radius:999px;padding:4px 11px;cursor:pointer}
+.mx-bands button:hover{border-color:var(--muted)}.mx-bands button:focus-visible{outline:2px solid var(--pc);outline-offset:2px}
+.mx-bands button.off{background:#E4DFD6;color:#8E877C;border-color:#CFC8BC;border-style:dashed;text-decoration:line-through}
+.mx-bands button:disabled{opacity:.4;cursor:default}
+.chip.t-off{display:none!important}
+@media(max-width:640px){.mx-bands{margin:6px 0 8px}}
 .mx-all{font:inherit;font-weight:600;color:inherit;background:none;border:0;padding:0;margin-left:4px;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 @media(max-width:640px){.mx-all{display:none}}
 @media(min-width:641px) and (max-width:899px){.grid.mx{grid-template-columns:repeat(3,minmax(0,1fr))}.mx:not(.all)>.ladder-sec~.gpart>:nth-child(n+3){display:none}}
@@ -924,7 +937,8 @@ def chip(j, home_lab=None, show_tier=False, home_i=None):
     # Compare button only where there is a colour to compare against (the page's own
     # colour); the "pairs well with" chips are companions, not matches, so they get none.
     cmp = cmp_btn(paints[home_i], q, word) if home_i is not None else ''
-    return (f'<div class="chip">'
+    band_attr = f' data-band="{price_band(q["brand"])}"' if show_tier else ''   # read by the price bracket buttons
+    return (f'<div class="chip"{band_attr}>'
             f'<div class="c-swatch" style="background:{q["hex"]}">{cmp}{heart(q["name"], q["brand"], q["hex"])}</div>'
             f'<div class="c-body"><a class="c-name" href="/colours/{slugs[j]}">{H.escape(q["name"])}</a>'
             f'<span class="c-brand">{H.escape(q["brand"])}</span>{de}</div></div>')
@@ -1082,7 +1096,7 @@ def build_colour_page(i):
 <p class="afftext">{price_line(p['brand'])}</p>
 </div></div>
 <p class="colour-summary">{name} is a {_depth} {_fam} from {brand}. Its closest match from another brand is <a href="/colours/{slugs[_x0]}">{seo_top}</a> ({seo_word}).</p>
-<h2>Closest matches from other brands</h2>
+<div class="mx-head"><h2>Closest matches from other brands</h2><div class="mx-bands" role="group" aria-label="Price brackets to show" hidden><span>Price bracket</span><button type="button" data-b="1">£</button><button type="button" data-b="2">££</button><button type="button" data-b="3">£££</button></div></div>
 <p class="sub">{mx_sub} <button class="mx-all" type="button" data-n="{len(_chips)}" hidden>Show all {len(_chips)}</button></p>
 <div class="grid mx"><div class="gpart">{''.join(_chips[:4])}</div>
 <section class="ladder-sec"><h2>Lighter &amp; darker</h2>
@@ -1099,7 +1113,30 @@ def build_colour_page(i):
 <a class="btn" href="{tool_url}">Open {name} in the colour tool \u2192</a></div>
 {kofi_strip()}
 <footer>{FOOT}</footer>
-</div><div class="top-band"></div><script>{SHORTLIST_JS}</script>{COMPARE_SCRIPT}<script>(function(){{var g=document.querySelector('.grid.mx'),b=document.querySelector('.mx-all');if(!g||!b)return;function chk(){{var cut=[].some.call(g.querySelectorAll('.gpart>*'),function(e){{return getComputedStyle(e).display==='none'}});b.hidden=!cut&&!g.classList.contains('all')}}b.addEventListener('click',function(){{var a=g.classList.toggle('all');b.textContent=a?'Show fewer':'Show all '+b.dataset.n}});chk();addEventListener('resize',chk)}})();</script></body></html>"""
+</div><div class="top-band"></div><script>{SHORTLIST_JS}</script>{COMPARE_SCRIPT}<script>(function(){{
+var g=document.querySelector('.grid.mx'),b=document.querySelector('.mx-all');if(!g||!b)return;
+var parts=g.querySelectorAll('.gpart'),cards=[].slice.call(g.querySelectorAll('.gpart>.chip')),bw=document.querySelector('.mx-bands'),off={{}},KEY='pd-bands',TTL=216e5;
+function isOff(c){{return !!off[c.dataset.band]}}
+function vis(){{return cards.filter(function(c){{return !isOff(c)}})}}
+function chk(){{var cut=vis().some(function(e){{return getComputedStyle(e).display==='none'}});b.hidden=!cut&&!g.classList.contains('all')}}
+function lay(){{var v=vis(),h=cards.filter(isOff);
+cards.forEach(function(c){{c.classList.toggle('t-off',isOff(c))}});
+if(parts.length>1){{v.slice(0,4).forEach(function(c){{parts[0].appendChild(c)}});v.slice(4).concat(h).forEach(function(c){{parts[1].appendChild(c)}})}}
+if(!g.classList.contains('all'))b.textContent='Show all '+v.length;chk()}}
+b.addEventListener('click',function(){{var a=g.classList.toggle('all');b.textContent=a?'Show fewer':'Show all '+vis().length}});
+addEventListener('resize',chk);
+if(bw){{var btns=[].slice.call(bw.querySelectorAll('button')),have={{}};
+cards.forEach(function(c){{have[c.dataset.band]=1}});
+function paint(){{btns.forEach(function(x){{var k=x.dataset.b,o=!!off[k];x.classList.toggle('off',o);x.setAttribute('aria-pressed',String(!o));x.title=(o?'Hidden. Tap to show ':'Tap to hide ')+x.textContent+' brands'}})}}
+function left(){{return btns.filter(function(x){{return have[x.dataset.b]&&!off[x.dataset.b]}}).length}}
+try{{var st=JSON.parse(sessionStorage.getItem(KEY)||'null');if(st&&Array.isArray(st.off)&&Date.now()-st.t<TTL)st.off.forEach(function(k){{off[k]=1}})}}catch(e){{}}
+if(!left())off={{}};
+btns.forEach(function(x){{var k=x.dataset.b;if(!have[k]){{x.disabled=true;return}}
+x.addEventListener('click',function(){{if(!off[k]&&left()<2)return;if(off[k])delete off[k];else off[k]=1;paint();lay();
+try{{var o=Object.keys(off);o.length?sessionStorage.setItem(KEY,JSON.stringify({{t:Date.now(),off:o}})):sessionStorage.removeItem(KEY)}}catch(e){{}}}})}});
+if(Object.keys(have).length>1){{paint();bw.hidden=false}}else off={{}};}}
+lay();
+}})();</script></body></html>"""
     return page
 
 # ---------- brand library pages (redesigned: family-grouped tiles, fan banner) ----------
