@@ -2292,7 +2292,7 @@
 "brand": "Little Greene",
 "code": "",
 "name": "Hammock",
-"hex": "#DDC8AC",
+"hex": "#DBC8AC",
 "url": "https://www.littlegreene.com/hammock"
 },
 {
@@ -3533,6 +3533,188 @@
 "name": "Marle",
 "hex": "#938168",
 "url": "https://www.littlegreene.com/marle"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Haye White",
+"hex": "#F6FAEE",
+"url": "https://www.littlegreene.com/haye-white"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Parlour",
+"hex": "#E3D6C5",
+"url": "https://www.littlegreene.com/parlour"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Perpetual Blue",
+"hex": "#829997",
+"url": "https://www.littlegreene.com/perpetual-blue"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Floss",
+"hex": "#D5A2AC",
+"url": "https://www.littlegreene.com/floss"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Ashes of Marigold",
+"hex": "#CB8741",
+"url": "https://www.littlegreene.com/ashes-of-marigold"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Hammock - Pale",
+"hex": "#F5F0E3",
+"url": "https://www.littlegreene.com/hammock-pale"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Hammock - Mid",
+"hex": "#EBE2D0",
+"url": "https://www.littlegreene.com/hammock-mid"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Hammock - Dark",
+"hex": "#CBB18E",
+"url": "https://www.littlegreene.com/hammock-dark"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Flight Pink",
+"hex": "#967A63",
+"url": "https://www.littlegreene.com/flight-pink"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Elysian Yellow",
+"hex": "#A38E65",
+"url": "https://www.littlegreene.com/elysian-yellow"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Brûlée",
+"hex": "#AC8534",
+"url": "https://www.littlegreene.com/brulee"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Barge Stone - Mid",
+"hex": "#E1E2CE",
+"url": "https://www.littlegreene.com/barge-stone-mid"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Barge Stone",
+"hex": "#D4D3BB",
+"url": "https://www.littlegreene.com/barge-stone"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Barge Stone - Dark",
+"hex": "#BBB9A1",
+"url": "https://www.littlegreene.com/barge-stone-dark"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Putti",
+"hex": "#989988",
+"url": "https://www.littlegreene.com/putti"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Oilcloth",
+"hex": "#535944",
+"url": "https://www.littlegreene.com/oilcloth"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Barge Stone - Pale",
+"hex": "#EEEFDE",
+"url": "https://www.littlegreene.com/barge-stone-pale"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Cobble",
+"hex": "#BABBAF",
+"url": "https://www.littlegreene.com/cobble"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Celestial Blue - Pale",
+"hex": "#EBF3F2",
+"url": "https://www.littlegreene.com/celestial-blue-pale"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Celestial Blue - Mid",
+"hex": "#D5E2E0",
+"url": "https://www.littlegreene.com/celestial-blue-mid"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Celestial Blue - Deep",
+"hex": "#BBCAC5",
+"url": "https://www.littlegreene.com/celestial-blue-deep"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Rome",
+"hex": "#3F5D63",
+"url": "https://www.littlegreene.com/rome"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Boxington - Pale",
+"hex": "#F2EFD8",
+"url": "https://www.littlegreene.com/boxington-pale"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Boxington - Mid",
+"hex": "#EBE6C7",
+"url": "https://www.littlegreene.com/boxington-mid"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Boxington - Deep",
+"hex": "#E0D7A9",
+"url": "https://www.littlegreene.com/boxington-deep"
+},
+{
+"brand": "Little Greene",
+"code": "",
+"name": "Hillside",
+"hex": "#797955",
+"url": "https://www.littlegreene.com/hillside"
 },
 {
 "brand": "Dulux",
