@@ -1031,6 +1031,35 @@ def _pair_pick(i, mask, target, chosen, brand_bonus=2.0, tol=14):
             if same[sb] <= dd[b]+brand_bonus: b = sb
             if dd[b] <= tol: return b
     return None
+# A brand's own published white for a colour, shown in place of the rule's pick and said to
+# be the brand's. Read from each colour's page on farrow-ball.com (its "Complementary
+# white") through Will's browser on 13 Nov 2026; the full set, with the schemes that are not
+# shown here, is in the Project doc claude/paintdial-fb-own-pairings-nov26.json. Only add a
+# colour after reading it off the brand's own UK page: never from a retailer or from memory.
+# name -> (the brand's page slug, its white)
+OWN_WHITE_CHECKED = 'Nov 2026'
+OWN_WHITE = {'Farrow & Ball': {
+    'Hague Blue': ('hague-blue', 'Wevet'), 'Railings': ('railings', 'Blackened'),
+    'Setting Plaster': ('setting-plaster', 'School House White'), "Elephant's Breath": ('elephants-breath', 'Strong White'),
+    'Pigeon': ('pigeon', 'School House White'), 'Green Smoke': ('green-smoke', 'Shaded White'),
+    'Stiffkey Blue': ('stiffkey-blue', 'Ammonite'), 'Down Pipe': ('down-pipe', 'Blackened'),
+    'Sulking Room Pink': ('sulking-room-pink', 'Skimming Stone'), 'Ammonite': ('ammonite', 'Wevet'),
+    'Skimming Stone': ('skimming-stone', 'Strong White'), 'De Nimes': ('de-nimes', 'Shaded White'),
+    'Inchyra Blue': ('inchyra-blue', 'Drop Cloth'), 'Mizzle': ('mizzle', 'School House White'),
+    'Card Room Green': ('card-room-green', 'Shaded White'), 'Studio Green': ('studio-green', 'Off-White'),
+    'Lichen': ('lichen', 'Slipper Satin'), 'French Gray': ('french-gray', 'Slipper Satin'),
+    'Cornforth White': ('cornforth-white', 'Wevet'), 'Dead Salmon': ('dead-salmon', 'Dimity'),
+    'Oval Room Blue': ('oval-room-blue', 'Ammonite')}}
+OWN_WHITE_URL = {'Farrow & Ball': 'https://www.farrow-ball.com/paint/{}'}
+_apos = lambda t: t.replace('\u2019', "'").lower()
+_BY_BRAND_NAME = {(q['brand'], _apos(q['name'])): k for k, q in enumerate(paints)}
+OWN_WHITE_IDX = {}   # paint index -> (index of the brand's white, the brand's page for the colour)
+for _b, _m in OWN_WHITE.items():
+    for _n, (_sl, _w) in _m.items():
+        assert (_b, _apos(_n)) in _BY_BRAND_NAME, f'OWN_WHITE: no {_b} colour called {_n}'
+        assert (_b, _apos(_w)) in _BY_BRAND_NAME, f'OWN_WHITE: no {_b} white called {_w}'
+        OWN_WHITE_IDX[_BY_BRAND_NAME[(_b, _apos(_n))]] = (_BY_BRAND_NAME[(_b, _apos(_w))], OWN_WHITE_URL[_b].format(_sl))
+
 def pairs_for(i):
     """[(role label, paint index)] for the Pairs well with cards, and whether a white was found."""
     Lx, Cx, h = float(OL[i]), float(OC[i]), float(OH[i])
@@ -1046,7 +1075,10 @@ def pairs_for(i):
     else:
         wt = _oklab(0.915, 0.018, 90); m = (OL >= 0.88) & (OC <= 0.026) & ((hdv(OH, 90) <= 35) | (OC < 0.008))
     if Lx > 0.88: m &= (OL >= Lx+0.02)
-    add('Woodwork and ceilings', _pair_pick(i, m, wt, ch, brand_bonus=4, tol=12))
+    if i in OWN_WHITE_IDX:   # the brand's own choice stands in for the rule's, and the other picks keep clear of it
+        add(H.escape(paints[i]['brand']) + '\u2019s own white', OWN_WHITE_IDX[i][0])
+    else:
+        add('Woodwork and ceilings', _pair_pick(i, m, wt, ch, brand_bonus=4, tol=12))
     has_white = bool(out)
     # deeper tone, or a lighter one when the colour is already very dark
     if Lx < 0.42:
@@ -1148,6 +1180,12 @@ def build_colour_page(i):
     assert all(j != i for _, j in _pairs), 'a colour was offered as its own pairing'
     pairs_sub = ('Each has a different job, named on the card. They are picked by rule from every brand here, '
                  f'leaning to {brand} where it has a good fit. Keep a contrast or accent to small areas.')
+    if i in OWN_WHITE_IDX:
+        _ow, _ow_url = OWN_WHITE_IDX[i]
+        pairs_sub = (f'{brand} itself gives <a href="/colours/{slugs[_ow]}">{H.escape(paints[_ow]["name"])}</a> as the white to go with '
+                     f'{name} (<a href="{_ow_url}" target="_blank" rel="nofollow noopener">its own page</a>, checked {OWN_WHITE_CHECKED}), '
+                     'so that is the first card. The rest are picked by rule from every brand here, each for the job named on its card. '
+                     'Keep a contrast or accent to small areas.')
     if not _pair_white:
         pairs_sub += f' No white here is lighter than {name}, so use it on the woodwork and ceiling too.'
 
