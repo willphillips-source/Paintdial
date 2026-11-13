@@ -718,6 +718,17 @@ h2::after{content:'';display:block;width:34px;height:4px;border-radius:2px;backg
 .mx>.ladder-sec,.mx>.mx-alt{grid-column:1/-1;min-width:0}
 .mx-alt .sub{margin-top:0!important}
 .more-h{display:none}
+/* Wider than a phone, the cross-brand cards stop at two full rows so Lighter & darker sits
+   higher and no row is left with one or two cards in it. The rest are still in the page
+   (links and all), a tap on "Show all" away. The counts below are 2 x the columns, less
+   the four cards in the first .gpart: keep them in step with the column rules. */
+.mx-all{font:inherit;font-weight:600;color:inherit;background:none;border:0;padding:0;margin-left:4px;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+@media(max-width:640px){.mx-all{display:none}}
+@media(min-width:641px) and (max-width:899px){.grid.mx{grid-template-columns:repeat(3,minmax(0,1fr))}.mx:not(.all)>.ladder-sec~.gpart>:nth-child(n+3){display:none}}
+@media(min-width:900px) and (max-width:1159px){.grid.mx{grid-template-columns:repeat(4,minmax(0,1fr))}.mx:not(.all)>.ladder-sec~.gpart>:nth-child(n+5){display:none}}
+@media(min-width:1160px) and (max-width:1399px){.grid.mx{grid-template-columns:repeat(5,minmax(0,1fr))}.mx:not(.all)>.ladder-sec~.gpart>:nth-child(n+7){display:none}}
+@media(min-width:1400px) and (max-width:1899px){.mx:not(.all)>.ladder-sec~.gpart>:nth-child(n+9){display:none}}
+@media(min-width:1900px){.mx:not(.all)>.ladder-sec~.gpart>:nth-child(n+15){display:none}}
 @media(min-width:641px){.mx .gpart{display:contents}.mx>.mx-alt{order:1}.mx>.ladder-sec{order:2}.mx>.ladder-sec h2:first-child{margin-top:18px}}
 @media(max-width:640px){.grid,.mx .gpart{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid.mx{display:block}.more-h{display:block}.mx-alt{margin-top:12px}}
 .rung{flex:1 1 0;min-width:72px;text-decoration:none;color:var(--ink);display:flex;flex-direction:column}
@@ -1035,7 +1046,7 @@ def build_colour_page(i):
 </div></div>
 <p class="colour-summary">{name} is a {_depth} {_fam} from {brand}. Its closest match from another brand is <a href="/colours/{slugs[_x0]}">{seo_top}</a> ({seo_word}).</p>
 <h2>Closest matches from other brands</h2>
-<p class="sub">{mx_sub}</p>
+<p class="sub">{mx_sub} <button class="mx-all" type="button" data-n="{len(_chips)}" hidden>Show all {len(_chips)}</button></p>
 <div class="grid mx"><div class="gpart">{''.join(_chips[:4])}</div>
 <section class="ladder-sec"><h2>Lighter &amp; darker</h2>
 <p class="sub">This colour, stepped evenly from dark to light.</p>
@@ -1051,7 +1062,7 @@ def build_colour_page(i):
 <a class="btn" href="{tool_url}">Open {name} in the colour tool \u2192</a></div>
 {kofi_strip()}
 <footer>{FOOT}</footer>
-</div><div class="top-band"></div><script>{SHORTLIST_JS}</script>{COMPARE_SCRIPT}</body></html>"""
+</div><div class="top-band"></div><script>{SHORTLIST_JS}</script>{COMPARE_SCRIPT}<script>(function(){{var g=document.querySelector('.grid.mx'),b=document.querySelector('.mx-all');if(!g||!b)return;function chk(){{var cut=[].some.call(g.querySelectorAll('.gpart>*'),function(e){{return getComputedStyle(e).display==='none'}});b.hidden=!cut&&!g.classList.contains('all')}}b.addEventListener('click',function(){{var a=g.classList.toggle('all');b.textContent=a?'Show fewer':'Show all '+b.dataset.n}});chk();addEventListener('resize',chk)}})();</script></body></html>"""
     return page
 
 # ---------- brand library pages (redesigned: family-grouped tiles, fan banner) ----------
