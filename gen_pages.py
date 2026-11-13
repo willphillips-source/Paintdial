@@ -637,13 +637,21 @@ FONTS = ('<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,ops
 # closes index.html's stylesheet, and pd-compare.js allows for the zoom when it tracks
 # the pointer.
 FONTS += '<style>@media(min-width:2800px){html{zoom:1.1}}</style>'
-HDR = '<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a><a href="/">Colour tool</a></div>'
+# The header gained a "Scheme planner" link on 13 Nov 2026. Below 900px there is no room for
+# it and the "Open the colour tool" button, so the button goes: the logo already goes to the
+# tool (Will's call). On a phone the planner link sits in the text row under the header (.mnav).
+FONTS += ('<style>@media(max-width:900px){header nav a.nav-cta{display:none!important}}'
+          # 561 to 700px (small tablets, phones on their side): four text links and the library
+          # button only fit on one line without the button's four swatches.
+          '@media(min-width:561px) and (max-width:700px){header .lib-swatches{display:none}header nav{gap:10px}}</style>')
+HDR = '<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a><a class="head-nav" href="/colour-scheme-planner/">Scheme planner</a><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a><a href="/colour-scheme-planner/">Scheme planner</a></div>'
 FOOT = ("<span class=\"foot-links\">"
         "<a href=\"/about/\">About</a> \u00b7 "
         "<a href=\"/how-it-works/\">How matching works</a> \u00b7 "
         "<a href=\"/research/\">Research</a> \u00b7 "
         "<a href=\"/match-paint-from-a-photo/\">Match from a photo</a> \u00b7 "
         "<a href=\"/paint-visualiser/\">Paint visualiser</a> \u00b7 "
+        "<a href=\"/colour-scheme-planner/\">Scheme planner</a> \u00b7 "
         "<a href=\"/contact/\">Contact</a> \u00b7 "
         "<a href=\"/privacy/\">Privacy</a> \u00b7 "
         "<a href=\"/colours/\">Colour library</a> \u00b7 "
@@ -1021,7 +1029,7 @@ def build_colour_page(i):
 <div class="hero"><div class="hero-swatch">{solo_btn(p)}{heart(p['name'], p['brand'], p['hex'])}</div><div class="hero-body">
 <h1><span class="eyebrow">{brand}</span> {name}</h1>
 <div class="facts"><span>Hex <b>{p['hex']}</b></span><span>RGB <b>{int(p['hex'][1:3],16)}, {int(p['hex'][3:5],16)}, {int(p['hex'][5:7],16)}</b></span><span>LRV <b>\u2248\u2009{lrv(L0):.0f}</b></span><span>Lightness <b>{L0:.0f}/100</b></span></div>{source_line(p['brand'])}
-<div class="hero-acts">{f'<a class="btn" href="{buy_url}" target="_blank" rel="{buy_rel}">{buy_label}</a>' if buy_url else ''}<a class="btn btn-wall" href="{VIS_PATH}?c={slug}">See it on your wall</a></div>
+<div class="hero-acts">{f'<a class="btn" href="{buy_url}" target="_blank" rel="{buy_rel}">{buy_label}</a>' if buy_url else ''}<a class="btn btn-wall" href="{VIS_PATH}?c={slug}">See it on your wall</a><a class="btn btn-wall" href="{SCHEME_PATH}?add={slug}">Plan a room with it</a></div>
 {f'<p class="afftext">{buy_note}</p>' if buy_note else ''}
 <p class="afftext">{price_line(p['brand'])}</p>
 </div></div>
@@ -1428,7 +1436,7 @@ header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6
 LIB_CSS += WIDE_SHELL_CSS
 
 
-LIB_HDR = '<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a><a href="/">Colour tool</a></div>'
+LIB_HDR = '<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a><a class="head-nav" href="/colour-scheme-planner/">Scheme planner</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a><a href="/colour-scheme-planner/">Scheme planner</a></div>'
 
 def anchor(fam): return 'f-'+re.sub(r'[^a-z0-9]+', '-', fam.lower().replace('&', 'and')).strip('-')
 
@@ -3136,7 +3144,7 @@ def build_alternatives_page(i):
 <meta name="twitter:image" content="{DOMAIN}/share/{slugs[i]}.jpg">
 {FAVICON}
 {FONTS}<style>{ALT_CSS}{COMPARE_BTN_CSS}{KOFI_STRIP_CSS}</style></head><body style="--pc:{p['hex']}"><div class="top-band"></div><div class="wrap">
-<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a><a href="/">Colour tool</a></div>
+<header><a class="logo" href="/"><svg class="mark" viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="var(--pc)" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="var(--ink)"/></svg>PaintDial</a><nav><a class="head-nav" href="/about/">About</a><a class="head-nav" href="/how-it-works/">How it works</a><a class="head-nav" href="/research/">Research</a><a class="head-nav" href="/colour-scheme-planner/">Scheme planner</a><a class="lib-link" href="/colours/"><span class="lib-swatches" aria-hidden="true"><i style="background:#5E7E8B"></i><i style="background:#A6675A"></i><i style="background:#8A9D80"></i><i style="background:#D7B576"></i></span>Colour library</a><a class="nav-cta" href="/"><span class="cta-wheel" aria-hidden="true"></span>Open the colour tool</a></nav></header><div class="mnav"><a href="/about/">About</a><a href="/how-it-works/">How it works</a><a href="/research/">Research</a><a href="/colour-scheme-planner/">Scheme planner</a></div>
 <h1>{brand} <span class="pn"><i></i>{name}</span> alternatives</h1>
 <div class="hero-card"><div class="hero-sw" style="background:{p['hex']}">{solo_btn(p, chip=False)}</div>
 <div class="hero-info"><div class="hero-label">The colour you\u2019re matching</div>

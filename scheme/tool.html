@@ -408,6 +408,19 @@
       if(!saved||!saved.r.length||eq){ S=eq?saved:inc; save(); history.replaceState(null,'',PATH); }
       else { S=inc; mine=saved; sharedView=true; }
     } else if(saved) S=saved;
+    /* A colour page's "Plan a room with it" button arrives as ?add=<slug>: the colour becomes
+       the walls of a new room, and the address is tidied so a reload doesn't add it twice. */
+    var add=q.get('add'), ac=!q.get('s')&&add?col(add):null;
+    if(ac){
+      history.replaceState(null,'',PATH);
+      if(S.r.length>=MAXR){ draw(); flash('This scheme is full, so '+ac.name+' wasn’t added.'); return; }
+      var nm='New room', k=2; while(S.r.some(function(r){return r.n===nm;})) nm='New room '+(k++);
+      var room=newRoom(nm); room.s[0].c=ac.slug; S.r.push(room); save(); draw();
+      var cards=document.querySelectorAll('#sp .sp-room'), card=cards[cards.length-1];
+      if(card) card.scrollIntoView({block:'center'});
+      flash(ac.name+' added as the walls of a new room. Tap the room’s name to change it.');
+      return;
+    }
     draw();
   }).catch(function(){
     $('spRooms').innerHTML='<p class="sp-hint">The colour library didn’t load. Check your connection and reload the page.</p>';
