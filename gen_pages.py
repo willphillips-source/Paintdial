@@ -756,6 +756,7 @@ h2::after{content:'';display:block;width:34px;height:4px;border-radius:2px;backg
 .mx>.ladder-sec,.mx>.mx-alt{grid-column:1/-1;min-width:0}
 .mx-alt .sub{margin-top:0!important}
 .more-h{display:none}
+.c-role{display:block;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;line-height:1.25}
 /* Wider than a phone, the cross-brand cards stop at two full rows so Lighter & darker sits
    higher and no row is left with one or two cards in it. The rest are still in the page
    (links and all), a tap on "Show all" away. The counts below are 2 x the columns, less
@@ -820,7 +821,7 @@ header nav a.lib-link,header nav a.nav-cta{font-size:12px;padding:5px 10px 5px 6
    logo and the page edges don't move when you click through from the homepage. The
    eighteen matches (one per other brand) sit six across from 1400px, three full rows, and
    nine across from 1900px, two full rows; nine is too tight below that (150px cards at
-   1536). Below 1400 the grid auto-fills. The four "Pairs well with" cards stay eight
+   1536). Below 1400 the grid auto-fills. The "Pairs well with" cards (up to five) stay eight
    across. If the brand count changes, re-pick these so the rows still come out full.
    The type steps up with the column. html{zoom:1.1} from 2800px (in FONTS) scales on
    top of the last step. If the homepage widths change, change these too. */
@@ -908,7 +909,7 @@ def ladder_for(i):
         if cost[j] < 1e9: chosen[s] = j
     return sorted(chosen.values(), key=lambda j: OL[j])
 
-def chip(j, home_lab=None, show_tier=False, home_i=None):
+def chip(j, home_lab=None, show_tier=False, home_i=None, role=None):
     q = paints[j]
     de = ''
     if home_lab is not None:
@@ -941,7 +942,7 @@ def chip(j, home_lab=None, show_tier=False, home_i=None):
     band_attr = f' data-band="{price_band(q["brand"])}"' if show_tier else ''   # read by the price bracket buttons
     return (f'<div class="chip"{band_attr}>'
             f'<div class="c-swatch" style="background:{q["hex"]}">{cmp}{heart(q["name"], q["brand"], q["hex"])}</div>'
-            f'<div class="c-body"><a class="c-name" href="/colours/{slugs[j]}">{H.escape(q["name"])}</a>'
+            f'<div class="c-body">{f'<span class="c-role">{role}</span>' if role else ''}<a class="c-name" href="/colours/{slugs[j]}">{H.escape(q["name"])}</a>'
             f'<span class="c-brand">{H.escape(q["brand"])}</span>{de}</div></div>')
 
 def a_an(w):
@@ -1002,6 +1003,91 @@ def buy_cta(p):
     return (url, f'Order {a} {name} tester →',
             f'Opens {brand_s} page, where you can order a tester or a full tin.')
 
+# ---------- "Pairs well with": one paint for each job ----------
+# The old rule (three pale tints of the colour's own hue and one exact complement) gave
+# three near-identical cards and a contrast far louder than a muted colour could take, and
+# it could offer a colour as its own partner. This fills roles instead: a woodwork white,
+# a deeper (or, for very dark colours, lighter) tone, a contrast of about the colour's own
+# strength, a neighbouring hue and a neutral of the other temperature. Neutrals get a
+# deeper tone, one accent from a short list and a neutral of the other temperature.
+# Every pick must be visibly different from the colour and from the other picks
+# (_PAIR_SEP, relaxed once), or the slot is left empty. The colour's own brand wins a near
+# tie. The numbers are judgement, tuned on a sheet of twelve colours and against Farrow &
+# Ball's own complementary whites (13 Nov 2026); they are not from any standard.
+_PAIR_BR = np.array([q['brand'] for q in paints])
+def _warm_h(h): return (h >= 330) or (h < 120)
+_PAIR_WARM = np.array([_warm_h(h) for h in OH])
+def _oklab(Lx, Cx, hx):
+    r = np.radians(hx); return np.array([Lx, Cx*np.cos(r), Cx*np.sin(r)])
+def _pair_pick(i, mask, target, chosen, brand_bonus=2.0, tol=14):
+    d = np.where(mask, 190*np.linalg.norm(OK-target, axis=1), 1e9); d[i] = 1e9
+    for sep in (10, 7):
+        dd = d.copy()
+        for j in [i]+chosen:
+            dd = np.where(190*np.linalg.norm(OK-OK[j], axis=1) < sep, 1e9, dd)
+        b = int(np.argmin(dd))
+        if dd[b] < 1e9:
+            same = np.where(_PAIR_BR == paints[i]['brand'], dd, 1e9); sb = int(np.argmin(same))
+            if same[sb] <= dd[b]+brand_bonus: b = sb
+            if dd[b] <= tol: return b
+    return None
+def pairs_for(i):
+    """[(role label, paint index)] for the Pairs well with cards, and whether a white was found."""
+    Lx, Cx, h = float(OL[i]), float(OC[i]), float(OH[i])
+    neutral = bool(IS_NEUTRAL[i]) or Cx < 0.015
+    strong = Cx > 0.12
+    w = _warm_h(h); out = []; ch = []
+    def add(label, j):
+        if j is not None: out.append((label, j)); ch.append(j)
+    def tdist(t, j): return 190*float(np.linalg.norm(OK[j]-t))
+    # woodwork white: near-neutral for blues and cool greys, a soft warm off-white otherwise
+    if (215 <= h <= 320) or (neutral and Cx < 0.012 and not w):
+        wt = _oklab(0.94, 0.004, 90); m = (OL >= 0.90) & (OC <= 0.010)
+    else:
+        wt = _oklab(0.915, 0.018, 90); m = (OL >= 0.88) & (OC <= 0.026) & ((hdv(OH, 90) <= 35) | (OC < 0.008))
+    if Lx > 0.88: m &= (OL >= Lx+0.02)
+    add('Woodwork and ceilings', _pair_pick(i, m, wt, ch, brand_bonus=4, tol=12))
+    has_white = bool(out)
+    # deeper tone, or a lighter one when the colour is already very dark
+    if Lx < 0.42:
+        tl = Lx+0.32; m = (OL > tl-0.08) & (OL < tl+0.08)
+        m &= ((hdv(OH, h) <= 18) & (OC >= 0.5*Cx) & (OC <= 1.3*Cx+0.01)) if Cx >= 0.03 else (OC <= 0.035)
+        add('Lighter tone', _pair_pick(i, m, _oklab(tl, Cx*0.8, h), ch))
+    else:
+        tl = Lx-(0.25 if Lx > 0.88 else 0.20); m = (OL > tl-0.07) & (OL < tl+0.07)
+        if Cx >= 0.03: m &= (hdv(OH, h) <= 15) & (OC >= 0.7*Cx) & (OC <= min(1.5*Cx, 0.16)+0.01)
+        else: m &= (OC <= 0.035) & ((_PAIR_WARM == w) | (OC < 0.01))
+        add('Deeper tone', _pair_pick(i, m, _oklab(tl, min(Cx*1.1, 0.14), h), ch))
+    if neutral:
+        best = None
+        for ah in ((255, 145) if w else (45, 85)):
+            t = _oklab(float(np.clip(Lx-0.30, 0.42, 0.60)) if Lx > 0.6 else 0.72, 0.065, ah)
+            m = (hdv(OH, ah) <= 20) & (OC >= 0.045) & (OC <= 0.085) & (np.abs(OL-Lx) >= 0.10)
+            j = _pair_pick(i, m, t, ch)
+            if j is not None and (best is None or tdist(t, j) < best[1]): best = (j, tdist(t, j))
+        add('Colour accent', best[0] if best else None)
+        nl = Lx if 0.60 <= Lx <= 0.90 else 0.80
+        m = (OC >= 0.006) & (OC <= 0.022) & (_PAIR_WARM != w) & (np.abs(OL-nl) <= 0.08)
+        add('Cooler neutral' if w else 'Warmer neutral', _pair_pick(i, m, _oklab(nl, 0.013, 240 if w else 75), ch))
+    else:
+        tc = float(np.clip(1.3*Cx, 0.04, 0.08 if strong else 0.10))
+        if Lx < 0.40: tL, lo, hi, tc = 0.80, 0.72, 0.87, float(np.clip(Cx, 0.03, 0.06))
+        else: tL = float(np.clip(Lx+0.12 if Lx <= 0.62 else Lx-0.12, 0.45, 0.78)); lo, hi = 0.40, 0.86
+        oh = (h+180) % 360
+        m = (hdv(OH, oh) <= 30) & (OC >= max(0.03, tc-0.03)) & (OC <= tc+0.015) & (OL >= lo) & (OL <= hi) & (np.abs(OL-Lx) >= 0.08)
+        add('Contrast accent', _pair_pick(i, m, _oklab(tL, tc, oh), ch))
+        best = None; cc = min(Cx, 0.09)
+        for sft in (-35, 35):
+            nh = (h+sft) % 360; t = _oklab(Lx, cc, nh)
+            m = (hdv(OH, nh) <= 12) & (OC >= 0.7*cc-0.005) & (OC <= 1.2*cc+0.005) & (np.abs(OL-Lx) <= 0.09)
+            j = _pair_pick(i, m, t, ch)
+            if j is not None and (best is None or tdist(t, j) < best[1]): best = (j, tdist(t, j))
+        add('Neighbouring colour', best[0] if best else None)
+        fh = 235 if w else 75; tL = 0.82 if Lx <= 0.80 else 0.72
+        m = (hdv(OH, fh) <= 25) & (OC >= 0.012) & (OC <= 0.042) & (OL >= tL-0.08) & (OL <= tL+0.07)
+        add('Cool balance' if w else 'Warm balance', _pair_pick(i, m, _oklab(tL, 0.025, fh), ch))
+    return out, has_white
+
 def build_colour_page(i):
     p = paints[i]; lab = LAB[i]
     name = H.escape(p['name']); brand = H.escape(p['brand'])
@@ -1056,14 +1142,14 @@ def build_colour_page(i):
         f'<span class="r-br">{H.escape(paints[j]["brand"])}</span></div></a>'
         for j in rungs)
 
-    # pairs well with: 3 light neutrals (undertone-sympathetic) + 1 complementary accent
-    H0, C0, L0 = HUE[i], C[i], L[i]
-    nm = (C < 8) & (L > 82)
-    nscore = np.where(C > 2, hdv(HUE, H0), 50.0)
-    neutrals = [int(j) for j in np.argsort(np.where(nm, nscore, 1e9))[:3]]
-    comp = (H0+180) % 360
-    am = (C > 20) & (L > 35) & (L < 75)
-    accents = [int(np.argmin(np.where(am, hdv(HUE, comp), 1e9)))]
+    # pairs well with: one paint per job (pairs_for). L0 is CIELAB lightness, used for LRV below.
+    L0 = L[i]
+    _pairs, _pair_white = pairs_for(i)
+    assert all(j != i for _, j in _pairs), 'a colour was offered as its own pairing'
+    pairs_sub = ('Each has a different job, named on the card. They are picked by rule from every brand here, '
+                 f'leaning to {brand} where it has a good fit. Keep a contrast or accent to small areas.')
+    if not _pair_white:
+        pairs_sub += f' No white here is lighter than {name}, so use it on the woodwork and ceiling too.'
 
     alt_link = (f'<p class="sub" style="margin-top:12px"><a href="/alternatives/{slug}" style="color:inherit;font-weight:600">'
                 f'See all {name} alternatives, ranked \u2192</a>'
@@ -1106,8 +1192,8 @@ def build_colour_page(i):
 <h2 class="more-h">More matches from other brands</h2></section>
 <div class="gpart">{''.join(_chips[4:])}</div>{('<div class="mx-alt">' + alt_link + '</div>') if alt_link else ''}</div>
 <h2>Pairs well with</h2>
-<p class="sub">Neutrals for woodwork and ceilings, and one colour that contrasts.</p>
-<div class="grid">{''.join(chip(j) for j in neutrals+accents)}</div>
+<p class="sub">{pairs_sub}</p>
+<div class="grid">{''.join(chip(j, role=_r) for _r, j in _pairs)}</div>
 {paint_block(p['brand'])}
 <div class="cta"><h2 style="margin-top:0">Not quite right?</h2>
 <p>Use the colour tool to find a lighter, darker, warmer or cooler version of this colour across all {N:,} paints.</p>
