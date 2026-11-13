@@ -3528,6 +3528,13 @@
 "url": "https://www.littlegreene.com/madeleine"
 },
 {
+"brand": "Little Greene",
+"code": "",
+"name": "Marle",
+"hex": "#938168",
+"url": "https://www.littlegreene.com/marle"
+},
+{
 "brand": "Dulux",
 "code": "1915101",
 "name": "Moon Shimmer",
@@ -18079,6 +18086,13 @@
 "name": "Flame Frenzy 1",
 "hex": "#462F27",
 "url": "https://www.dulux.co.uk/en/colour-details/flame-frenzy-1"
+},
+{
+"brand": "Dulux",
+"code": "3196925",
+"name": "Soulful Sage",
+"hex": "#A3A793",
+"url": "https://www.dulux.co.uk/en/colour-details/soulful-sage"
 },
 {
 "brand": "Johnstone's",

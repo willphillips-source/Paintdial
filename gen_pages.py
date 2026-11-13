@@ -689,6 +689,7 @@ FOOT = ("<span class=\"foot-links\">"
         "<a href=\"/paint-visualiser/\">Paint visualiser</a> \u00b7 "
         "<a href=\"/colour-scheme-planner/\">Scheme planner</a> \u00b7 "
         "<a href=\"/paint-calculator/\">Paint calculator</a> \u00b7 "
+        "<a href=\"/colour-of-the-year/\">Colour of the year</a> \u00b7 "
         "<a href=\"/contact/\">Contact</a> \u00b7 "
         "<a href=\"/privacy/\">Privacy</a> \u00b7 "
         "<a href=\"/colours/\">Colour library</a> \u00b7 "
@@ -3103,6 +3104,85 @@ def build_scheme_page():
 </div></body></html>"""
 
 
+# ---------- Colour of the year ----------
+# One page listing the colour each brand on the site has named its Colour of the Year, with the
+# closest matches from the other brands. Only brands that have named a single colour, and only
+# where the brand's own site says so (the link in each row; all read 13 Nov 2026). Left out on
+# purpose: Lick (an eight-colour edit, no single colour), Crown (palettes), Valspar (Cottage Door
+# is its US pick; valsparpaint.co.uk does not name one), Earthborn (no 2027 colour on its site).
+# Dulux Soulful Sage and Little Greene Marle were new colours and were added to paints-fixed.json
+# for this page, their values read from the brands' own colour pages the same way as the rest.
+# Update once a year, in the autumn, as brands announce: change COTY_YEAR and the rows.
+COTY_PATH = '/colour-of-the-year/'
+COTY_YEAR = 2027
+COTY_CHECKED = '13 November 2026'
+COTY = [
+ ('Dulux', 'Soulful Sage', 'https://www.dulux.co.uk/en/colour-inspiration/colour-of-the-year-2027-soulful-sage'),
+ ('Little Greene', 'Marle', 'https://www.littlegreene.com/marle'),
+ ('Benjamin Moore', 'Webster Green', 'https://www.benjaminmoorepaint.co.uk/be-inspired/colour-of-the-year-2026/'),
+ ('Mylands', 'Huguenot', 'https://mylands.com/blogs/news'),
+ ("Johnstone's", 'Country Soil', 'https://www.johnstonestrade.com/en-GB/colour'),
+ ('Tikkurila', 'Heartland', 'https://www.tikkurila.co.uk/color-now/colour-palette'),
+]
+COTY_CSS = """
+.cy-sw{display:block;height:150px;border-radius:12px;border:1px solid rgba(0,0,0,.08);margin:4px 0 12px}
+.cy-ms{display:flex;flex-direction:column;margin:6px 0 4px;max-width:640px}
+.cy-m{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:11px;align-items:center;padding:8px 0;border-top:1px solid var(--hairline);text-decoration:none;color:var(--ink)}
+.cy-m i{width:38px;height:38px;border-radius:8px;border:1px solid rgba(0,0,0,.1);display:block}
+.cy-m b{display:block;font-weight:600;font-size:15px}.cy-m small{display:block;font-size:12.5px;color:var(--muted)}
+.cy-m span.w{font-size:12.5px;color:var(--muted);white-space:nowrap;text-align:right}
+.cy-m:hover b{text-decoration:underline}
+.cy-k{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 0 0}
+"""
+
+def build_coty_page():
+    idx = []
+    for b, n, _u in COTY:
+        hit = [i for i in range(N) if paints[i]['brand'] == b and paints[i]['name'] == n]
+        assert len(hit) == 1, f'colour of the year: {b} {n} matches {len(hit)} colours in the library'
+        idx.append(hit[0])
+    secs = []
+    for (b, n, url), i in zip(COTY, idx):
+        p = paints[i]
+        d, g = dmatch(i), mdist(i)
+        xm = []
+        for ob in BRAND_ORDER:
+            if ob == b: continue
+            j = brand_match(i, ob, d, g)
+            if j is not None: xm.append((j, d[j]))
+        xm.sort(key=lambda t: t[1])
+        bn, nm = H.escape(b), H.escape(n)
+        poss = bn if bn.endswith(('’s', '&#x27;s')) else bn + '’' if bn.endswith('s') else bn + '’s'
+        code = f' ({H.escape(p["code"])})' if p.get('code') and b != "Johnstone's" and b != 'Dulux' else ''
+        rows = ''.join(
+            f'<a class="cy-m" href="/colours/{slugs[j]}"><i style="background:{paints[j]["hex"]}"></i>'
+            f'<span><b>{H.escape(paints[j]["name"])}</b><small>{H.escape(paints[j]["brand"])}</small></span>'
+            f'<span class="w">{matchword(dd)} · {dd:.1f}</span></a>' for j, dd in xm[:4])
+        secs.append(
+            f'<h2>{bn}: {nm}</h2>'
+            f'<a class="cy-sw" href="/colours/{slugs[i]}" style="background:{p["hex"]}" aria-label="{nm} by {bn}"></a>'
+            f'<p><a href="/colours/{slugs[i]}">{nm}</a>{code} is {poss} Colour of the Year for {COTY_YEAR} '
+            f'(<a href="{url}" rel="nofollow noopener" target="_blank">{poss} announcement</a>).</p>'
+            f'<p class="cy-k">Closest in other brands</p><div class="cy-ms">{rows}</div>'
+            f'<p class="muted"><a href="/colours/{slugs[i]}">Every brand’s closest match to {nm}</a></p>')
+    names = _and([f'{H.escape(b.replace(chr(39), chr(8217)))} ({H.escape(n)})' for b, n, _u in COTY])
+    body = (f'<span class="eyebrow">Colour of the year</span>'
+            f'<h1>Colour of the Year {COTY_YEAR}: each brand’s pick, and its closest matches</h1>'
+            f'<p>{numword(len(COTY)).capitalize()} of the {BRANDS_WORD} brands on PaintDial have named a Colour of the Year for {COTY_YEAR}: {names}. '
+            f'Each is shown here with the closest colours from other brands, ranked the same way as everywhere else on the site.</p>'
+            f'<p class="muted">The number beside each match is how far apart the two colours are: under 2 is near-identical. '
+            f'<a href="/how-it-works/#difference">How it’s worked out</a>. Checked against each brand’s own site on {COTY_CHECKED}.</p>'
+            + ''.join(secs) +
+            f'<h2>Brands that haven’t named one</h2>'
+            f'<p>Not every brand picks a single colour. Lick has chosen a set of eight for {COTY_YEAR}, and Crown publishes palettes. '
+            f'The other brands on PaintDial have not named one on their own sites. This page is updated each autumn as brands announce.</p>'
+            f'<p class="muted">Screens don’t show paint exactly. Before you commit to a colour or a match, order testers and look at them in the room.</p>')
+    ld = _itemlist([(f"{n} by {b}", f"/colours/{slugs[i]}") for (b, n, _u), i in zip(COTY, idx)])
+    return _page_shell(f"Colour of the Year {COTY_YEAR}: Every UK Brand’s Pick and Its Closest Matches",
+        f"The {COTY_YEAR} Colour of the Year from {_and([b.replace(chr(39), '’') for b, _n, _u in COTY])}, each with its closest matches from other UK paint brands.",
+        COTY_PATH, body, head=f'{FAVICON}<style>{COTY_CSS}</style>{_ldjson(ld)}')
+
+
 def build_calc_page():
     lead = ('<span class="eyebrow">Paint calculator</span>'
             '<h1>How much paint do you need?</h1>'
@@ -3394,6 +3474,9 @@ if __name__ == '__main__':
     os.makedirs('site' + CALC_PATH, exist_ok=True)
     open('site' + CALC_PATH + 'index.html', 'w', encoding='utf-8').write(build_calc_page())
     print('paint calculator written')
+    os.makedirs('site' + COTY_PATH, exist_ok=True)
+    open('site' + COTY_PATH + 'index.html', 'w', encoding='utf-8').write(build_coty_page())
+    print('colour of the year page written')
     print('trust pages: 3 (+ contact thanks)')
 
     urls = [f'{DOMAIN}/', f'{DOMAIN}/colours/'] \
@@ -3404,7 +3487,7 @@ if __name__ == '__main__':
         + [f'{DOMAIN}{POPULAR_PATH}'] \
         + [f'{DOMAIN}/how-it-works/', f'{DOMAIN}/about/', f'{DOMAIN}/contact/', f'{DOMAIN}/privacy/', f'{DOMAIN}/paint-match-index/',
            f'{DOMAIN}/paint-choice-index/', f'{DOMAIN}/research/', f'{DOMAIN}/match-paint-from-a-photo/',
-           f'{DOMAIN}{VIS_PATH}', f'{DOMAIN}{SCHEME_PATH}', f'{DOMAIN}{CALC_PATH}']
+           f'{DOMAIN}{VIS_PATH}', f'{DOMAIN}{SCHEME_PATH}', f'{DOMAIN}{CALC_PATH}', f'{DOMAIN}{COTY_PATH}']
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += ''.join(f'<url><loc>{u}</loc></url>\n' for u in urls)+'</urlset>'
     open('site/sitemap.xml', 'w').write(sm)
