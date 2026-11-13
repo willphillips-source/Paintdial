@@ -38,6 +38,15 @@
 #pv .share{position:absolute;right:10px;bottom:52px;border:none;border-radius:9px;padding:8px 11px;background:var(--ink);color:#fff;
     box-shadow:0 1px 3px rgba(0,0,0,.25);font:600 12.5px/1.2 var(--sans);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 #pv .share[hidden]{display:none}
+#pv .lightbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;background:var(--card);border:1px solid var(--hairline);border-radius:10px;padding:8px 10px}
+#pv .lightbar.nudge{background:#FFF7E6;border-color:#E2B865}
+#pv .lightbar .btn svg{stroke-width:1.8}
+#pv .lb-acts{display:flex;gap:8px;flex-wrap:wrap}
+#pv .lb-txt{flex:1 1 240px;min-width:0;font-size:13.5px;line-height:1.4;color:var(--muted)}
+#pv .lb-txt b{color:var(--ink);font-weight:600}
+#pv .wdot{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.5),0 1px 5px rgba(0,0,0,.45);pointer-events:none}
+#pv .frame.picking-white #view{cursor:cell}
+#pv .frame.showing-before .wdot{visibility:hidden}
 #pv .share svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 #pv .share:disabled{opacity:.6;cursor:progress}
 #pv .frame.showing-before .share{visibility:hidden}
@@ -183,6 +192,7 @@
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/></svg>
         </div>
         <div id="dots"></div>
+        <div class="wdot" id="wdot" hidden></div>
         <div class="status" id="status" role="status" aria-live="polite"></div>
         <button class="share" id="share" type="button" hidden><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4M5 13v6h14v-6"/></svg><span id="shareTxt">Share picture</span></button>
         <button class="before" id="before" type="button">Hold for before</button>
@@ -197,6 +207,13 @@
         <button class="btn" id="example" type="button"><span>Example<span class="desk-only"> room</span></span></button>
         <input id="camera" type="file" accept="image/*" capture="environment" hidden>
         <input id="file" type="file" accept="image/*" hidden>
+      </div>
+      <div class="lightbar" id="lightBar">
+        <div class="lb-acts">
+          <button class="btn" type="button" id="lightBtn"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg><span id="lightBtnTxt">Correct the light</span></button>
+          <button class="btn" type="button" id="lightAnyway" hidden>Use it anyway</button>
+        </div>
+        <p class="lb-txt" id="lightTxt" role="status" aria-live="polite"></p>
       </div>
       <section class="wallbox" aria-labelledby="hWallPick">
         <div class="wb-head">
@@ -288,6 +305,7 @@
   // "Tap" on phones and tablets, "click" with a mouse
   const verb = window.matchMedia('(hover:none) and (pointer:coarse)').matches ? 'tap' : 'click';
   const Verb = verb[0].toUpperCase() + verb.slice(1);
+  const verbed = verb === 'tap' ? 'tapped' : 'clicked';
   const view = $('view'), ctx = view.getContext('2d'), frame = $('frame');
   const offA = document.createElement('canvas'), offB = document.createElement('canvas'), orig = document.createElement('canvas');
 
@@ -297,7 +315,8 @@
     regions: [], rk: 0, history: [], mode: 'add',
     embedded: false, embedding: false, inFlight: null,
     A: null, B: null, matches: [], cur: null, recent: [], seam: 0.5, before: false,
-    loaded: 0, total: 0, err: '', tech: {}
+    loaded: 0, total: 0, err: '', tech: {},
+    raw: null, look: null, wb: null, wbPick: false, wbPending: null
   };
   function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
@@ -307,6 +326,7 @@
     let html = '';
     if (S.err) html = esc(S.err);
     else if (!S.prep) html = 'Loading…';
+    else if (S.wbPick) html = Verb + ' something white';
     else if (worker && !workerReady) {
       const mb = (n) => (n / 1048576).toFixed(n > 10485760 ? 0 : 1);
       html = S.total ? 'Getting the wall finder ready: ' + mb(S.loaded) + ' of ' + mb(S.total) + ' MB, once only' : 'Getting the wall finder ready…';
@@ -318,6 +338,7 @@
     el.innerHTML = html;
     el.hidden = !html;
     frame.classList.toggle('busy', !!(S.embedding || S.inFlight));
+    frame.classList.toggle('picking-white', S.wbPick);
     hint();
   }
   // The instructions under the photo, plus one line saying what's happening right now.
@@ -413,6 +434,8 @@
     octx.drawImage(bmp, 0, 0, w, h);
     const rgba = octx.getImageData(0, 0, w, h).data;
     S.photoId++; S.isExample = isExample; S.w = w; S.h = h;
+    S.raw = new Uint8ClampedArray(rgba); S.look = V.photoLook(rgba);
+    S.wb = null; S.wbPick = false; S.wbPending = null; lightNote = '';
     S.regions = []; S.history = []; S.inFlight = null;
     S.embedded = false; S.embedding = false; S.err = ''; S.preset = null;
     // The example room's real paint is known, so it starts lit the way the photo is.
@@ -423,7 +446,7 @@
     if (device) S.tech['Runs on'] = device;
     if (isExample) S.preset = await loadMatte(EXAMPLE.matte, w, h);
     else ensureWorker();
-    hint(''); fit(); rebuild(); dots(); lightUI(); status(); tech();
+    hint(''); lightBarUI(); fit(); rebuild(); dots(); lightUI(); status(); tech();
     embed();
   }
   async function loadMatte(url, w, h) {
@@ -546,7 +569,7 @@
   // pointer handling: a short press without movement is a tap; the handle drags the line
   let down = null, dragging = false;
   frame.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('#before')) return;
+    if (e.target.closest('#before, #share')) return;
     if (e.target.closest('#handle')) { dragging = true; try { frame.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); return; }
     if (e.button !== undefined && e.button !== 0) return;
     down = { x: e.clientX, y: e.clientY, t: performance.now() };
@@ -560,7 +583,7 @@
     if (moved > 10 || dt > 800) return;
     const r = view.getBoundingClientRect();
     const nx = (e.clientX - r.left) / r.width, ny = (e.clientY - r.top) / r.height;
-    if (nx >= 0 && nx <= 1 && ny >= 0 && ny <= 1) tap(nx, ny);
+    if (nx >= 0 && nx <= 1 && ny >= 0 && ny <= 1) { if (S.wbPick) pickWhite(nx, ny, false); else tap(nx, ny); }
   });
   frame.addEventListener('pointercancel', () => { down = null; dragging = false; });
   function setSeam(v) { S.seam = Math.max(0, Math.min(1, v)); labels(); draw(); }
@@ -728,6 +751,57 @@
     });
   }
 
+  // ---------- correcting the light ----------
+  /* Under the photo: tap Correct the light, then tap something white, and the whole photo is
+     scaled so that white reads as paper white (vis-core.js, the same rule as the homepage photo
+     matcher). The untouched photo is kept in S.raw so it can be undone. The wall selection
+     doesn't change; the edge clean-up and the paint are redone on the corrected photo. */
+  let lightNote = '';
+  function setLightImage() {
+    const { w, h } = S, src = S.wb ? V.applyGains(S.raw, S.wb.gains) : new Uint8ClampedArray(S.raw);
+    orig.getContext('2d').putImageData(new ImageData(src, w, h), 0, 0);
+    S.prep = V.prepare(src, w, h);
+    if (S.wb) S.tech['Light correction'] = 'R ×' + S.wb.gains[0].toFixed(2) + ', G ×' + S.wb.gains[1].toFixed(2) + ', B ×' + S.wb.gains[2].toFixed(2);
+    else delete S.tech['Light correction'];
+    tech(); rebuild(); lightBarUI(); lightUI(); status();
+  }
+  function startWhite() { if (!S.raw) return; S.wbPick = true; S.wbPending = null; lightNote = ''; lightBarUI(); status(); }
+  function cancelWhite() { S.wbPick = false; S.wbPending = null; lightNote = ''; lightBarUI(); status(); }
+  function undoWhite() { S.wb = null; S.wbPending = null; lightNote = ''; setLightImage(); }
+  function pickWhite(nx, ny, force) {
+    const { w, h } = S, x = Math.min(w - 1, Math.round(nx * w)), y = Math.min(h - 1, Math.round(ny * h));
+    const lin = V.sampleLin(S.raw, w, h, x, y, Math.max(4, Math.round(Math.max(w, h) / 200)));
+    const chk = V.whiteCheck(lin, S.look.bright);
+    S.wbPending = null;
+    if (chk === 'dark') lightNote = 'That spot is too dark to use. ' + Verb + ' something white that’s in the light.';
+    else if (chk === 'blown') lightNote = 'That spot has burnt out to pure white in the photo, so its colour can’t be read. ' + Verb + ' a white that isn’t in sun or glare.';
+    else if (chk === 'dim' && !force) { S.wbPending = { x: nx, y: ny }; lightNote = 'That looks too dark to be white. ' + Verb + ' something whiter, or use it anyway.'; }
+    else {
+      S.wb = { x: nx, y: ny, gains: V.whiteGains(lin) }; S.wbPick = false; lightNote = '';
+      setLightImage();
+      return;
+    }
+    lightBarUI(); status();
+  }
+  function lightBarUI() {
+    const look = S.look || {}, needs = !S.wb && !S.wbPick && (look.warm || look.cool || look.dark);
+    $('lightBtnTxt').textContent = S.wb ? 'Undo light correction' : S.wbPick ? 'Cancel' : 'Correct the light';
+    $('lightAnyway').hidden = !S.wbPending;
+    $('lightBar').classList.toggle('nudge', !!needs);
+    let txt;
+    if (S.wbPick) txt = lightNote ? esc(lightNote) : '<b>' + Verb + ' something white in the photo.</b> A sheet of paper held against the wall is best. A white door, skirting board or window frame works too.';
+    else if (S.wb) txt = '<b>Light corrected.</b> The photo is balanced so the white you ' + verbed + ' reads as white.';
+    else if (needs) {
+      const how = look.warm ? 'yellow' : look.cool ? 'blue' : 'dark';
+      txt = '<b>This photo looks quite ' + how + (look.dark && how !== 'dark' ? ' and dark' : '') + '</b>, so the paint won’t look right in it. Correct the light, then ' + verb + ' something white.';
+    }
+    else txt = '<b>Photo looks yellow, blue or dark?</b> Correct the light, then ' + verb + ' something white in the photo.';
+    $('lightTxt').innerHTML = txt;
+    const p = S.wbPending || (S.wb && !S.wbPick ? S.wb : null), dot = $('wdot');
+    dot.hidden = !p;
+    if (p) { dot.style.left = (p.x * 100) + '%'; dot.style.top = (p.y * 100) + '%'; }
+  }
+
   // ---------- lighting ----------
   function setCurrent(c) { S.cur = c; lightUI(); regrade(); note(); }
   function lightUI() {
@@ -740,7 +814,8 @@
     }
     $('lightHint').textContent = has
       ? 'Lit like the photo. The light falling on ' + S.cur.name + ' in this photo is measured and the new colour gets the same light, so a dim room stays dim.'
-      : 'Right now the wall averages out at the paint’s published colour, with your photo’s light and shade on top. If you know what’s on the wall now, pick it and the new colour is lit the way your photo is instead.';
+      : S.wb ? 'The light in your photo is corrected, and the wall averages out at the paint’s published colour, with your photo’s light and shade on top. If you know what’s on the wall now, pick it and the new colour is lit the way your photo is instead.'
+      : 'Right now the wall averages out at the paint’s published colour, with your photo’s light and shade on top. If the photo looks yellow, blue or dark, use Correct the light under the photo. If you know what’s on the wall now, pick it and the new colour is lit the way your photo is instead.';
     const sug = $('curSuggest'); sug.innerHTML = '';
     if (S.isExample && !has && EXAMPLE.current) {
       const c = find(EXAMPLE.current);
@@ -765,6 +840,8 @@
   $('modeAdd').addEventListener('click', () => mode('add'));
   $('modeRemove').addEventListener('click', () => mode('remove'));
   $('undo').addEventListener('click', undo);
+  $('lightBtn').addEventListener('click', () => { if (S.wb) undoWhite(); else if (S.wbPick) cancelWhite(); else startWhite(); });
+  $('lightAnyway').addEventListener('click', () => { const p = S.wbPending; if (p) pickWhite(p.x, p.y, true); });
   $('reset').addEventListener('click', reset);
   if (window.ResizeObserver) new ResizeObserver(() => fit()).observe($('photoWrap')); else window.addEventListener('resize', fit);
   window.addEventListener('resize', () => { fit(); if (wheel) wheel.place(); });

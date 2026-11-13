@@ -296,7 +296,77 @@
     return out;
   }
 
+  // ---------- correcting the light ----------
+  /* A phone photo carries the room's light: yellow under bulbs, grey or blue on a dull day,
+     dark in a dim room. The paint is shown at its published colour, so in a photo like that
+     the new wall doesn't sit in the room and looks wrong. Correcting the light works like the
+     homepage photo matcher's: the person taps something white, and each channel of the whole
+     photo is scaled (in linear light) so that white comes out as paper white. That takes out
+     the colour cast and lifts a dark photo in one go, and the paint then sits in a room lit
+     the way it would be in daylight. */
+  const WB_WHITE = 0.86;                                     // the homepage's paper white, linear
+  /* Average linear colour of a small patch (radius r pixels) round x, y. */
+  function sampleLin(rgba, w, h, x, y, r) {
+    let sr = 0, sg = 0, sb = 0, n = 0;
+    for (let yy = Math.max(0, y - r); yy <= Math.min(h - 1, y + r); yy++)
+      for (let xx = Math.max(0, x - r); xx <= Math.min(w - 1, x + r); xx++) {
+        const k = (yy * w + xx) * 4; sr += S2L[rgba[k]]; sg += S2L[rgba[k + 1]]; sb += S2L[rgba[k + 2]]; n++;
+      }
+    return [sr / n, sg / n, sb / n];
+  }
+  /* How bright the photo's bright end is: the 97th percentile of each pixel's brightest
+     channel, 0 to 255 (the homepage's photoBright). */
+  function brightRef(rgba) {
+    const hist = new Uint32Array(256); let n = 0;
+    for (let k = 0; k < rgba.length; k += 16) { hist[Math.max(rgba[k], rgba[k + 1], rgba[k + 2])]++; n++; }
+    let c = 0;
+    for (let v = 0; v < 256; v++) { c += hist[v]; if (c >= n * 0.97) return v; }
+    return 255;
+  }
+  /* Check a tapped patch can be used as white. 'dark': too dark to read at all. 'blown': a
+     channel is clipped, so its true value is lost. 'dim': much darker than the photo's bright
+     end, so probably not white (the person can still say use it). */
+  function whiteCheck(lin, bright) {
+    const mx = Math.max(lin[0], lin[1], lin[2]), mn = Math.min(lin[0], lin[1], lin[2]);
+    if (mx < 0.02 || mn < 0.004) return 'dark';
+    if (mx > 0.96) return 'blown';
+    if (l2s(mx) < 0.8 * bright) return 'dim';
+    return 'ok';
+  }
+  function whiteGains(lin) {
+    const cl = v => Math.max(0.25, Math.min(8, v));
+    return [cl(WB_WHITE / lin[0]), cl(WB_WHITE / lin[1]), cl(WB_WHITE / lin[2])];
+  }
+  /* A copy of the photo with each channel scaled in linear light. */
+  function applyGains(rgba, gains) {
+    const lut = gains.map(g => { const a = new Uint8ClampedArray(256); for (let v = 0; v < 256; v++) a[v] = l2s(S2L[v] * g); return a; });
+    const out = new Uint8ClampedArray(rgba.length);
+    for (let k = 0; k < rgba.length; k += 4) { out[k] = lut[0][rgba[k]]; out[k + 1] = lut[1][rgba[k + 1]]; out[k + 2] = lut[2][rgba[k + 2]]; out[k + 3] = 255; }
+    return out;
+  }
+  /* Does the photo look like it needs correcting? Only a nudge: the button is always there.
+     cast: the median red-over-blue (linear) of the photo's lighter, unclipped pixels. A median,
+     so one blue table or a bright window can't swing it. It can't tell a pink room in daylight
+     from a neutral room under warm bulbs (both read about 1.3), which is why the photo is never
+     corrected without a tap on something white, and why the thresholds only catch clear cases.
+     Calibrated 13 Nov 2026 on the example room: daylight 1.30, under bulbs 2.67, dull blue day
+     0.89, dim 1.30 with bright 125 against 222 in daylight. */
+  function photoLook(rgba) {
+    const bright = brightRef(rgba), lo = bright * 0.5;
+    const BINS = 600, hist = new Uint32Array(BINS); let n = 0;      // ln(R/B) from -3 to 3
+    for (let k = 0; k < rgba.length; k += 8) {
+      const mx = Math.max(rgba[k], rgba[k + 1], rgba[k + 2]);
+      if (mx < lo || mx >= 250) continue;
+      const v = Math.log(Math.max(S2L[rgba[k]], 1e-4) / Math.max(S2L[rgba[k + 2]], 1e-4));
+      hist[Math.max(0, Math.min(BINS - 1, Math.floor((v + 3) / 6 * BINS)))]++; n++;
+    }
+    let cast = 1;
+    if (n > 200) { let c = 0; for (let i = 0; i < BINS; i++) { c += hist[i]; if (c >= n / 2) { cast = Math.exp((i + 0.5) / BINS * 6 - 3); break; } } }
+    return { bright, cast, warm: cast > 1.7, cool: cast < 0.7, dark: bright < 150 };
+  }
+
   const api = { hexLin, oklab, lrv, dist, closenessWord, diffSentence, baseSlug, buildLibrary, bestPerBrand, nearestN, search,
+                sampleLin, brightRef, whiteCheck, whiteGains, applyGains, photoLook,
                 boxMean, prepare, softFromLogits, logitAt, refine, wallStats, regrade, l2s };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.VisCore = api;
 })(typeof self !== 'undefined' ? self : this);
