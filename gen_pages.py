@@ -2493,6 +2493,20 @@ def ink_on(i):
 
 RESEARCH = {}   # headline figures published by the two studies, read by the hub
 
+def _hub_pairs(fb_pairs):
+    """Four Farrow & Ball colours and their near-identical value matches for the Research page's
+    card: the most colourful ones, at least 50 degrees of hue apart, so the band is not four
+    creams. Falls back to the truest dupes if there are not four."""
+    pick = []
+    for _d, i, k in sorted((t for t in fb_pairs if t[0] < 2 and OC[t[1]] > 0.05), key=lambda t: -OC[t[1]]):
+        if all(min(abs(OH[i] - OH[j]) % 360, 360 - abs(OH[i] - OH[j]) % 360) >= 50 for j, _k in pick):
+            pick.append((i, k))
+        if len(pick) == 4: break
+    for _d, i, k in fb_pairs:
+        if len(pick) == 4: break
+        if (i, k) not in pick: pick.append((i, k))
+    return sorted(pick, key=lambda t: OH[t[0]])
+
 def build_match_index_page():
     """The UK Paint Match Index — findings computed live from the library, so the
     page stays true as brands are added. Every colour named links to its page."""
@@ -2610,7 +2624,8 @@ def build_match_index_page():
     else:
         deep_p = ''
     RESEARCH['match'] = dict(pct_vc=pct_vc, n_uniq=len(uniq), n_prem=len(prem), n_prem_brands=len(prem_brands),
-                             uniq_head=uniq_head, n_uniq_brands=len(ub), deep_story=bool(deep_p))
+                             uniq_head=uniq_head, n_uniq_brands=len(ub), deep_story=bool(deep_p),
+                             pairs=_hub_pairs(fb_pairs))
     body = f"""<span class="eyebrow">Research \u00b7 The UK Paint Match Index</span>
 <h1>Only {len(uniq)} of the {len(prem):,} premium paint colours from {numword(len(prem_brands))} brands sold in the UK can\u2019t be matched. {uniq_head}</h1>
 <p>I compared every one of the {N:,} colours published by {len(brands)} paint brands sold in the UK against every other, millions of comparisons in all, to see how many premium paint colours already have a near-identical twin and how many are unique.</p>
@@ -2843,18 +2858,49 @@ def build_research_hub():
     _rm_deep = (' The ones that can\u2019t be matched are the very dark colours.' if _rm['deep_story'] else '')
     _rc_purp = ('only one of them is a vivid purple' if _rc['purp_vivid'] == 1
                 else f'only {_rc["purp_vivid"]} of them are vivid purples')
+    # A band of real colours on each card, so the page looks like it belongs to a paint site.
+    # Match Index: its four truest Farrow & Ball dupes, each beside its match. Choice Index: one
+    # run of colours from different brands that are all near-identical to each other's anchor,
+    # found from the data (the colour, of a spread of 300, with the most near-identical
+    # neighbours in other brands). Colour of the Year: the colours themselves.
+    def _sw(i): return f'<i style="background:{paints[i]["hex"]}" title="{H.escape(paints[i]["name"])}, {H.escape(paints[i]["brand"])}"></i>'
+    band_match = '<i class="rsch-band">' + ''.join(f'<i>{_sw(i)}{_sw(k)}</i>' for i, k in _rm['pairs']) + '</i>'
+    _best, _run = -1, []
+    _anch = [i for i in range(N) if OC[i] > 0.07]
+    for _i in _anch[::max(1, len(_anch) // 300)]:
+        _d = dmatch(_i); _seen = {paints[_i]['brand']}; _r = [_i]
+        for _j in np.argsort(_d)[:60]:
+            _j = int(_j)
+            if _d[_j] >= 2: break
+            if paints[_j]['brand'] not in _seen:
+                _seen.add(paints[_j]['brand']); _r.append(_j)
+        if len(_r) > _best: _best, _run = len(_r), _r
+    _run = sorted(_run[:12], key=lambda j: -OL[j])
+    band_choice = '<i class="rsch-band run">' + ''.join(_sw(j) for j in _run) + '</i>'
+    cap_choice = (f'<em class="rsch-cap">{numword(len(_run)).capitalize()} colours from {numword(len(_run))} brands, '
+                  f'under {numword(len({paints[j]["name"] for j in _run}))} names. All near-identical.</em>') if len(_run) >= 4 else ''
+    if len(_run) < 4: band_choice = ''
+    _ci = [next(i for i in range(N) if paints[i]['brand'] == b and paints[i]['name'] == n) for b, n, _u in COTY]
+    band_coty = '<i class="rsch-band run">' + ''.join(_sw(i) for i in _ci) + '</i>'
     body = f"""<span class="eyebrow">PaintDial</span>
 <h1>Research</h1>
 <p>Original studies computed from PaintDial\u2019s live library of {N:,} colours across {len(brands)} brands sold in the UK, compared with the same metric and thresholds used on every page of this site. Each study rebuilds automatically as brands are added.</p>
 <div class="rsch-cards">
-<a class="rsch-card" href="/paint-match-index/"><small>The UK Paint Match Index</small><b>Only {_rm['n_uniq']} of the {_rm['n_prem']:,} premium paint colours from {numword(_rm['n_prem_brands'])} brands sold in the UK can\u2019t be matched. {_rm['uniq_head']}</b><span>{_rm['pct_vc']}% of premium colours have a very close match from a value brand.{_rm_deep}</span></a>
-<a class="rsch-card" href="/paint-choice-index/"><small>The UK Paint Choice Index</small><b>{numword(len(brands)).capitalize()} paint brands on the UK market sell {N:,} colours between them. Only {_rc['distinct']:,} are actually different.</b><span>{_rc['dup_pct']}% of them are near-identical duplicates, {_rc['exact_total']} colours share an exact value with a sibling from their own range, and {_rc_purp}.</span></a>
-<a class="rsch-card" href="{COTY_PATH}"><small>Colour of the Year {COTY_YEAR}</small><b>{numword(len(COTY)).capitalize()} brands have named a Colour of the Year for {COTY_YEAR}. Here is each one next to its closest matches from other brands.</b><span>{_and([H.escape(n) for _b, n, _u in COTY])}.</span></a>
+<a class="rsch-card" href="/paint-match-index/">{band_match}<em class="rsch-cap">Four Farrow &amp; Ball colours, each beside its closest match from a value brand. All near-identical.</em><small>The UK Paint Match Index</small><b>Only {_rm['n_uniq']} of the {_rm['n_prem']:,} premium paint colours from {numword(_rm['n_prem_brands'])} brands sold in the UK can\u2019t be matched. {_rm['uniq_head']}</b><span>{_rm['pct_vc']}% of premium colours have a very close match from a value brand.{_rm_deep}</span></a>
+<a class="rsch-card" href="/paint-choice-index/">{band_choice}{cap_choice}<small>The UK Paint Choice Index</small><b>{numword(len(brands)).capitalize()} paint brands on the UK market sell {N:,} colours between them. Only {_rc['distinct']:,} are actually different.</b><span>{_rc['dup_pct']}% of them are near-identical duplicates, {_rc['exact_total']} colours share an exact value with a sibling from their own range, and {_rc_purp}.</span></a>
+<a class="rsch-card" href="{COTY_PATH}">{band_coty}<em class="rsch-cap">The six colours named for {COTY_YEAR}.</em><small>Colour of the Year {COTY_YEAR}</small><b>{numword(len(COTY)).capitalize()} brands have named a Colour of the Year for {COTY_YEAR}. Here is each one next to its closest matches from other brands.</b><span>{_and([H.escape(n) for _b, n, _u in COTY])}.</span></a>
 </div>
 <p class="muted">Journalists and researchers: every underlying comparison is public, colour by colour, across the site. Questions or corrections: <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("Research", 
         f"Original colour research computed from {N:,} UK paint colours across {len(brands)} brands.",
-        "/research/", body)
+        "/research/", body, head='<style>'
+        '.rsch-band{display:flex;gap:6px;height:72px;margin:0 0 8px;font-style:normal}'
+        '.rsch-band>i{flex:1 1 0;display:flex;border-radius:8px;overflow:hidden;border:1px solid rgba(0,0,0,.08)}'
+        '.rsch-band>i>i{flex:1 1 0;display:block}.rsch-band>i>i+i{box-shadow:inset 1px 0 0 rgba(255,255,255,.6)}'
+        '.rsch-band.run{gap:0;border-radius:8px;overflow:hidden;border:1px solid rgba(0,0,0,.08)}'
+        '.rsch-band.run>i{border:none;border-radius:0;display:block}'
+        'a.rsch-card em.rsch-cap{display:block;font-style:normal;font-size:12px;line-height:1.4;color:var(--muted);margin:0 0 16px}'
+        '</style>')
 
 
 def _about_values_line():
