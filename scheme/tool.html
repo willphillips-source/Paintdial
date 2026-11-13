@@ -36,21 +36,23 @@
 #sp .sp-pv{border-radius:10px;overflow:hidden;border:1px solid var(--hairline);display:flex;flex-direction:column;height:170px;align-self:start}
 #sp .sp-pv i{display:block}
 #sp .pv-c{height:16%}#sp .pv-w{flex:1 1 auto;position:relative}#sp .pv-t{height:9%}
-#sp .pv-a{position:absolute;right:14%;bottom:0;width:26%;height:72%;border-radius:3px 3px 0 0;box-shadow:0 0 0 1px rgba(0,0,0,.06)}
+#sp .pv-x{position:absolute;right:8%;bottom:0;height:72%;width:60%;display:flex;justify-content:flex-end;align-items:flex-end;gap:5%}
+#sp .pv-x i{flex:0 1 30%;height:100%;border-radius:3px 3px 0 0;box-shadow:0 0 0 1px rgba(0,0,0,.06)}
 #sp .pv-none{background:repeating-linear-gradient(135deg,#F4F1EA 0 6px,#ECE8DF 6px 12px)}
 #sp .sp-rows{display:flex;flex-direction:column}
 #sp .sp-row{display:grid;grid-template-columns:44px minmax(0,1fr);gap:4px 12px;align-items:start;padding:10px 0;border-top:1px solid #EEEAE1;text-align:left}
 #sp .sp-row:first-child{border-top:none;padding-top:2px}
 #sp .sp-sw{width:44px;height:44px;border-radius:9px;border:1px solid rgba(0,0,0,.1);cursor:pointer;padding:0;display:block}
-#sp button.sp-row{background:none;border:none;border-top:1px solid #EEEAE1;width:100%;cursor:pointer;align-items:center}
-#sp button.sp-row:first-child{border-top:none}
 #sp .sp-sw-empty{display:flex;align-items:center;justify-content:center;background:#F7F5F0;border:1px dashed #C9C3B6;color:var(--muted);font-size:20px;line-height:1}
-#sp .sp-k{display:block;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+#sp .sp-k{display:block;width:100%;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:transparent;border:1px solid transparent;border-radius:6px;padding:2px 6px;margin:-3px 0 1px -7px;text-overflow:ellipsis}
+#sp .sp-k:hover{border-color:var(--hairline)}#sp .sp-k:focus{border-color:var(--hairline);background:#fff;color:var(--ink)}
+#sp .sp-addc{align-self:flex-start;margin-top:10px;border:1px dashed #C9C3B6;background:#F7F5F0;border-radius:9px;padding:9px 13px;font-size:13.5px;font-weight:600;color:var(--pick);cursor:pointer}
+#sp .sp-addc:hover{border-color:var(--muted)}
 #sp .sp-name{font-family:var(--serif);font-size:16.5px;font-weight:600;color:var(--ink);text-decoration:none}
 #sp .sp-name:hover{text-decoration:underline}
 #sp .sp-sub{display:block;font-size:12.5px;color:var(--muted)}
-#sp .sp-choose{font-size:14px;color:var(--pick);font-weight:600}
-#sp .sp-rowacts{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:5px}
+#sp .sp-choose{font-size:14px}
+#sp .sp-rowacts{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:5px;align-items:baseline}
 #sp details.sp-alt{margin-top:6px}
 #sp details.sp-alt summary{font-size:12.5px;font-weight:600;color:var(--pick);cursor:pointer;list-style:none}
 #sp details.sp-alt summary::-webkit-details-marker{display:none}
@@ -96,6 +98,9 @@
   #sp>*:not(.sp-print){display:none!important}
   #sp .sp-print{display:block;color:#000;font-size:11pt}
   #sp .sp-print *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #sp .sp-print .pr-brand{display:flex;align-items:center;gap:6pt;margin-bottom:14pt;padding-bottom:8pt;border-bottom:.6pt solid #bbb}
+  #sp .sp-print .pr-brand b{font-family:var(--serif);font-size:14pt;font-weight:600;color:#5E7E8B}
+  #sp .sp-print .pr-brand span{margin-left:auto;font-size:9.5pt;color:#444}
   #sp .sp-print h2{font-family:var(--serif);font-size:20pt;margin:0 0 2pt}
   #sp .sp-print .pr-sub{font-size:9.5pt;color:#444;margin-bottom:12pt}
   #sp .sp-print table{width:100%;border-collapse:collapse;margin-bottom:12pt}
@@ -140,39 +145,66 @@
 <script>
 (function(){
   'use strict';
-  var KEY='pd_scheme_v1', SLKEY='pd_shortlist_v1', MAXR=12, PATH='/colour-scheme-planner/';
-  var SURF=[['w','Walls'],['t','Woodwork'],['c','Ceiling'],['a','Accent']];
+  var KEY='pd_scheme_v1', SLKEY='pd_shortlist_v1', MAXR=12, MAXS=8, PATH='/colour-scheme-planner/';
+  /* A room starts with these three. Any of them can be renamed or removed, and more can be
+     added, so a room holds a list of {l: label, c: colour slug}. */
+  var DEF=['Walls','Woodwork','Ceiling'];
+  var EXTRA=['Second colour','Third colour','Fourth colour','Fifth colour','Sixth colour'];
   var PRESETS=['Living room','Kitchen','Hall','Dining room','Bedroom','Bathroom','Landing','Study'];
+  var LOGO='<svg viewBox="0 0 32 32" width="20" height="20" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="#5E7E8B" stroke-width="5"/><circle cx="16" cy="16" r="3.2" fill="#211F1B"/></svg>';
   var $=function(id){return document.getElementById(id);};
   var lib=null, bySlug=new Map(), S={t:'',r:[]}, sharedView=false, mine=null, pick=null, undo=null, flashT=0;
 
   function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function cleanName(s){return String(s||'').replace(/[:~]/g,' ').replace(/\s+/g,' ').trim().slice(0,30);}
+  function cleanLabel(s){return String(s||'').replace(/[:~.=]/g,' ').replace(/\s+/g,' ').trim().slice(0,24);}
   function ink(hex){var o=VisCore.oklab(hex);return o[0]>0.62?'#211F1B':'#FFFFFF';}
   function col(slug){return slug?bySlug.get(slug)||null:null;}
   function sub(c){return esc(c.brand)+(c.code?' · '+esc(c.code):'');}
+  function same(a,b){return String(a).toLowerCase()===String(b).toLowerCase();}
+  function newRoom(name){return {n:name,s:DEF.map(function(l){return {l:l,c:''};})};}
+  function nextLabel(r){
+    for(var i=0;i<EXTRA.length;i++){ if(!r.s.some(function(x){return same(x.l,EXTRA[i]);})) return EXTRA[i]; }
+    return 'Another colour';
+  }
 
-  /* ---- the scheme as text: Room:walls.woodwork.ceiling.accent~Room:... (slugs are a-z, 0-9 and -) ---- */
+  /* ---- the scheme as text ----
+     Room:surface.surface.surface~Room:...   A surface is a colour slug (a-z, 0-9 and -), or
+     Label=slug when its name is not the default for that position (Walls, Woodwork, Ceiling). */
   function encode(s){
-    return s.r.map(function(r){return encodeURIComponent(cleanName(r.n)||'Room')+':'+SURF.map(function(k){return r.s[k[0]]||'';}).join('.');}).join('~');
+    return s.r.map(function(r){
+      return encodeURIComponent(cleanName(r.n)||'Room')+':'+r.s.map(function(x,j){
+        return (x.l===DEF[j]?'':encodeURIComponent(x.l)+'=')+(x.c||'');
+      }).join('.');
+    }).join('~');
   }
   function shareURL(){
     return location.origin+PATH+'?s='+encode(S)+(S.t?'&t='+encodeURIComponent(S.t):'');
   }
+  function surface(label,slug,j){
+    return {l:cleanLabel(label)||DEF[j]||'Colour '+(j+1), c:(slug&&bySlug.has(slug))?slug:''};
+  }
   function decode(str,title){
     var out={t:String(title||'').slice(0,40),r:[]};
     String(str||'').split('~').slice(0,MAXR).forEach(function(part){
-      var i=part.lastIndexOf(':'); if(i<0) return;
-      var name=cleanName(part.slice(0,i))||'Room', sl=part.slice(i+1).split('.'), s={};
-      SURF.forEach(function(k,j){ if(sl[j]&&bySlug.has(sl[j])) s[k[0]]=sl[j]; });
-      out.r.push({n:name,s:s});
+      var i=part.indexOf(':'); if(i<0) return;
+      var s=part.slice(i+1).split('.').slice(0,MAXS).map(function(x,j){
+        var e=x.indexOf('='); return e<0?surface(DEF[j],x,j):surface(x.slice(0,e),x.slice(e+1),j);
+      });
+      if(!s.length) s=newRoom('').s;
+      out.r.push({n:cleanName(part.slice(0,i))||'Room',s:s});
     });
     return out;
   }
   function tidy(o){   // anything read from storage is checked the same way as a link
     var out={t:String((o&&o.t)||'').slice(0,40),r:[]};
     ((o&&o.r)||[]).slice(0,MAXR).forEach(function(r){
-      var s={}; SURF.forEach(function(k){var v=r&&r.s&&r.s[k[0]]; if(v&&bySlug.has(v)) s[k[0]]=v;});
+      var src=(r&&r.s)||[], s;
+      if(!Array.isArray(src)){   // the first test build kept {w,t,c,a}
+        s=[surface('Walls',src.w,0),surface('Woodwork',src.t,1),surface('Ceiling',src.c,2)];
+        if(src.a) s.push(surface('Second colour',src.a,3));
+      } else s=src.slice(0,MAXS).map(function(x,j){return surface(x&&x.l,x&&x.c,j);});
+      if(!s.length) s=newRoom('').s;
       out.r.push({n:cleanName(r&&r.n)||'Room',s:s});
     });
     return out;
@@ -192,12 +224,24 @@
     return out;
   }
   function used(){
-    var out=[]; S.r.forEach(function(r){SURF.forEach(function(k){var c=col(r.s[k[0]]); if(c&&out.indexOf(c)<0) out.push(c);});});
+    var out=[]; S.r.forEach(function(r){r.s.forEach(function(x){var c=col(x.c); if(c&&out.indexOf(c)<0) out.push(c);});});
     return out;
   }
   function alts(c){
     return VisCore.bestPerBrand(lib,c.i,3).map(function(m){return {c:lib.list[m.j],w:VisCore.closenessWord(m.d)};}).filter(function(m){return m.w;});
   }
+  /* Which line of a room is the ceiling, the woodwork and the main wall, for the little picture
+     and the strip of walls. Goes by name, so it still works after a rename or a removal. */
+  function roles(r){
+    var ce=-1, wo=-1, wa=-1;
+    r.s.forEach(function(x,j){
+      if(ce<0&&/ceiling/i.test(x.l)) ce=j;
+      else if(wo<0&&/woodwork|skirting|trim/i.test(x.l)) wo=j;
+      else if(wa<0) wa=j;
+    });
+    return {ce:ce,wo:wo,wa:wa};
+  }
+  function wallOf(r){var k=roles(r).wa; return k<0?null:col(r.s[k].c);}
 
   function flash(msg,undoFn){
     var f=$('spFlash'); undo=undoFn||null;
@@ -208,37 +252,38 @@
 
   /* ---- drawing ---- */
   function roomHTML(r,ri){
-    var c={}; SURF.forEach(function(k){c[k[0]]=col(r.s[k[0]]);});
-    var pv='<div class="sp-pv" aria-hidden="true">'+
-      '<i class="pv-c'+(c.c?'" style="background:'+c.c.hex+'"':' pv-none"')+'></i>'+
-      '<i class="pv-w'+(c.w?'" style="background:'+c.w.hex+'"':' pv-none"')+'>'+(c.a?'<i class="pv-a" style="background:'+c.a.hex+'"></i>':'')+'</i>'+
-      '<i class="pv-t'+(c.t?'" style="background:'+c.t.hex+'"':' pv-none"')+'></i></div>';
-    var rows=SURF.map(function(k){
-      var key=k[0], label=k[1], x=c[key], d=' data-r="'+ri+'" data-k="'+key+'"';
-      if(!x) return '<button type="button" class="sp-row" data-act="pick"'+d+'><span class="sp-sw sp-sw-empty" aria-hidden="true">+</span>'+
-        '<span><span class="sp-k">'+label+'</span><span class="sp-choose">Choose a colour</span></span></button>';
-      var al=alts(x), others=S.r.length>1&&(key==='t'||key==='c')&&S.r.some(function(o){return o.s[key]!==r.s[key];});
-      return '<div class="sp-row"><button type="button" class="sp-sw" style="background:'+x.hex+'" data-act="pick"'+d+' aria-label="Change the '+label.toLowerCase()+' colour for '+esc(r.n)+'"></button>'+
-        '<div><span class="sp-k">'+label+'</span><a class="sp-name" href="/colours/'+x.slug+'">'+esc(x.name)+'</a><span class="sp-sub">'+sub(x)+'</span>'+
+    var ro=roles(r), band=function(k,cls){var x=k<0?null:col(r.s[k].c); return '<i class="'+cls+(x?'" style="background:'+x.hex+'"':' pv-none"')+'>';};
+    var extra=r.s.map(function(x,j){return (j===ro.ce||j===ro.wo||j===ro.wa)?null:col(x.c);}).filter(Boolean).slice(0,4);
+    var pv='<div class="sp-pv" aria-hidden="true">'+band(ro.ce,'pv-c')+'</i>'+band(ro.wa,'pv-w')+
+      (extra.length?'<span class="pv-x">'+extra.map(function(x){return '<i style="background:'+x.hex+'"></i>';}).join('')+'</span>':'')+'</i>'+
+      band(ro.wo,'pv-t')+'</i></div>';
+    var rows=r.s.map(function(s,k){
+      var x=col(s.c), d=' data-r="'+ri+'" data-k="'+k+'"';
+      var lab='<input class="sp-k" type="text" maxlength="24" value="'+esc(s.l)+'"'+d+' aria-label="Name of this surface">';
+      var rm=r.s.length>1?'<button type="button" class="sp-link sp-link-warn" data-act="rm"'+d+'>Remove</button>':'';
+      if(!x) return '<div class="sp-row"><button type="button" class="sp-sw sp-sw-empty" data-act="pick"'+d+' aria-label="Choose a colour for '+esc(s.l)+', '+esc(r.n)+'">+</button>'+
+        '<div>'+lab+'<div class="sp-rowacts"><button type="button" class="sp-link sp-choose" data-act="pick"'+d+'>Choose a colour</button>'+rm+'</div></div></div>';
+      var al=alts(x), others=ro.wa!==k&&S.r.some(function(o){return o!==r&&o.s.some(function(y){return same(y.l,s.l)&&y.c!==s.c;});});
+      return '<div class="sp-row"><button type="button" class="sp-sw" style="background:'+x.hex+'" data-act="pick"'+d+' aria-label="Change the colour for '+esc(s.l)+', '+esc(r.n)+'"></button>'+
+        '<div>'+lab+'<a class="sp-name" href="/colours/'+x.slug+'">'+esc(x.name)+'</a><span class="sp-sub">'+sub(x)+'</span>'+
         '<div class="sp-rowacts"><button type="button" class="sp-link" data-act="pick"'+d+'>Change</button>'+
-        (others?'<button type="button" class="sp-link" data-act="all"'+d+'>Use in every room</button>':'')+
-        '<button type="button" class="sp-link sp-link-warn" data-act="clear"'+d+'>Remove</button></div>'+
+        (others?'<button type="button" class="sp-link" data-act="all"'+d+'>Use in every room</button>':'')+rm+'</div>'+
         (al.length?'<details class="sp-alt"><summary>Closest in other brands</summary><div class="sp-alt-list">'+al.map(function(m){
           return '<div class="sp-alt-item"><i style="background:'+m.c.hex+'"></i><span><a href="/colours/'+m.c.slug+'">'+esc(m.c.name)+'</a> <small>'+esc(m.c.brand)+', '+m.w+'</small></span>'+
             '<button type="button" class="sp-link" data-act="use"'+d+' data-slug="'+m.c.slug+'">Use this</button></div>';
         }).join('')+'</div></details>':'')+
         '</div></div>';
     }).join('');
+    var add=r.s.length<MAXS?'<button type="button" class="sp-addc" data-act="add" data-r="'+ri+'"><span aria-hidden="true">+</span> Add another colour</button>':'';
     return '<section class="sp-room"><div class="sp-room-head"><input class="sp-rname" type="text" maxlength="30" value="'+esc(r.n)+'" data-r="'+ri+'" aria-label="Room name">'+
-      '<button type="button" class="sp-link sp-link-warn" data-act="del" data-r="'+ri+'">Remove room</button></div>'+pv+'<div class="sp-rows">'+rows+'</div></section>';
+      '<button type="button" class="sp-link sp-link-warn" data-act="del" data-r="'+ri+'">Remove room</button></div>'+pv+'<div class="sp-rows">'+rows+add+'</div></section>';
   }
   function draw(){
     $('spRooms').innerHTML=S.r.map(roomHTML).join('');
-    var walls=S.r.filter(function(r){return col(r.s.w);});
-    var fl=$('spFlow');
+    var walls=S.r.filter(wallOf), fl=$('spFlow');
     if(walls.length>=2){
       fl.hidden=false;
-      fl.innerHTML='<b>The walls, side by side</b><div class="sp-flow-row">'+walls.map(function(r){var x=col(r.s.w);
+      fl.innerHTML='<b>The walls, side by side</b><div class="sp-flow-row">'+walls.map(function(r){var x=wallOf(r);
         return '<div style="background:'+x.hex+';color:'+ink(x.hex)+'"><span>'+esc(r.n)+'</span></div>';}).join('')+'</div>';
     } else fl.hidden=true;
     $('spAddH').textContent=S.r.length?'Add a room':'Start with a room';
@@ -268,30 +313,29 @@
     }
     $('spRes').innerHTML=h;
   }
-  function openPicker(ri,key){
-    var r=S.r[ri]; if(!r) return;
-    pick={r:ri,k:key,from:document.activeElement};
-    var label=SURF.filter(function(k){return k[0]===key;})[0][1];
-    $('spSheetH').textContent=label+', '+r.n;
+  function openPicker(ri,k){
+    var r=S.r[ri]; if(!r||!r.s[k]) return;
+    pick={r:ri,k:k};
+    $('spSheetH').textContent=r.s[k].l+', '+r.n;
     $('spQ').value=''; drawPicker(); $('spSheet').hidden=false;
     document.documentElement.style.overflow='hidden';
     if(!shortlist().length&&!used().length) $('spQ').focus(); else $('spClose').focus();
   }
   function closePicker(){
     $('spSheet').hidden=true; document.documentElement.style.overflow='';
-    if(pick&&pick.from&&pick.from.focus) try{pick.from.focus();}catch(e){}
     pick=null;
   }
 
   /* ---- printing ---- */
   function buildPrint(){
     var d=new Date(), date=d.getDate()+' '+['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()]+' '+d.getFullYear();
-    var h='<h2>'+esc(S.t||'Colour schedule')+'</h2><div class="pr-sub">Colour schedule, '+date+'. Made with PaintDial, paintdial.co.uk</div>'+
+    var h='<div class="pr-brand">'+LOGO+'<b>PaintDial</b><span>paintdial.co.uk</span></div>'+
+      '<h2>'+esc(S.t||'Colour schedule')+'</h2><div class="pr-sub">Colour schedule, '+date+'</div>'+
       '<table><thead><tr><th>Surface</th><th></th><th>Colour</th><th>Brand</th><th>Code</th><th>Closest in another brand</th></tr></thead><tbody>';
     S.r.forEach(function(r){
-      var rows=SURF.map(function(k){var x=col(r.s[k[0]]); if(!x) return '';
+      var rows=r.s.map(function(s){var x=col(s.c); if(!x) return '';
         var al=alts(x)[0];
-        return '<tr><td>'+k[1]+'</td><td><span class="pr-sw" style="background:'+x.hex+'"></span></td><td>'+esc(x.name)+'</td><td>'+esc(x.brand)+'</td><td>'+esc(x.code||'')+'</td>'+
+        return '<tr><td>'+esc(s.l)+'</td><td><span class="pr-sw" style="background:'+x.hex+'"></span></td><td>'+esc(x.name)+'</td><td>'+esc(x.brand)+'</td><td>'+esc(x.code||'')+'</td>'+
           '<td>'+(al?esc(al.c.name)+' <small>'+esc(al.c.brand)+', '+al.w+'</small>':'')+'</td></tr>';}).join('');
       if(rows) h+='<tr class="pr-room"><td colspan="6">'+esc(r.n)+'</td></tr>'+rows;
     });
@@ -302,24 +346,29 @@
   /* ---- events ---- */
   $('spRooms').addEventListener('click',function(e){
     var b=e.target.closest('[data-act]'); if(!b) return;
-    var ri=+b.dataset.r, key=b.dataset.k, r=S.r[ri], act=b.dataset.act; if(!r) return;
-    if(act==='pick') openPicker(ri,key);
-    else if(act==='clear'){ delete r.s[key]; changed(); }
-    else if(act==='use'){ if(bySlug.has(b.dataset.slug)){ r.s[key]=b.dataset.slug; changed(); } }
-    else if(act==='all'){ var before=JSON.stringify(S.r), v=r.s[key]; S.r.forEach(function(o){o.s[key]=v;}); changed();
-      flash('Used in every room.',function(){S.r=JSON.parse(before);changed();}); }
-    else if(act==='del'){ var gone=S.r.splice(ri,1)[0]; changed();
-      flash(gone.n+' removed.',function(){S.r.splice(Math.min(ri,S.r.length),0,gone);changed();}); }
+    var ri=+b.dataset.r, k=+b.dataset.k, r=S.r[ri], act=b.dataset.act; if(!r) return;
+    var before=JSON.stringify(S.r), back=function(){S.r=JSON.parse(before);changed();};
+    if(act==='pick') openPicker(ri,k);
+    else if(act==='use'){ if(r.s[k]&&bySlug.has(b.dataset.slug)){ r.s[k].c=b.dataset.slug; changed(); } }
+    else if(act==='rm'){ if(r.s.length>1&&r.s[k]){ var g=r.s.splice(k,1)[0]; changed(); flash(g.l+' removed.',back); } }
+    else if(act==='add'){ if(r.s.length<MAXS){ r.s.push({l:nextLabel(r),c:''}); changed();
+        var ins=document.querySelectorAll('#sp .sp-room')[ri].querySelectorAll('input.sp-k'), last=ins[ins.length-1];
+        if(last){ last.focus(); last.select(); } } }
+    else if(act==='all'){ var s=r.s[k]; if(!s) return;
+      S.r.forEach(function(o){o.s.forEach(function(y){ if(same(y.l,s.l)) y.c=s.c; });}); changed(); flash('Used in every room.',back); }
+    else if(act==='del'){ var gone=S.r.splice(ri,1)[0]; changed(); flash(gone.n+' removed.',back); }
   });
   $('spRooms').addEventListener('change',function(e){
-    var i=e.target.closest('.sp-rname'); if(!i) return;
-    var r=S.r[+i.dataset.r]; if(!r) return; r.n=cleanName(i.value)||'Room'; changed();
+    var t=e.target, r=S.r[+t.dataset.r]; if(!r) return;
+    if(t.classList.contains('sp-rname')){ r.n=cleanName(t.value)||'Room'; changed(); }
+    else if(t.classList.contains('sp-k')){ var s=r.s[+t.dataset.k]; if(s){ s.l=cleanLabel(t.value)||s.l; changed(); } }
   });
+  $('spRooms').addEventListener('keydown',function(e){ if(e.key==='Enter'&&e.target.matches('input')) e.target.blur(); });
   $('spPresets').addEventListener('click',function(e){
     var b=e.target.closest('[data-preset]'); if(!b||S.r.length>=MAXR) return;
     var name=b.dataset.preset, n=2;
     if(!name){ name='Room'; while(S.r.some(function(r){return r.n===name;})) name='Room '+(n++); }
-    S.r.push({n:name,s:{}}); changed();
+    S.r.push(newRoom(name)); changed();
     var inputs=document.querySelectorAll('#sp .sp-rname'), last=inputs[inputs.length-1];
     if(last){ last.closest('.sp-room').scrollIntoView({block:'nearest',behavior:'smooth'}); if(!b.dataset.preset){ last.focus(); last.select(); } }
   });
@@ -327,7 +376,7 @@
   $('spQ').addEventListener('input',drawPicker);
   $('spRes').addEventListener('click',function(e){
     var b=e.target.closest('.sp-opt'); if(!b||!pick) return;
-    var r=S.r[pick.r]; if(r&&bySlug.has(b.dataset.slug)) r.s[pick.k]=b.dataset.slug;
+    var r=S.r[pick.r]; if(r&&r.s[pick.k]&&bySlug.has(b.dataset.slug)) r.s[pick.k].c=b.dataset.slug;
     closePicker(); changed();
   });
   $('spClose').addEventListener('click',closePicker);
@@ -339,7 +388,7 @@
     var fallback=function(){
       var t=document.createElement('textarea'); t.value=url; t.setAttribute('readonly',''); t.style.position='fixed'; t.style.opacity='0';
       document.body.appendChild(t); t.select(); var ok=false; try{ok=document.execCommand('copy');}catch(e){} t.remove();
-      if(ok) done(); else flash('Couldn’t copy. The link is in the address bar now.'), history.replaceState(null,'',url);
+      if(ok) done(); else { history.replaceState(null,'',url); flash('Couldn’t copy. The link is in the address bar now.'); }
     };
     if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done,fallback); else fallback();
   });
@@ -355,8 +404,8 @@
     var q=new URLSearchParams(location.search), saved=readMine();
     if(q.get('s')){
       var inc=decode(q.get('s'),q.get('t'));
-      var same=saved&&encode(saved)===encode(inc)&&saved.t===inc.t;
-      if(!saved||!saved.r.length||same){ S=same?saved:inc; save(); history.replaceState(null,'',PATH); }
+      var eq=saved&&encode(saved)===encode(inc)&&saved.t===inc.t;
+      if(!saved||!saved.r.length||eq){ S=eq?saved:inc; save(); history.replaceState(null,'',PATH); }
       else { S=inc; mine=saved; sharedView=true; }
     } else if(saved) S=saved;
     draw();

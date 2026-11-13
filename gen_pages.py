@@ -2693,7 +2693,7 @@ def build_privacy_page():
 <p>I use two tools to see how the site is used. Cloudflare Web Analytics counts page views without cookies and without identifying you. Microsoft Clarity records how pages are used (clicks, scrolling and movement around the page) so I can see where the site is confusing; it is set up to run without cookies, and Microsoft processes that data for me. Neither tells me who you are.</p>
 
 <h2>Things saved in your browser</h2>
-<p>Your shortlist and the brands you’ve switched off are saved in your own browser so they are still there next time. They stay on your device and are never sent to me. Clearing your browser’s site data removes them.</p>
+<p>Your shortlist, the brands you’ve switched off and any scheme you make in the colour scheme planner are saved in your own browser so they are still there next time. They stay on your device and are never sent to me. Clearing your browser’s site data removes them. If you copy a link to a scheme, the room names and colours are in the link itself, so whoever you send it to can see them.</p>
 
 <h2>Photos</h2>
 <p>Photos you use in the photo match or the visualiser stay on your device. The work is done in your browser and the photo isn’t uploaded.</p>
@@ -2956,7 +2956,7 @@ SCHEME_PATH = '/colour-scheme-planner/'
 def build_scheme_page():
     lead = ('<span class="eyebrow">Colour scheme planner</span>'
             '<h1>Plan your colours, room by room</h1>'
-            '<p>Add your rooms and give each one a colour for the walls, woodwork and ceiling. '
+            '<p>Add your rooms and give each one a colour for the walls, woodwork and ceiling, plus any others you need. '
             f'Pick from your shortlist or search {N:,} paints from {BRANDS_WORD} brands sold in the UK. '
             'Then share the scheme as a link, or print it as a colour schedule.</p>')
     tool = open('scheme/tool.html', encoding='utf-8').read()
@@ -2981,6 +2981,7 @@ def build_scheme_page():
                               "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faqs]}
     text = f"""<h2>How it works</h2>
 <p>Add a room, then tap a surface to choose its colour. Colours you’ve saved to your shortlist are offered first, and you can search the whole library by name or code. The strip at the top puts the wall colours side by side, so you can see how one room leads into the next.</p>
+<p>Every room starts with walls, woodwork and ceiling. Use <b>Add another colour</b> for a feature wall, cabinets, a door or anything else, and tap any name to change it.</p>
 <h2>Getting a scheme that hangs together</h2>
 <ul>
 <li>Choose the woodwork and ceiling colours once, then use them in every room. One white through the house is easier to live with than five.</li>
