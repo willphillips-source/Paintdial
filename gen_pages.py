@@ -2849,6 +2849,7 @@ def build_research_hub():
 <div class="rsch-cards">
 <a class="rsch-card" href="/paint-match-index/"><small>The UK Paint Match Index</small><b>Only {_rm['n_uniq']} of the {_rm['n_prem']:,} premium paint colours from {numword(_rm['n_prem_brands'])} brands sold in the UK can\u2019t be matched. {_rm['uniq_head']}</b><span>{_rm['pct_vc']}% of premium colours have a very close match from a value brand.{_rm_deep}</span></a>
 <a class="rsch-card" href="/paint-choice-index/"><small>The UK Paint Choice Index</small><b>{numword(len(brands)).capitalize()} paint brands on the UK market sell {N:,} colours between them. Only {_rc['distinct']:,} are actually different.</b><span>{_rc['dup_pct']}% of them are near-identical duplicates, {_rc['exact_total']} colours share an exact value with a sibling from their own range, and {_rc_purp}.</span></a>
+<a class="rsch-card" href="{COTY_PATH}"><small>Colour of the Year {COTY_YEAR}</small><b>{numword(len(COTY)).capitalize()} brands have named a Colour of the Year for {COTY_YEAR}. Here is each one next to its closest matches from other brands.</b><span>{_and([H.escape(n) for _b, n, _u in COTY])}.</span></a>
 </div>
 <p class="muted">Journalists and researchers: every underlying comparison is public, colour by colour, across the site. Questions or corrections: <a href="/contact/">get in touch</a>.</p>"""
     return _page_shell("Research", 
@@ -3265,6 +3266,10 @@ def build_coty_page():
         hit = [i for i in range(N) if paints[i]['brand'] == b and paints[i]['name'] == n]
         assert len(hit) == 1, f'colour of the year: {b} {n} matches {len(hit)} colours in the library'
         idx.append(hit[0])
+    # The homepage (hand-kept index.html) carries a strip with these colours as dots.
+    _dots = re.findall(r'<i style="background:(#[0-9A-Fa-f]{6})"></i>', (re.search(r'<span class="coty-dots"[^>]*>(.*?)</span>', _IDX, re.S) or [None, ''])[1])
+    assert not _dots or [d.upper() for d in _dots] == [paints[i]['hex'].upper() for i in idx], \
+        'index.html: the Colour of the Year strip no longer matches COTY in gen_pages.py'
     secs = []
     for (b, n, url), i in zip(COTY, idx):
         p = paints[i]

@@ -727,6 +727,7 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
    FONTS in gen_pages.py so the generated pages match. */
 /* Ko-fi strip under the results: hidden until someone uses the tool (wheel, dial, photo, search,
    filters or a heart). Twin of KOFI_STRIP_CSS / kofi_strip() in gen_pages.py; change both together. */
+.coty-strip{display:flex;align-items:center;gap:12px;margin:0 0 26px;padding:12px 16px;background:var(--card);border:1px solid var(--hairline);border-radius:12px;text-decoration:none;color:var(--ink);font-size:14.5px;line-height:1.3}.coty-strip:hover{border-color:var(--muted)}.coty-dots{display:inline-flex;gap:4px;flex:none}.coty-dots i{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.08);display:block}.coty-strip b{font-weight:600}.coty-more{color:var(--muted)}.coty-go{margin-left:auto;color:var(--muted)}@media(max-width:560px){.coty-strip{font-size:13.5px;padding:10px 12px;gap:9px;margin-bottom:20px}.coty-dots{gap:3px}.coty-dots i{width:12px;height:12px}.coty-more{display:none}}
 .kofi-s{display:flex;align-items:center;gap:14px;margin:30px 0 0;padding:16px 22px;background:var(--card);border:1px solid var(--hairline);border-radius:14px}.kofi-s .kofi-cup{flex:none;width:46px;height:46px;margin-top:-5px}.kofi-s p{flex:1;font-family:var(--serif);font-size:19px;font-weight:600;line-height:1.3;margin:0;max-width:none;color:var(--ink)}.kofi-s a{flex:none;background:var(--ink);color:var(--paper)!important;font-family:var(--sans);font-size:14px;font-weight:600;text-align:center;text-decoration:none!important;padding:10px 18px;border-radius:8px;transition:transform .12s,box-shadow .12s}.kofi-s a:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(33,31,27,.18)}@media(max-width:560px){.kofi-s{flex-wrap:wrap;gap:10px 12px;padding:14px}.kofi-s p{flex-basis:100%;font-size:16.5px;text-wrap:balance}.kofi-s a{flex:1;padding:11px 18px}.kofi-s .kofi-cup{width:42px;height:42px}}
 .kofi-s[hidden]{display:none}
 @media(min-width:2800px){ html{ zoom:1.1; } }
@@ -836,6 +837,9 @@ canvas#wheel:focus-visible{outline:2px solid #211F1B;outline-offset:4px}
     </div>
   </main>
   <section class="allmatches" id="allmatches" aria-label="All close matches">
+    <!-- Colour of the Year strip. The six dots are the colours on /colour-of-the-year/, in its order;
+       gen_pages.py fails the build if they stop matching. Take the strip out when the topic goes stale. -->
+    <a class="coty-strip" href="/colour-of-the-year/"><span class="coty-dots" aria-hidden="true"><i style="background:#A3A793"></i><i style="background:#938168"></i><i style="background:#64806C"></i><i style="background:#703E43"></i><i style="background:#918374"></i><i style="background:#998B7A"></i></span><span><b>Colour of the Year 2027</b><span class="coty-more"> Six brands’ picks, and the closest matches to each</span></span><span class="coty-go" aria-hidden="true">→</span></a>
     <h3 class="sec-head" id="gridHead">All close matches</h3>
     <div class="grid" id="grid"></div>
     <div id="moreWrap" style="text-align:center;margin-top:18px"></div>
