@@ -347,6 +347,41 @@ PAINT_INFO = {
     coats='2', recoat='2 hours', tins='5L', note='Washable.', src='tech help page', url='https://www.lakelandpaints.co.uk/tech-help'),
 }
 assert set(PAINT_INFO) == set(BRAND_ORDER), f"PAINT_INFO brands {sorted(set(PAINT_INFO) ^ set(BRAND_ORDER))} don't match BRAND_ORDER"
+# ---------- Paint calculator ----------
+# The calculator (/paint-calculator/, calc/tool.html) needs each brand's coverage as numbers.
+# CALC_COV restates the PAINT_INFO coverage text as (lowest m², highest m², from how many litres),
+# and the check below fails the build if a number here is not in that text, so the two cannot
+# drift apart. A brand with no coverage in PAINT_INFO has no entry: the calculator then asks for
+# the figure on the tin and estimates nothing (agreed with Will, 12 Nov 2026). No prices.
+CALC_PATH = '/paint-calculator/'
+CALC_COV = {
+ 'Farrow & Ball': (14, 14, 1), 'Little Greene': (14, 14, 1), 'Paint & Paper Library': (15, 15, 1),
+ 'Craig & Rose': (14, 14, 1), 'Dulux': (13, 13, 1), 'Dulux Heritage': (13, 13, 1), 'Valspar': (10, 10, 1),
+ 'COAT': (10, 10, 1), 'Lick': (10, 12, 1), 'Earthborn': (10, 10, 1), 'Edward Bulmer': (12, 12, 1),
+ 'Mylands': (15, 15, 1), 'Sanderson': (12, 12, 1), 'Fired Earth': (14, 14, 1), 'Tikkurila': (8, 16, 1),
+ 'Benjamin Moore': (37, 42, 3.79), 'Lakeland Paints': (65, 65, 5),
+}
+assert set(CALC_COV) == {b for b, d in PAINT_INFO.items() if d.get('coverage')}, \
+    f"CALC_COV and PAINT_INFO disagree about which brands state a coverage: {sorted(set(CALC_COV) ^ {b for b, d in PAINT_INFO.items() if d.get('coverage')})}"
+for _b, (_lo, _hi, _per) in CALC_COV.items():
+    _nums = set(re.findall(r'\d+(?:\.\d+)?', PAINT_INFO[_b]['coverage'].replace('m²', '')))
+    for _n in {_lo, _hi} | ({_per} if _per != 1 else set()):
+        assert f'{_n:g}' in _nums, f"CALC_COV {_b}: {_n:g} is not in its PAINT_INFO coverage text ({PAINT_INFO[_b]['coverage']})"
+    assert (_per == 1) == ('a litre' in PAINT_INFO[_b]['coverage']), f"CALC_COV {_b}: per-litre and the coverage text disagree"
+
+def calc_data():
+    rows = []
+    for b in BRAND_ORDER:
+        d = PAINT_INFO[b]
+        tins = []
+        for n, unit in re.findall(r'(\d+(?:\.\d+)?)\s*(ml|L)\b', d.get('tins', '')):
+            litres = float(n) / 1000 if unit == 'ml' else float(n)
+            if litres >= 0.75:      # 250ml pots are for samples and touching up, not for walls
+                tins.append(litres)
+        rows.append({'slug': base_slug(b), 'name': b.replace("'", '’'), 'product': d['product'], 'what': d.get('what', 'matt'),
+                     'coverage': d.get('coverage'), 'cov': list(CALC_COV[b]) if b in CALC_COV else None,
+                     'upto': (d.get('coverage') or '').startswith('Up to'), 'coats': d.get('coats'), 'tins': sorted(set(tins))})
+    return rows
 def paint_block(brand):
     d = PAINT_INFO[brand]
     b = H.escape(brand)
@@ -363,7 +398,8 @@ def paint_block(brand):
     return (f'<h2>{b} {H.escape(d["product"])}</h2>'
             f'<p class="sub">{poss[0].upper() + poss[1:]} {d.get("what", "matt")} for walls and ceilings.{note}</p>'
             f'<dl class="pinfo">{dl}</dl>'
-            f'<p class="afftext">From {poss} own {src}, checked {PAINT_CHECKED}.{tail}</p>')
+            f'<p class="afftext">From {poss} own {src}, checked {PAINT_CHECKED}.{tail} '
+            f'<a href="{CALC_PATH}?brand={base_slug(brand)}">Work out how much you need</a>.</p>')
 
 def price_band(brand):
     lo, hi, *tin = PRICING[brand]
@@ -652,6 +688,7 @@ FOOT = ("<span class=\"foot-links\">"
         "<a href=\"/match-paint-from-a-photo/\">Match from a photo</a> \u00b7 "
         "<a href=\"/paint-visualiser/\">Paint visualiser</a> \u00b7 "
         "<a href=\"/colour-scheme-planner/\">Scheme planner</a> \u00b7 "
+        "<a href=\"/paint-calculator/\">Paint calculator</a> \u00b7 "
         "<a href=\"/contact/\">Contact</a> \u00b7 "
         "<a href=\"/privacy/\">Privacy</a> \u00b7 "
         "<a href=\"/colours/\">Colour library</a> \u00b7 "
@@ -3029,6 +3066,63 @@ def build_scheme_page():
 </div></body></html>"""
 
 
+def build_calc_page():
+    lead = ('<span class="eyebrow">Paint calculator</span>'
+            '<h1>How much paint do you need?</h1>'
+            f'<p>Pick a brand and give the size of the room. The sum uses the coverage figure each brand publishes for its own wall paint, for {BRANDS_WORD} brands sold in the UK, and gives the answer in the tin sizes that brand sells.</p>')
+    tool = open('calc/tool.html', encoding='utf-8').read()
+    for mark in ('<!--PC-LEAD-->', '/*PC-DATA*/null', "/*PC-CHECKED*/''"):
+        assert tool.count(mark) == 1, f'calc/tool.html has lost its {mark} placeholder'
+    tool = (tool.replace('<!--PC-LEAD-->', lead)
+                .replace('/*PC-DATA*/null', json.dumps(calc_data(), ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/'))
+                .replace("/*PC-CHECKED*/''", json.dumps(PAINT_CHECKED)))
+    none = [b.replace("'", '’') for b in BRAND_ORDER if b not in CALC_COV]
+    faqs = [
+        ("How is it worked out?",
+         "The area of the walls, less doors and windows, times the number of coats, divided by the coverage the brand gives for a litre of its wall matt. The answer is then rounded up to the tins that brand sells."),
+        ("Why does the amount change from brand to brand?",
+         "Each brand states a different coverage for its own paint. The calculator uses each brand’s own published figure and doesn’t compare them."),
+        ("Why does it ask me for the coverage?",
+         f"{_and([H.escape(n) for n in none])} don’t publish a coverage per litre for the paint the calculator uses, and PaintDial doesn’t guess one. The figure is on the tin or in the paint’s data sheet."),
+        ("How many coats will I need?",
+         "Most brands say two. Bare plaster needs a first thinned coat or a primer, and going from a dark colour to a light one can take a third."),
+        ("Does it work for woodwork or ceilings?",
+         "Tick the box to add the ceiling in the same paint. Woodwork is painted in eggshell or gloss, which cover differently, so use the figure on that tin."),
+    ]
+    faq_html = "".join(f'<details><summary>{q}</summary><p>{a}</p></details>' for q, a in faqs)
+    faq_ld = {"@context": "https://schema.org", "@type": "FAQPage",
+              "mainEntity": [{"@type": "Question", "name": q,
+                              "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faqs]}
+    text = f"""<h2>Measuring a room</h2>
+<p>Measure the length and width of the room and the height of the walls. Count the doors and windows so their area comes off. If the room isn’t a plain rectangle, work out the wall area yourself (width times height for each wall, added up) and choose <b>I know the area</b>.</p>
+<h2>What the figure does and doesn’t tell you</h2>
+<ul>
+<li>It’s for each brand’s main matt for walls and ceilings, the same paint described on that brand’s colour pages.</li>
+<li>Coverage figures are the brands’ own, checked {PAINT_CHECKED}. Where a brand says “up to”, the answer is the least you’ll need.</li>
+<li>Rough or bare walls and a big change of colour take more. If you’re between tin sizes, the calculator rounds up.</li>
+<li>Mixed-to-order paint can vary slightly from batch to batch, so buy enough for the room in one go.</li>
+</ul>
+<h2>Common questions</h2>
+<div class="faq">{faq_html}</div>"""
+    secs = _sectionise(text, 'grid').replace('<div class="lead"></div>\n', '', 1)
+    title = "Paint Calculator: How Much Paint for a Room, by Brand"
+    desc = (f"Work out how many litres and which tins you need, using the coverage each of {BRANDS_WORD} UK paint brands "
+            "publishes for its own wall paint. Free, no account.")
+    return f"""<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{title} | PaintDial</title>
+<meta name="description" content="{desc}">
+<link rel="canonical" href="{DOMAIN}{CALC_PATH}">
+{FAVICON}
+{FONTS}<style>{PAGES_CSS}</style></head><body><div class="wrap">
+{HDR}
+{tool}
+{secs}
+{_ldjson(faq_ld)}
+<footer>{FOOT}</footer>
+</div></body></html>"""
+
+
 # Hand-written, evergreen openings for the most-searched hero colours. The opening is
 # editorial (no LRV/hex/price claims); the closest-match sentence that follows is ALWAYS
 # generated from the data, so match names can never go stale. Any slug not listed gets a
@@ -3260,6 +3354,9 @@ if __name__ == '__main__':
     os.makedirs('site' + SCHEME_PATH, exist_ok=True)
     open('site' + SCHEME_PATH + 'index.html', 'w', encoding='utf-8').write(build_scheme_page())
     print('colour scheme planner written')
+    os.makedirs('site' + CALC_PATH, exist_ok=True)
+    open('site' + CALC_PATH + 'index.html', 'w', encoding='utf-8').write(build_calc_page())
+    print('paint calculator written')
     print('trust pages: 3 (+ contact thanks)')
 
     urls = [f'{DOMAIN}/', f'{DOMAIN}/colours/'] \
@@ -3270,7 +3367,7 @@ if __name__ == '__main__':
         + [f'{DOMAIN}{POPULAR_PATH}'] \
         + [f'{DOMAIN}/how-it-works/', f'{DOMAIN}/about/', f'{DOMAIN}/contact/', f'{DOMAIN}/privacy/', f'{DOMAIN}/paint-match-index/',
            f'{DOMAIN}/paint-choice-index/', f'{DOMAIN}/research/', f'{DOMAIN}/match-paint-from-a-photo/',
-           f'{DOMAIN}{VIS_PATH}', f'{DOMAIN}{SCHEME_PATH}']
+           f'{DOMAIN}{VIS_PATH}', f'{DOMAIN}{SCHEME_PATH}', f'{DOMAIN}{CALC_PATH}']
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += ''.join(f'<url><loc>{u}</loc></url>\n' for u in urls)+'</urlset>'
     open('site/sitemap.xml', 'w').write(sm)

@@ -1,0 +1,164 @@
+<!-- PaintDial paint calculator. gen_pages.py drops this into /paint-calculator/ inside the site's
+     header and footer and fills in PC_DATA from PAINT_INFO, so every coverage figure and tin size
+     here is the one shown on the colour pages. Styles are scoped under #pc. Nothing is estimated:
+     a brand with no published figure asks for the number on the tin. No prices. -->
+<style>
+#pc{font-size:15px;line-height:1.5;--pick:#5E7E8B}
+#pc p,#pc h2,#pc h3{margin:0;max-width:none}#pc p{font-size:inherit}
+#pc button,#pc input,#pc select{font:inherit;color:inherit}
+#pc [hidden]{display:none!important}
+#pc a{color:var(--pick)}
+#pc :focus-visible{outline:2px solid var(--pick);outline-offset:2px}
+#pc .pc-lead{margin-bottom:22px}#pc .pc-lead h1{margin:8px 0 12px}#pc .pc-lead p{max-width:640px}
+#pc .pc-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+#pc .pc-card{background:#fff;border:1px solid var(--hairline);border-radius:14px;padding:18px}
+#pc .pc-f{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+#pc .pc-f>span,#pc legend{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0}
+#pc .pc-f small{font-size:12.5px;color:var(--muted)}
+#pc select,#pc input[type=number]{background:#fff;border:1px solid var(--hairline);border-radius:9px;padding:10px 12px;font-size:16px;width:100%;min-width:0}
+#pc fieldset{border:none;padding:0;margin:0 0 14px;min-width:0}
+#pc .pc-seg{display:inline-flex;border:1px solid var(--hairline);border-radius:9px;overflow:hidden;margin-top:5px}
+#pc .pc-seg button{border:none;background:#fff;padding:8px 14px;font-size:13.5px;font-weight:600;cursor:pointer;color:var(--muted)}
+#pc .pc-seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+#pc .pc-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#pc .pc-row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#pc .pc-check{display:flex;gap:9px;align-items:center;font-size:14.5px;margin-bottom:14px;cursor:pointer}
+#pc .pc-check input{width:18px;height:18px;accent-color:var(--pick)}
+#pc .pc-out{position:sticky;top:16px}
+#pc .pc-out h2{font-family:var(--serif);font-size:19px;font-weight:600;margin-bottom:4px}
+#pc .pc-big{font-family:var(--serif);font-size:34px;font-weight:600;line-height:1.15;margin:10px 0 2px}
+#pc .pc-tins{font-size:16px;font-weight:600;margin:10px 0 0}
+#pc .pc-sub{font-size:13.5px;color:var(--muted);margin-top:4px}
+#pc .pc-basis{font-size:13px;color:var(--muted);margin-top:14px;padding-top:12px;border-top:1px solid #EEEAE1}
+#pc .pc-basis p+p{margin-top:8px}
+#pc .pc-empty{color:var(--muted);font-size:14.5px;margin-top:8px}
+@media(max-width:720px){#pc .pc-grid{grid-template-columns:minmax(0,1fr)}#pc .pc-out{position:static}#pc .pc-big{font-size:29px}}
+</style>
+<div id="pc">
+<div class="pc-lead"><!--PC-LEAD--></div>
+<div class="pc-grid">
+<div class="pc-card">
+  <label class="pc-f"><span>Brand</span><select id="pcBrand"></select><small id="pcProduct"></small></label>
+  <label class="pc-f" id="pcCovWrap" hidden><span>Coverage from the tin (m² a litre)</span><input id="pcCov" type="number" inputmode="decimal" min="1" max="30" step="0.5" placeholder="e.g. 12"><small id="pcCovNote"></small></label>
+  <fieldset><legend>What you’re painting</legend>
+    <div class="pc-seg" role="group" aria-label="How to give the size">
+      <button type="button" id="pcModeRoom" aria-pressed="true">A room</button><button type="button" id="pcModeArea" aria-pressed="false">I know the area</button>
+    </div>
+  </fieldset>
+  <div id="pcRoom">
+    <fieldset><legend>Measure in</legend>
+      <div class="pc-seg" role="group" aria-label="Units">
+        <button type="button" id="pcM" aria-pressed="true">Metres</button><button type="button" id="pcFt" aria-pressed="false">Feet</button>
+      </div>
+    </fieldset>
+    <div class="pc-row">
+      <label class="pc-f"><span>Length</span><input id="pcL" type="number" inputmode="decimal" min="0" step="0.1"></label>
+      <label class="pc-f"><span>Width</span><input id="pcW" type="number" inputmode="decimal" min="0" step="0.1"></label>
+      <label class="pc-f"><span>Height</span><input id="pcH" type="number" inputmode="decimal" min="0" step="0.1"></label>
+    </div>
+    <div class="pc-row2">
+      <label class="pc-f"><span>Doors</span><input id="pcDoors" type="number" inputmode="numeric" min="0" max="20" step="1" value="1"></label>
+      <label class="pc-f"><span>Windows</span><input id="pcWins" type="number" inputmode="numeric" min="0" max="20" step="1" value="1"></label>
+    </div>
+    <label class="pc-check"><input id="pcCeil" type="checkbox">Paint the ceiling in the same colour</label>
+  </div>
+  <div id="pcArea" hidden>
+    <label class="pc-f"><span>Area to paint (m²)</span><input id="pcA" type="number" inputmode="decimal" min="0" step="0.5"><small>Wall area, with doors and windows already taken off.</small></label>
+  </div>
+  <label class="pc-f"><span>Coats</span><select id="pcCoats"><option>1</option><option selected>2</option><option>3</option></select><small id="pcCoatsNote"></small></label>
+</div>
+<div class="pc-card pc-out" aria-live="polite">
+  <h2 id="pcOutH">How much paint</h2>
+  <div id="pcOut"><p class="pc-empty">Enter the size of the room to see how much paint it takes.</p></div>
+</div>
+</div>
+</div>
+<script>
+(function(){
+  'use strict';
+  var DATA=/*PC-DATA*/null, CHECKED=/*PC-CHECKED*/'', DOOR=1.5, WIN=1.4, FT=0.3048;
+  var $=function(id){return document.getElementById(id);};
+  var mode='room', feet=false;
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function poss(b){return /s$/.test(b)?b+'’':b+'’s';}
+  function num(id){var v=parseFloat($(id).value); return isFinite(v)&&v>0?v:0;}
+  function fmt(x){return (Math.round(x*10)/10).toString();}
+  function brand(){return DATA.filter(function(b){return b.slug===$('pcBrand').value;})[0]||DATA[0];}
+
+  /* Tins that hold at least `need`, from the brand's own sizes (testers left out by the build).
+     Picks the least paint left over, but counts each extra tin as 0.6 litres of bother, so
+     4.4 litres comes out as one 5L tin and not a 2.5L and two 1L. */
+  function tinsFor(need,sizes){
+    if(!sizes.length||need<=0) return null;
+    var s=sizes.slice().sort(function(a,b){return b-a;}), best=null, big=s[0];
+    var maxBig=Math.ceil(need/big);
+    (function walk(i,left,pick,vol,count){
+      if(left<=1e-9){ var cost=vol+0.6*count; if(!best||cost<best.cost-1e-9) best={vol:vol,count:count,cost:cost,pick:pick.slice()}; return; }
+      if(i>=s.length) return;
+      var max=Math.min(Math.ceil(left/s[i]), i===0?maxBig:Math.ceil(big/s[i]));
+      for(var n=max;n>=0;n--){ pick[i]=n; walk(i+1,left-n*s[i],pick,vol+n*s[i],count+n); }
+      pick[i]=0;
+    })(0,need,[],0,0);
+    if(!best) return null;
+    var parts=[]; s.forEach(function(z,i){ if(best.pick[i]) parts.push(best.pick[i]+' × '+(z<1?Math.round(z*1000)+'ml':fmt(z)+'L')); });
+    return {text:parts.join(' and '),vol:best.vol};
+  }
+
+  function area(){
+    if(mode==='area') return {a:num('pcA'),note:''};
+    var k=feet?FT:1, l=num('pcL')*k, w=num('pcW')*k, h=num('pcH')*k;
+    if(!l||!w||!h) return {a:0,note:''};
+    var d=Math.round(num('pcDoors')), n=Math.round(num('pcWins'));
+    var walls=2*(l+w)*h, off=Math.min(d*DOOR+n*WIN,walls*0.6), a=walls-off+($('pcCeil').checked?l*w:0);
+    var bits=['walls '+fmt(walls)+' m²'];
+    if(off>0) bits.push('less '+fmt(off)+' m² for '+[d?d+(d===1?' door':' doors'):'',n?n+(n===1?' window':' windows'):''].filter(Boolean).join(' and '));
+    if($('pcCeil').checked) bits.push('plus '+fmt(l*w)+' m² of ceiling');
+    return {a:a,note:bits.join(', ')};
+  }
+
+  function draw(){
+    var b=brand(), ar=area(), coats=parseInt($('pcCoats').value,10)||2;
+    $('pcProduct').textContent='Worked out for '+b.name+' '+b.product+', its '+b.what+' for walls and ceilings. Other finishes cover differently.';
+    $('pcCovWrap').hidden=!!b.cov;
+    $('pcCovNote').textContent=b.cov?'':poss(b.name)+' pages give no coverage per litre for this paint. Use the figure printed on the tin or in its data sheet.';
+    $('pcCoatsNote').textContent=b.coats?b.name+' says: '+b.coats+'.':'';
+    $('pcOutH').textContent='How much '+b.name+' '+b.product;
+    var lo,hi;   // m² a litre
+    if(b.cov){ lo=b.cov[0]/b.cov[2]; hi=b.cov[1]/b.cov[2]; } else { lo=hi=num('pcCov'); }
+    var out=$('pcOut');
+    if(!ar.a){ out.innerHTML='<p class="pc-empty">Enter the size of the room to see how much paint it takes.</p>'; return; }
+    if(!lo){ out.innerHTML='<p class="pc-empty">Enter the coverage figure from the tin to see how much paint it takes.</p>'; return; }
+    var most=ar.a*coats/lo, least=ar.a*coats/hi, range=most-least>0.05;
+    var t=tinsFor(most,b.tins);
+    var h='<p class="pc-big">'+(range?fmt(least)+' to '+fmt(most):(b.upto?'At least ':'About ')+fmt(most))+' litres</p>'+
+      '<p class="pc-sub">'+fmt(ar.a)+' m² to paint, '+coats+(coats===1?' coat':' coats')+(ar.note?' ('+esc(ar.note)+')':'')+'.</p>';
+    if(t) h+='<p class="pc-tins">'+t.text+'</p><p class="pc-sub">'+fmt(t.vol)+' litres in tins, from the sizes '+esc(b.name)+' sells'+(range?', enough for the higher figure':'')+'.</p>';
+    h+='<div class="pc-basis">';
+    if(b.cov) h+='<p>From '+esc(poss(b.name))+' own figure: '+esc(b.coverage.charAt(0).toLowerCase()+b.coverage.slice(1))+', checked '+esc(CHECKED)+'.'+
+      (b.upto?' That is the most it covers, so treat this as the least you’ll need.':'')+'</p>';
+    else h+='<p>From the coverage figure you entered.</p>';
+    h+='<p>Bare plaster, rough walls and a big change of colour all take more paint. '+
+      (mode==='room'?'Doors are taken as '+DOOR+' m² each and windows as '+WIN+' m² each. ':'')+'Check the tin before you buy.</p></div>';
+    out.innerHTML=h;
+  }
+
+  function setMode(m){mode=m;$('pcModeRoom').setAttribute('aria-pressed',m==='room');$('pcModeArea').setAttribute('aria-pressed',m==='area');$('pcRoom').hidden=m!=='room';$('pcArea').hidden=m!=='area';draw();}
+  function setFeet(f){
+    if(f!==feet){ ['pcL','pcW','pcH'].forEach(function(id){var v=num(id); if(v) $(id).value=(Math.round((f?v/FT:v*FT)*100)/100).toString();}); }
+    feet=f;$('pcM').setAttribute('aria-pressed',!f);$('pcFt').setAttribute('aria-pressed',f);draw();
+  }
+  $('pcBrand').innerHTML=DATA.map(function(b){return '<option value="'+b.slug+'">'+esc(b.name)+'</option>';}).join('');
+  var want=new URLSearchParams(location.search).get('brand');
+  if(want&&DATA.some(function(b){return b.slug===want;})) $('pcBrand').value=want;
+  $('pcBrand').addEventListener('change',function(){
+    var b=brand(), m=/^(\d)/.exec(b.coats||''); if(m) $('pcCoats').value=m[1];
+    history.replaceState(null,'',location.pathname+'?brand='+b.slug); draw();
+  });
+  (function(){var m=/^(\d)/.exec(brand().coats||''); if(m) $('pcCoats').value=m[1];})();
+  ['pcCov','pcL','pcW','pcH','pcDoors','pcWins','pcA'].forEach(function(id){$(id).addEventListener('input',draw);});
+  $('pcCeil').addEventListener('change',draw); $('pcCoats').addEventListener('change',draw);
+  $('pcModeRoom').addEventListener('click',function(){setMode('room');}); $('pcModeArea').addEventListener('click',function(){setMode('area');});
+  $('pcM').addEventListener('click',function(){setFeet(false);}); $('pcFt').addEventListener('click',function(){setFeet(true);});
+  draw();
+})();
+</script>

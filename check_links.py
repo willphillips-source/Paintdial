@@ -313,6 +313,10 @@ def main():
             rows, names = [], {}
             for p in ps:
                 url = p.get('url') or buy.get(brand, {}).get(p.get('code') or p['name'])
+                # COAT's tester button goes to the sample page, not the paint page the data
+                # holds (see buy_link in gen_pages.py), so that is the page to open.
+                if brand == 'COAT' and url and url.endswith('-flat-matt'):
+                    url = url[:-len('-flat-matt')] + '-sample'
                 if url:
                     label = f'{p["name"]}' + (f' ({p["code"]})' if p.get('code') else '')
                     rows.append((label, url.split('?')[0] if brand != 'Lick' else url))
