@@ -11,6 +11,10 @@
 #pv .vis{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:32px;align-items:start;margin:4px 0 8px}
 #pv .stage{position:sticky;top:16px;display:flex;flex-direction:column;align-items:center;gap:12px;min-width:0}
 #pv .photo-wrap{width:100%;display:flex;justify-content:center;min-width:0}
+#pv .stage.side{flex-direction:row;align-items:flex-start;justify-content:flex-start;gap:24px}
+#pv .stage.side .photo-wrap{width:auto;flex:none}
+#pv .stage.side .ptools{flex:none}
+#pv .stage.side .how{grid-template-columns:minmax(0,1fr)}
 #pv .frame{position:relative;line-height:0;border-radius:10px;overflow:hidden;background:#E9E5DC;box-shadow:0 1px 3px rgba(33,31,27,.08),0 8px 28px rgba(33,31,27,.08);touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #pv #view{display:block;width:100%;height:100%;cursor:crosshair}
 #pv .frame.busy #view{cursor:progress}
@@ -118,7 +122,7 @@
 @media (hover:none) and (pointer:coarse){#pv .touch-hint{display:block}}
 #pv #dial:active{cursor:grabbing}
 #pv #dial:focus-visible{outline:2px solid var(--pick);outline-offset:4px}
-#pv .mini-label{display:block;text-align:center;margin-top:6px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+#pv .mini-label{display:block;text-align:center;margin-top:9px;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);white-space:nowrap}
 #pv .from{display:flex;align-items:center;justify-content:center;gap:10px;font-size:13.5px;color:var(--muted)}
 #pv .from select{min-height:38px;border:1px solid var(--hairline);border-radius:9px;background:var(--card);padding:6px 10px;font-size:14px;font-weight:600;color:var(--ink);max-width:100%}
 #pv .recent{display:flex;align-items:center;gap:10px;min-width:0}
@@ -174,7 +178,8 @@
 #pv .wheel-wrap{width:196px;flex:none}
 #pv .wheel-ring{padding:7px}
 #pv #wheel{border-width:4px}
-#pv #dial{width:118px;height:118px}}
+#pv #dial{width:118px;height:118px}
+#pv .mini-label{margin-top:6px;font-size:10px;letter-spacing:.1em;color:var(--muted)}}
 @media (prefers-reduced-motion:reduce){#pv .status .bar i{transition:none}}
 #pv .vis{grid-template-areas:"stage lead" "stage panel";grid-template-rows:auto 1fr;row-gap:6px}#pv .stage{grid-area:stage}#pv .pv-lead{grid-area:lead;min-width:0}#pv .panel{grid-area:panel}#pv .pv-lead h1{margin:2px 0 12px;font-size:32px;text-wrap:balance}#pv .pv-lead p{font-size:15px;line-height:1.55;margin:0 0 14px}@media (max-width:880px){#pv .vis{grid-template-areas:"lead" "photo" "tools" "panel";grid-template-rows:none}#pv .photo-wrap{grid-area:photo}#pv .ptools{grid-area:tools}#pv .pv-lead h1{font-size:27px}}
 @media(max-width:640px){#pv{--g:18px}}
@@ -245,7 +250,6 @@
         <div class="wheel-wrap" id="wheelWrap">
           <div class="wheel-ring" id="wheelRing"><canvas id="wheel" width="600" height="600" tabindex="0" aria-label="Colour wheel: drag to choose a colour, or use the arrow keys. The wall shows the nearest paint."></canvas></div>
           <div class="pointer" id="pointer"></div>
-          <span class="mini-label">Colour</span>
         </div>
         <div class="dial-wrap">
           <canvas id="dial" width="360" height="360" tabindex="0" role="slider" aria-label="Lighter or darker: drag or use the arrow keys" aria-valuemin="5" aria-valuemax="97" aria-valuenow="52"></canvas>
@@ -466,7 +470,22 @@
     const wrap = $('photoWrap'), pt = $('ptools'), cs = getComputedStyle(wrap);
     const availW = wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
     const narrow = window.matchMedia('(max-width: 880px)').matches;
+    // On a wide screen the tools go beside the photo, not under it, so the photo can be
+    // as tall as the window. Under 1000px of room they stay underneath.
+    const stage = $('stage'), SIDE_W = 320, SIDE_GAP = 24;
+    const side = !narrow && stage.clientWidth >= 1000;
+    stage.classList.toggle('side', side);
     let availH;
+    if (side) {
+      const top = $('pv').getBoundingClientRect().top + window.scrollY;
+      const sw = stage.clientWidth - SIDE_W - SIDE_GAP, sh = Math.max(280, window.innerHeight - top - 16 - 12);
+      const ks = Math.min(sw / S.w, sh / S.h);
+      frame.style.width = Math.floor(S.w * ks) + 'px'; frame.style.height = Math.floor(S.h * ks) + 'px';
+      // Whatever the photo leaves over goes to the tools, up to 400px.
+      pt.style.width = Math.max(SIDE_W, Math.min(400, stage.clientWidth - Math.floor(S.w * ks) - SIDE_GAP)) + 'px';
+      if (wheel) wheel.place();
+      return;
+    }
     if (narrow) { pt.style.width = ''; availH = window.innerHeight * 0.45; }
     else {
       // The photo, its buttons and the wall instructions all fit on screen as the page
